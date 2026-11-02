@@ -1,0 +1,19 @@
+{
+  "name": "feedbackpulse",
+  "private": true,
+  "workspaces": [
+    "apps/*"
+  ],
+  "scripts": {
+    "dev": "concurrently -n api,web -c cyan,magenta \"npm run dev -w @feedbackpulse/api\" \"npm run dev -w @feedbackpulse/web\"",
+    "build": "npm run build --workspaces",
+    "db:generate": "npm run db:generate -w @feedbackpulse/api",
+    "db:migrate": "npm run db:migrate -w @feedbackpulse/api",
+    "db:seed": "npm run db:seed -w @feedbackpulse/api",
+    "db:setup": "npm run db:setup -w @feedbackpulse/api",
+    "db:studio": "npm run db:studio -w @feedbackpulse/api"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  }
+}

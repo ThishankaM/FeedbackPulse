@@ -1,0 +1,87 @@
+{
+  "common": {
+    "loading": "Loading...",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "close": "Close",
+    "submit": "Submit",
+    "success": "Success",
+    "error": "Error",
+    "theme": {
+      "toggle": "Toggle theme",
+      "light": "Light",
+      "dark": "Dark",
+      "system": "System"
+    }
+  },
+  "nav": {
+    "brand": "FeedbackPulse",
+    "boards": "Feedback",
+    "roadmap": "Roadmap",
+    "changelog": "Changelog",
+    "createWorkspace": "New Workspace",
+    "documentation": "Docs",
+    "health": "System Status"
+  },
+  "workspace": {
+    "modalTitle": "Create New Workspace",
+    "modalDescription": "Set up a new customer feedback hub for your product or organization.",
+    "nameLabel": "Workspace Name",
+    "namePlaceholder": "e.g. Acme Software",
+    "slugLabel": "URL Slug",
+    "slugPlaceholder": "acme",
+    "slugHelp": "Public boards will be available at /b/:slug",
+    "colorLabel": "Brand Accent Color",
+    "ownerEmailLabel": "Owner Email",
+    "ownerEmailPlaceholder": "alex@example.com",
+    "ownerNameLabel": "Owner Name",
+    "ownerNamePlaceholder": "Alex Mercer",
+    "submitButton": "Create Workspace",
+    "submitting": "Creating Workspace...",
+    "createSuccess": "Workspace created successfully!",
+    "createError": "Failed to create workspace."
+  },
+  "feedback": {
+    "suggestFeature": "Suggest a Feature",
+    "titleLabel": "Title",
+    "titlePlaceholder": "Short, descriptive title",
+    "contentLabel": "Description",
+    "contentPlaceholder": "Explain what you want to achieve (Markdown supported)...",
+    "submitFeedback": "Submit Feedback",
+    "upvote": "Upvote",
+    "upvoted": "Upvoted",
+    "status": {
+      "underReview": "Under Review",
+      "planned": "Planned",
+      "inProgress": "In Progress",
+      "completed": "Completed",
+      "closed": "Closed"
+    },
+    "filter": {
+      "all": "All Posts",
+      "trending": "Trending",
+      "top": "Top Voted",
+      "recent": "Most Recent"
+    },
+    "searchPlaceholder": "Search feedback and feature requests..."
+  },
+  "roadmap": {
+    "title": "Product Roadmap",
+    "subtitle": "Track our progress on upcoming features and enhancements.",
+    "planned": "Planned",
+    "inProgress": "In Progress",
+    "completed": "Completed",
+    "empty": "No items in this column yet."
+  },
+  "changelog": {
+    "title": "Product Changelog",
+    "subtitle": "Discover the latest features, improvements, and fixes shipped by our team.",
+    "badge": {
+      "feature": "New Feature",
+      "improvement": "Improvement",
+      "fix": "Fix"
+    }
+  }
+}
