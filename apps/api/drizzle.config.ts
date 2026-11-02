@@ -1,15 +1,16 @@
 import { defineConfig } from 'drizzle-kit';
-import * as dotenv from 'dotenv';
-
-dotenv.config();
 
 export default defineConfig({
-  schema: './src/db/schema.ts',
-  out: './drizzle',
   dialect: 'postgresql',
+  schema: './src/db/schema.ts',
+  out: './src/db/migrations',
   dbCredentials: {
-    url: process.env.DATABASE_URL || 'postgresql://postgres:postgres@localhost:5432/feedbackpulse',
+    url:
+      process.env.DATABASE_URL_DIRECT ??
+      process.env.DATABASE_URL ??
+      'postgresql://postgres:postgres@localhost:5432/feedbackpulse',
   },
+  casing: 'snake_case',
   verbose: true,
   strict: true,
 });

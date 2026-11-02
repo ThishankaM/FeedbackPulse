@@ -9,9 +9,12 @@
     "build": "npm run build --workspaces",
     "db:generate": "npm run db:generate -w @feedbackpulse/api",
     "db:migrate": "npm run db:migrate -w @feedbackpulse/api",
+    "db:post-migrate": "npm run db:post-migrate -w @feedbackpulse/api",
     "db:seed": "npm run db:seed -w @feedbackpulse/api",
-    "db:setup": "npm run db:setup -w @feedbackpulse/api",
-    "db:studio": "npm run db:studio -w @feedbackpulse/api"
+    "db:seed:reset": "npm run db:seed:reset -w @feedbackpulse/api",
+    "db:setup": "npm run db:migrate -w @feedbackpulse/api && npm run db:post-migrate -w @feedbackpulse/api && npm run db:seed -w @feedbackpulse/api",
+    "db:check": "npm run db:check -w @feedbackpulse/api",
+    "test:db": "npm run test:db --workspace=@feedbackpulse/api"
   },
   "devDependencies": {
     "concurrently": "^9.1.2"
