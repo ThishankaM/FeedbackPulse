@@ -24,6 +24,19 @@ app.use('*', cors({
 
 // Route Definitions chained for Hono RPC type inference
 const routes = app
+  // 0. Welcome / Index
+  .get('/', (c) => {
+    return c.json({
+      name: 'FeedbackPulse API',
+      version: '1.0.0',
+      status: 'active',
+      endpoints: {
+        health: '/api/health',
+        workspaces: '/api/workspaces/:slug',
+      },
+    });
+  })
+
   // 1. Healthcheck
   .get('/api/health', async (c) => {
     try {
@@ -104,6 +117,14 @@ const routes = app
       }
     }
   );
+
+app.notFound((c) => {
+  return c.json({
+    error: 'Not Found',
+    path: c.req.path,
+    documentation: 'Try / or /api/health',
+  }, 404);
+});
 
 const port = Number(process.env.PORT) || 3000;
 
