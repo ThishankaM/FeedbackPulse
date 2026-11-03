@@ -18,9 +18,14 @@
   },
   "nav": {
     "brand": "FeedbackPulse",
+    "dashboard": "Dashboard",
+    "feedbackBoard": "Feedback Board",
     "boards": "Feedback",
     "roadmap": "Roadmap",
     "changelog": "Changelog",
+    "analytics": "Analytics",
+    "settings": "Settings",
+    "helpSupport": "Help & Support",
     "createWorkspace": "New Workspace",
     "documentation": "Docs",
     "health": "System Status",
@@ -93,6 +98,41 @@
       "recent": "Most Recent"
     },
     "searchPlaceholder": "Search feedback and feature requests..."
+  },
+  "dashboard": {
+    "welcome": "Welcome back, {{name}}! 👋",
+    "subtitle": "Here's what's happening with your product.",
+    "searchPlaceholder": "Search feedback, users...",
+    "timeRange": {
+      "7d": "7D",
+      "30d": "30D",
+      "90d": "90D"
+    },
+    "totalFeedback": "Total Feedback",
+    "totalVotes": "Total Votes",
+    "totalComments": "Total Comments",
+    "thisMonthReleases": "This Month Releases",
+    "newFeedback": "New Feedback",
+    "tabs": {
+      "all": "All",
+      "underReview": "Under Review",
+      "planned": "Planned",
+      "inProgress": "In Progress",
+      "completed": "Completed",
+      "closed": "Closed"
+    },
+    "emptyColumn": "No feedback in this section.",
+    "hoursAgo": "{{count}}h ago",
+    "daysAgo": "{{count}}d ago",
+    "justNow": "Just now",
+    "createFeedbackTitle": "Submit New Feedback",
+    "createFeedbackDesc": "Share a feature suggestion or report an issue directly to the team.",
+    "boardLabel": "Select Board",
+    "tagLabel": "Tag / Category",
+    "submitButton": "Submit Feedback",
+    "submitting": "Submitting...",
+    "successMessage": "Feedback submitted successfully!",
+    "errorMessage": "Failed to submit feedback."
   },
   "roadmap": {
     "title": "Product Roadmap",

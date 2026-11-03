@@ -5,8 +5,9 @@ import { logger } from 'hono/logger';
 import { zValidator } from '@hono/zod-validator';
 import { z } from 'zod';
 import { db } from './db/index';
-import { workspaces, users, workspaceMembers } from './db/schema';
-import { eq } from 'drizzle-orm';
+import { workspaces, users, workspaceMembers, boards, posts, changelogs } from './db/schema';
+import { eq, and, isNull, sql, desc } from 'drizzle-orm';
+import { toggleVote } from './db/queries/feedback';
 import { hashPassword, verifyPassword, createToken, verifyAuthToken } from './lib/auth';
 import * as dotenv from 'dotenv';
 
@@ -211,7 +212,7 @@ const routes = app
         name: z.string().min(2, 'Name must be at least 2 characters').max(255),
         slug: z.string().min(2).max(100).regex(/^[a-z0-9-]+$/, 'Slug must be lowercase alphanumeric with hyphens'),
         primaryColor: z.string().regex(/^#([0-9a-fA-F]{3}){1,2}$/, 'Must be a valid hex color').default('#4F46E5'),
-        ownerEmail: z.string().email(),
+        ownerEmail: z.string().email().optional(),
         ownerName: z.string().optional(),
       })
     ),
@@ -219,30 +220,75 @@ const routes = app
       const { name, slug, primaryColor, ownerEmail, ownerName } = c.req.valid('json');
 
       try {
-        // Find or create owner user
-        let [owner] = await db.select().from(users).where(eq(users.email, ownerEmail));
-        if (!owner) {
-          [owner] = await db.insert(users).values({
-            email: ownerEmail,
-            name: ownerName || ownerEmail.split('@')[0],
-          }).returning();
+        // 1. If auth header is provided, use authenticated user as owner
+        let owner: any = null;
+        const authHeader = c.req.header('Authorization');
+        if (authHeader && authHeader.startsWith('Bearer ')) {
+          const payload = await verifyAuthToken(authHeader.substring(7));
+          if (payload?.sub) {
+            const [existingAuthUser] = await db.select().from(users).where(eq(users.id, payload.sub as string));
+            if (existingAuthUser) {
+              owner = existingAuthUser;
+            }
+          }
         }
 
-        // Create workspace
-        const [workspace] = await db.insert(workspaces).values({
-          name,
-          slug,
-          primaryColor,
-        }).returning();
+        // 2. If not authenticated, find or create user by ownerEmail
+        if (!owner) {
+          const emailToUse = ownerEmail || `${slug}-admin@feedbackpulse.dev`;
+          const [existing] = await db.select().from(users).where(eq(users.email, emailToUse));
+          if (existing) {
+            owner = existing;
+          } else {
+            [owner] = await db
+              .insert(users)
+              .values({
+                email: emailToUse,
+                name: ownerName || emailToUse.split('@')[0],
+                status: 'ACTIVE',
+              })
+              .returning();
+          }
+        }
 
-        // Assign user as OWNER
+        // 3. Create workspace
+        const [workspace] = await db
+          .insert(workspaces)
+          .values({
+            name,
+            slug,
+            primaryColor,
+          })
+          .returning();
+
+        // 4. Assign user as OWNER
         await db.insert(workspaceMembers).values({
           workspaceId: workspace.id,
           userId: owner.id,
           role: 'OWNER',
         });
 
-        return c.json({ workspace, owner }, 201);
+        // 5. Create default feedback board for this workspace
+        const [defaultBoard] = await db
+          .insert(boards)
+          .values({
+            workspaceId: workspace.id,
+            name: 'Feature Requests',
+            slug: 'features',
+            description: 'General feedback and feature requests',
+            isDefault: true,
+            isPublic: true,
+          })
+          .returning();
+
+        // 6. Issue JWT token for the owner
+        const token = await createToken({
+          id: owner.id,
+          email: owner.email,
+          name: owner.name,
+        });
+
+        return c.json({ workspace, owner, defaultBoard, token }, 201);
       } catch (error: any) {
         if (error?.code === '23505') { // Postgres unique violation
           return c.json({ error: 'A workspace with this slug already exists' }, 409);
@@ -250,7 +296,249 @@ const routes = app
         return c.json({ error: error.message || 'Failed to create workspace' }, 500);
       }
     }
-  );
+  )
+
+  // 6. Workspace Dashboard Data (KPI Metrics + Status Columns + Boards)
+  .get('/api/workspaces/:slug/dashboard', async (c) => {
+    const slug = c.req.param('slug');
+
+    try {
+      const [workspace] = await db.select().from(workspaces).where(eq(workspaces.slug, slug));
+      if (!workspace) {
+        return c.json({ error: 'Workspace not found' }, 404);
+      }
+
+      // Fetch boards for this workspace (auto-create default board if missing)
+      let workspaceBoards = await db
+        .select({
+          id: boards.id,
+          name: boards.name,
+          slug: boards.slug,
+          description: boards.description,
+          isDefault: boards.isDefault,
+        })
+        .from(boards)
+        .where(and(eq(boards.workspaceId, workspace.id), isNull(boards.archivedAt)));
+
+      if (workspaceBoards.length === 0) {
+        const [newBoard] = await db
+          .insert(boards)
+          .values({
+            workspaceId: workspace.id,
+            name: 'Feature Requests',
+            slug: 'features',
+            description: 'General feedback and feature requests',
+            isDefault: true,
+            isPublic: true,
+          })
+          .returning();
+        workspaceBoards = [
+          {
+            id: newBoard.id,
+            name: newBoard.name,
+            slug: newBoard.slug,
+            description: newBoard.description,
+            isDefault: newBoard.isDefault,
+          },
+        ];
+      }
+
+      // Fetch real posts for this workspace
+      const workspacePosts = await db
+        .select({
+          id: posts.id,
+          boardId: posts.boardId,
+          title: posts.title,
+          content: posts.content,
+          status: posts.status,
+          voteCount: posts.voteCount,
+          commentCount: posts.commentCount,
+          createdAt: posts.createdAt,
+          authorName: users.name,
+          authorAvatar: users.avatarUrl,
+        })
+        .from(posts)
+        .leftJoin(users, eq(posts.authorUserId, users.id))
+        .where(
+          and(
+            eq(posts.workspaceId, workspace.id),
+            isNull(posts.deletedAt),
+            eq(posts.moderationStatus, 'APPROVED')
+          )
+        )
+        .orderBy(desc(posts.voteCount), desc(posts.createdAt));
+
+      // Calculate real KPI metrics from database
+      const totalFeedback = workspacePosts.length;
+      const totalVotes = workspacePosts.reduce((acc, p) => acc + (p.voteCount || 0), 0);
+      const totalComments = workspacePosts.reduce((acc, p) => acc + (p.commentCount || 0), 0);
+
+      // Fetch real releases count for this month
+      const startOfMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+      const publishedReleases = await db
+        .select({ id: changelogs.id })
+        .from(changelogs)
+        .where(
+          and(
+            eq(changelogs.workspaceId, workspace.id),
+            eq(changelogs.status, 'PUBLISHED'),
+            sql`${changelogs.publishedAt} >= ${startOfMonth}`
+          )
+        );
+      const thisMonthReleases = publishedReleases.length;
+
+      // Group real posts by status
+      const columns = {
+        UNDER_REVIEW: workspacePosts.filter((p) => p.status === 'UNDER_REVIEW'),
+        PLANNED: workspacePosts.filter((p) => p.status === 'PLANNED'),
+        IN_PROGRESS: workspacePosts.filter((p) => p.status === 'IN_PROGRESS'),
+        COMPLETED: workspacePosts.filter((p) => p.status === 'COMPLETED'),
+        CLOSED: workspacePosts.filter((p) => p.status === 'CLOSED'),
+      };
+
+      return c.json({
+        workspace,
+        metrics: {
+          totalFeedback,
+          totalVotes,
+          totalComments,
+          thisMonthReleases,
+          deltas: {
+            feedback: '+0%',
+            votes: '+0%',
+            comments: '+0%',
+            releases: '+0%',
+          },
+        },
+        columns,
+        boards: workspaceBoards,
+      }, 200);
+    } catch (error: any) {
+      return c.json({ error: error.message || 'Failed to fetch dashboard data' }, 500);
+    }
+  })
+
+  // 7. Feedback: Create Post
+  .post(
+    '/api/posts',
+    zValidator(
+      'json',
+      z.object({
+        workspaceId: z.string().uuid(),
+        boardId: z.string().uuid(),
+        title: z.string().min(3, 'Title must be at least 3 characters').max(255),
+        content: z.string().min(3, 'Description must be at least 3 characters'),
+        status: z.enum(['UNDER_REVIEW', 'PLANNED', 'IN_PROGRESS', 'COMPLETED', 'CLOSED']).default('UNDER_REVIEW'),
+      })
+    ),
+    async (c) => {
+      const { workspaceId, boardId, title, content, status } = c.req.valid('json');
+
+      try {
+        // Attempt to extract authenticated user
+        let authorId: string | null = null;
+        const authHeader = c.req.header('Authorization');
+        if (authHeader && authHeader.startsWith('Bearer ')) {
+          const payload = await verifyAuthToken(authHeader.substring(7));
+          if (payload?.sub) {
+            authorId = payload.sub as string;
+          }
+        }
+
+        // Fallback: if no auth token, use the first active workspace member/user
+        if (!authorId) {
+          const [firstUser] = await db
+            .select({ userId: workspaceMembers.userId })
+            .from(workspaceMembers)
+            .where(eq(workspaceMembers.workspaceId, workspaceId))
+            .limit(1);
+          authorId = firstUser?.userId || null;
+        }
+
+        // Verify or fallback target board
+        let targetBoardId = boardId;
+        const [targetBoard] = await db
+          .select({ id: boards.id })
+          .from(boards)
+          .where(and(eq(boards.id, targetBoardId), eq(boards.workspaceId, workspaceId)));
+
+        if (!targetBoard) {
+          const [defaultBoard] = await db
+            .select({ id: boards.id })
+            .from(boards)
+            .where(eq(boards.workspaceId, workspaceId))
+            .limit(1);
+          if (!defaultBoard) {
+            return c.json({ error: 'No board found for this workspace' }, 400);
+          }
+          targetBoardId = defaultBoard.id;
+        }
+
+        const [newPost] = await db
+          .insert(posts)
+          .values({
+            workspaceId,
+            boardId: targetBoardId,
+            title,
+            content,
+            status,
+            authorUserId: authorId,
+            moderationStatus: 'APPROVED',
+          })
+          .returning();
+
+        return c.json({ post: newPost }, 201);
+      } catch (error: any) {
+        return c.json({ error: error.message || 'Failed to create post' }, 500);
+      }
+    }
+  )
+
+  // 8. Feedback: Toggle Upvote (Atomic via database trigger)
+  .post('/api/posts/:id/vote', async (c) => {
+    const postId = c.req.param('id');
+
+    try {
+      const [post] = await db.select().from(posts).where(eq(posts.id, postId));
+      if (!post) {
+        return c.json({ error: 'Post not found' }, 404);
+      }
+
+      // Check auth header
+      let userId: string | undefined = undefined;
+      const authHeader = c.req.header('Authorization');
+      if (authHeader && authHeader.startsWith('Bearer ')) {
+        const payload = await verifyAuthToken(authHeader.substring(7));
+        if (payload?.sub) {
+          userId = payload.sub as string;
+        }
+      }
+
+      // If anonymous, find default admin/user from workspace
+      if (!userId) {
+        const [defaultUser] = await db
+          .select({ id: users.id })
+          .from(users)
+          .limit(1);
+        userId = defaultUser?.id;
+      }
+
+      if (!userId) {
+        return c.json({ error: 'No user context available for voting' }, 400);
+      }
+
+      const result = await toggleVote({
+        workspaceId: post.workspaceId,
+        postId: post.id,
+        userId,
+      });
+
+      return c.json(result, 200);
+    } catch (error: any) {
+      return c.json({ error: error.message || 'Failed to toggle vote' }, 500);
+    }
+  }
+);
 
 app.notFound((c) => {
   return c.json({
