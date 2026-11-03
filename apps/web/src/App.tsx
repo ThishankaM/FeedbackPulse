@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Briefcase, Plus } from 'lucide-react';
 import { useAuth } from './context/AuthContext';
 import { AppSidebar } from './components/layout/AppSidebar';
 import { AppHeader } from './components/layout/AppHeader';
@@ -26,8 +27,8 @@ export default function App() {
     slug: string;
     primaryColor?: string;
   }>({
-    name: 'Acme Corp',
-    slug: 'acme',
+    name: '',
+    slug: '',
   });
 
   // Available Boards for New Feedback Modal
@@ -55,27 +56,45 @@ export default function App() {
   const [isSubmittingAuth, setIsSubmittingAuth] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
 
-  // Sync active workspace from user's memberships when available
+  // Initial load: discover any available workspaces in the database
   useEffect(() => {
-    if (memberships.length > 0) {
-      const match = memberships.find((m) => m.workspaceSlug === activeWorkspace.slug);
-      if (match) {
+    async function initWorkspace() {
+      // 1. If user has memberships, use first membership
+      if (memberships.length > 0) {
+        const first = memberships[0];
         setActiveWorkspace({
-          id: match.workspaceId,
-          name: match.workspaceName,
-          slug: match.workspaceSlug,
-          primaryColor: match.primaryColor || '#4F46E5',
+          id: first.workspaceId,
+          name: first.workspaceName,
+          slug: first.workspaceSlug,
+          primaryColor: first.primaryColor || '#4F46E5',
         });
-      } else {
-        setActiveWorkspace({
-          id: memberships[0].workspaceId,
-          name: memberships[0].workspaceName,
-          slug: memberships[0].workspaceSlug,
-          primaryColor: memberships[0].primaryColor || '#4F46E5',
-        });
+        return;
+      }
+
+      // 2. Otherwise query database for any existing workspace
+      try {
+        const res = await client.api.workspaces.$get();
+        if (res.ok) {
+          const data = await res.json();
+          if (data.workspaces && data.workspaces.length > 0) {
+            const first = data.workspaces[0];
+            setActiveWorkspace({
+              id: first.id,
+              name: first.name,
+              slug: first.slug,
+              primaryColor: first.primaryColor || '#4F46E5',
+            });
+          }
+        }
+      } catch {
+        // Fresh database without workspaces
       }
     }
-  }, [memberships]);
+
+    if (!activeWorkspace.slug) {
+      initWorkspace();
+    }
+  }, [memberships, activeWorkspace.slug]);
 
   // Pre-fill owner details when user is authenticated
   useEffect(() => {
@@ -87,6 +106,8 @@ export default function App() {
 
   // Fetch workspace details & boards
   const loadWorkspace = useCallback(async () => {
+    if (!activeWorkspace.slug) return;
+
     try {
       const res = await client.api.workspaces[':slug'].dashboard.$get({
         param: { slug: activeWorkspace.slug },
@@ -106,6 +127,8 @@ export default function App() {
         } else {
           setBoards([]);
         }
+      } else if (res.status === 404) {
+        setActiveWorkspace({ name: '', slug: '' });
       }
     } catch {
       // Fallback gracefully
@@ -266,16 +289,38 @@ export default function App() {
         />
 
         <main className="flex-1 pb-16">
-          {currentView === 'dashboard' && (
+          {/* If no workspace exists in the database yet, show clean initial onboarding */}
+          {!activeWorkspace.slug ? (
+            <div className="flex flex-col items-center justify-center min-h-[65vh] text-center p-8 max-w-md mx-auto">
+              <div className="h-16 w-16 rounded-3xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center mb-5 ring-8 ring-blue-500/5">
+                <Briefcase className="h-8 w-8 stroke-[2]" />
+              </div>
+              <h2 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
+                No workspace found
+              </h2>
+              <p className="text-sm text-slate-500 dark:text-slate-400 mt-2 leading-relaxed">
+                Your database is clean with zero test data. Create your first workspace to start collecting customer feedback and managing your public roadmap.
+              </p>
+              <Button
+                onClick={() => setIsWorkspaceModalOpen(true)}
+                className="mt-6 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl px-5 py-2.5 shadow-sm cursor-pointer"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                {t('workspace.modalTitle')}
+              </Button>
+            </div>
+          ) : currentView === 'dashboard' ? (
             <DashboardView
               workspaceSlug={activeWorkspace.slug}
               searchQuery={searchQuery}
               onOpenNewFeedback={() => setIsNewFeedbackModalOpen(true)}
+              onOpenAuthModal={() => {
+                setAuthMode('login');
+                setIsAuthModalOpen(true);
+              }}
               refreshTrigger={refreshTrigger}
             />
-          )}
-
-          {currentView !== 'dashboard' && (
+          ) : (
             <div className="flex flex-col items-center justify-center min-h-[60vh] text-center p-8">
               <div className="h-14 w-14 rounded-2xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center mb-4">
                 <span className="text-xl font-bold">✨</span>

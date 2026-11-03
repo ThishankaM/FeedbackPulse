@@ -113,12 +113,12 @@ The database schema is defined modularly in `apps/api/src/db/schema/` using [Dri
 
 | Cluster | Tables | Purpose |
 | :--- | :--- | :--- |
-| **1. Workspaces & Identity** | `workspaces`, `workspace_members`, `users`, `user_identities`, `sessions` | Organization tenants, membership RBAC (`OWNER`, `ADMIN`, `MODERATOR`, `MEMBER`), credentials, and social SSO logins. |
-| **2. Core Feedback Engine** | `boards`, `posts`, `post_votes`, `comments`, `tags`, `post_tags` | Multi-board feedback channels, posts with status tracking, upvoting engine, threaded comments, and categorization tags. |
-| **3. Moderation & Audit Logs** | `moderation_events`, `audit_logs`, `content_filters`, `workspace_invites` | Moderation workflows (`PENDING`, `APPROVED`, `FLAGGED`, `REJECTED`, `SPAM`), tenant audit trails, automated keyword filters, and team invites. |
-| **4. Roadmaps & Status Tracking** | `status_definitions`, `roadmap_views`, `roadmap_items` | Customizable Kanban roadmap columns (Planned, In Progress, Complete), post stage associations, and custom ordering. |
-| **5. Changelog & Communication** | `changelog_posts`, `changelog_labels`, `changelog_post_labels` | Public product release notes, release labels (New, Improved, Fixed), and subscriber broadcasts. |
-| **6. Notifications & Webhooks** | `notification_preferences`, `notifications`, `webhooks`, `webhook_deliveries` | Per-user event subscriptions, in-app notifications, and outbound HTTP webhooks with execution logs and retry status. |
+| **1. Workspaces & Identity** | `workspaces`, `workspace_members`, `workspace_embed_domains`, `api_keys`, `users`, `auth_accounts`, `sessions`, `one_time_tokens` | Organization tenants, membership RBAC (`OWNER`, `ADMIN`, `MEMBER`), credentials, and social SSO logins. |
+| **2. Core Feedback Engine** | `visitors`, `boards`, `posts`, `post_votes`, `comments` | Multi-board feedback channels, posts with status tracking, upvoting engine, and threaded comments. |
+| **3. Tags & Attachments** | `tags`, `post_tags`, `changelog_tags`, `uploads`, `post_attachments` | Categorization tags and file attachments for posts. |
+| **4. Roadmaps & Changelog** | `changelogs`, `changelog_posts` | Public product release notes with status tracking (`post_status`) and post associations. |
+| **5. Moderation & Audit Logs** | `audit_logs` | Moderation workflows (`PENDING`, `APPROVED`, `FLAGGED`, `REJECTED`) and tenant audit trails. |
+| **6. Notifications & Email** | `notification_preferences`, `notifications`, `email_outbox` | Per-user event subscriptions, in-app notifications, and queued outbound emails. |
 
 ### PostgreSQL Triggers & Counter Invariants
 
@@ -234,7 +234,7 @@ npm run db:setup
 This command sequentially executes:
 1. `npm run db:migrate` — Applies all pending Drizzle schema migrations.
 2. `npm run db:post-migrate` — Installs the 19 triggers and stored functions.
-3. `npm run db:seed` — Seeds demo tenant (`Acme Corp`, slug: `acme`), demo user (`alex@example.com`), boards, posts, votes, and tags.
+3. `npm run db:seed` — Seeds demo tenant (`Acme Corp`, slug: `acme`), demo users `owner@acme.test`, `admin@acme.test`, and `member@acme.test` (all with password `demo1234`), boards, posts, votes, and tags.
 
 ### 5. Verify Database Invariants
 

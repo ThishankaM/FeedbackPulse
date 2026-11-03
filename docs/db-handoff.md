@@ -49,9 +49,9 @@ The PGlite in-memory test suite (`npm run test:db`) validates **21 checks passed
 | Entity | Identifier / Email | Role / State |
 | :--- | :--- | :--- |
 | **Workspace** | `/b/acme` | Plan: `PRO`, primary: `#4F46E5` |
-| **Owner** | `owner@acme.test` | Role: `OWNER`, status: `ACTIVE` |
-| **Admin** | `admin@acme.test` | Role: `ADMIN`, status: `ACTIVE` |
-| **Member** | `member@acme.test` | Role: `MEMBER`, status: `ACTIVE` |
+| **Owner** | `owner@acme.test` | Role: `OWNER`, status: `ACTIVE`, password: `demo1234` |
+| **Admin** | `admin@acme.test` | Role: `ADMIN`, status: `ACTIVE`, password: `demo1234` |
+| **Member** | `member@acme.test` | Role: `MEMBER`, status: `ACTIVE`, password: `demo1234` |
 | **Boards** | `features`, `bugs` | Default & public boards |
 | **Sample Posts** | 6 posts | "Dark mode for the widget", "Public REST API", etc. |
 | **Comments** | 4 comments | 3 public, 1 internal note |

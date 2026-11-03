@@ -20,12 +20,14 @@ export interface DashboardViewProps {
   searchQuery: string;
   onOpenNewFeedback: () => void;
   refreshTrigger: number;
+  onOpenAuthModal?: () => void;
 }
 
 export function DashboardView({
   workspaceSlug,
   searchQuery,
   onOpenNewFeedback,
+  onOpenAuthModal,
   refreshTrigger,
 }: DashboardViewProps) {
   const { t } = useTranslation();
@@ -101,6 +103,7 @@ export function DashboardView({
                 createdAt: p.createdAt,
                 authorName: p.authorName || null,
                 authorAvatar: p.authorAvatar || null,
+                hasVoted: false,
               }));
             }
           });
@@ -118,8 +121,16 @@ export function DashboardView({
 
   // Handle upvoting
   const handleVote = async (postId: string) => {
+    // Voting is member-only; guests are sent to sign in
+    if (!user) {
+      onOpenAuthModal?.();
+      return;
+    }
+
     // 1. Optimistic update
+    let previousColumns: Record<string, FeedbackCardData[]> | null = null;
     setColumns((prev) => {
+      previousColumns = prev;
       const next = { ...prev };
       Object.keys(next).forEach((colKey) => {
         next[colKey] = next[colKey].map((card) => {
@@ -161,7 +172,10 @@ export function DashboardView({
         }));
       }
     } catch {
-      // Rollback on error handled gracefully
+      // Roll the optimistic update back on failure
+      if (previousColumns) {
+        setColumns(previousColumns);
+      }
     }
   };
 
@@ -192,6 +206,7 @@ export function DashboardView({
     { key: 'PLANNED', title: t('dashboard.tabs.planned') },
     { key: 'IN_PROGRESS', title: t('dashboard.tabs.inProgress') },
     { key: 'COMPLETED', title: t('dashboard.tabs.completed') },
+    { key: 'CLOSED', title: t('dashboard.tabs.closed') },
   ];
 
   const displayName = user?.name || (user?.email ? user.email.split('@')[0] : 'Guest');
