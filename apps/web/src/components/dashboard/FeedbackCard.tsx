@@ -48,7 +48,7 @@ export function FeedbackCard({ card, onVote }: FeedbackCardProps) {
   };
 
   return (
-    <div className="kanban-card group rounded-xl border border-slate-200/90 dark:border-slate-800/90 bg-white dark:bg-slate-900/90 p-4 shadow-2xs hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700 transition-all cursor-pointer">
+    <div className="kanban-card group rounded-xl border border-slate-200/90 dark:border-slate-800/90 bg-white dark:bg-[#0a0a0a] p-4 shadow-2xs hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700 transition-all cursor-pointer">
       {/* Title & Options */}
       <div className="flex items-start justify-between gap-2 mb-1.5">
         <h4 className="text-sm font-bold text-slate-900 dark:text-slate-100 leading-snug line-clamp-1 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
@@ -87,7 +87,7 @@ export function FeedbackCard({ card, onVote }: FeedbackCardProps) {
               'flex items-center gap-1 font-semibold transition-colors px-1.5 py-0.5 rounded-md',
               card.hasVoted
                 ? 'text-blue-600 bg-blue-50 dark:bg-blue-950/40 dark:text-blue-400'
-                : 'text-slate-600 dark:text-slate-300 hover:text-blue-600 hover:bg-slate-100 dark:hover:bg-slate-800'
+                : 'text-slate-600 dark:text-slate-300 hover:text-blue-600 hover:bg-slate-100 dark:hover:bg-[#1c1c20]'
             )}
           >
             <ArrowBigUp className={cn('h-4 w-4', card.hasVoted && 'fill-current')} />

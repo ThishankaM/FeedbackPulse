@@ -26,25 +26,73 @@
   }
 
   .dark {
-    --background: #09090b;
+    --background: #000000;
     --foreground: #fafafa;
-    --card: #09090b;
+    --card: #0a0a0a;
     --card-foreground: #fafafa;
-    --popover: #09090b;
+    --popover: #0a0a0a;
     --popover-foreground: #fafafa;
     --primary: #6366f1;
     --primary-foreground: #ffffff;
-    --secondary: #27272a;
+    --secondary: #111113;
     --secondary-foreground: #fafafa;
-    --muted: #27272a;
+    --muted: #111113;
     --muted-foreground: #a1a1aa;
-    --accent: #27272a;
+    --accent: #111113;
     --accent-foreground: #fafafa;
     --destructive: #7f1d1d;
     --destructive-foreground: #fafafa;
-    --border: #27272a;
-    --input: #27272a;
+    --border: #26262b;
+    --input: #0a0a0a;
     --ring: #6366f1;
+  }
+}
+
+@keyframes fp-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Native theme cross-fade: compositor-driven snapshots instead of
+   animating colors on every element in the document. */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 200ms;
+  animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Freeze component transitions while the theme snapshots are captured so the
+   incoming frame contains the final colors, not a transition start state. */
+html.theme-switching,
+html.theme-switching *:not(.theme-toggle-icon):not(.theme-toggle-icon *),
+html.theme-switching *::before,
+html.theme-switching *::after {
+  transition: none !important;
+}
+
+/* Fallback for browsers without View Transitions. Only paint-cheap color
+   properties animate; shadows and SVG fills/strokes are excluded. */
+html.theme-transition,
+html.theme-transition *:not(.theme-toggle-icon):not(.theme-toggle-icon *) {
+  transition-property: background-color, border-color, color;
+  transition-duration: 200ms;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-delay: 0s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none;
+  }
+
+  html.theme-transition,
+  html.theme-transition *:not(.theme-toggle-icon):not(.theme-toggle-icon *) {
+    transition: none;
   }
 }
 

@@ -201,18 +201,25 @@ export function DashboardView({
     { id: 'CLOSED', label: t('dashboard.tabs.closed') },
   ];
 
-  const columnConfig = [
+  const primaryRoadmapColumns = [
     { key: 'UNDER_REVIEW', title: t('dashboard.tabs.underReview') },
     { key: 'PLANNED', title: t('dashboard.tabs.planned') },
     { key: 'IN_PROGRESS', title: t('dashboard.tabs.inProgress') },
     { key: 'COMPLETED', title: t('dashboard.tabs.completed') },
-    { key: 'CLOSED', title: t('dashboard.tabs.closed') },
   ];
+
+  const columnsToRender =
+    activeTab === 'ALL'
+      ? primaryRoadmapColumns
+      : [
+          ...primaryRoadmapColumns,
+          { key: 'CLOSED', title: t('dashboard.tabs.closed') },
+        ].filter((col) => col.key === activeTab);
 
   const displayName = user?.name || (user?.email ? user.email.split('@')[0] : 'Guest');
 
   return (
-    <div className="flex-1 p-8 space-y-7 max-w-7xl mx-auto w-full">
+    <div className="flex-1 px-6 lg:px-8 py-7 space-y-7 w-full max-w-[1920px] mx-auto">
       {/* 1. Greeting & Time Range Bar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
@@ -225,7 +232,7 @@ export function DashboardView({
         </div>
 
         {/* Time Range Pills: 7D | 30D | 90D */}
-        <div className="inline-flex items-center p-1 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 self-start sm:self-auto">
+        <div className="inline-flex items-center p-1 rounded-xl bg-slate-100 dark:bg-[#0a0a0a] border border-slate-200/80 dark:border-slate-800 self-start sm:self-auto">
           {(['7D', '30D', '90D'] as const).map((r) => (
             <button
               key={r}
@@ -315,22 +322,27 @@ export function DashboardView({
       </div>
 
       {/* 4. Kanban Status Columns Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 items-start">
-        {columnConfig
-          .filter((col) => activeTab === 'ALL' || activeTab === col.key)
-          .map((col) => {
-            const filteredCards = filterCards(columns[col.key] || []);
-            return (
-              <KanbanColumn
-                key={col.key}
-                statusKey={col.key}
-                title={col.title}
-                count={filteredCards.length}
-                cards={filteredCards}
-                onVote={handleVote}
-              />
-            );
-          })}
+      <div
+        className={cn(
+          'gap-4 items-start w-full',
+          activeTab === 'ALL'
+            ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4'
+            : 'flex max-w-xl'
+        )}
+      >
+        {columnsToRender.map((col) => {
+          const filteredCards = filterCards(columns[col.key] || []);
+          return (
+            <KanbanColumn
+              key={col.key}
+              statusKey={col.key}
+              title={col.title}
+              count={filteredCards.length}
+              cards={filteredCards}
+              onVote={handleVote}
+            />
+          );
+        })}
       </div>
     </div>
   );

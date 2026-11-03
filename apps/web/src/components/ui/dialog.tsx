@@ -35,7 +35,7 @@ export function Dialog({ open, onOpenChange, children }: DialogProps) {
         onClick={() => onOpenChange(false)}
       />
       {/* Dialog container */}
-      <div className="relative z-50 w-full max-w-lg rounded-2xl border border-slate-200 bg-white p-6 shadow-2xl transition-all dark:border-slate-800 dark:bg-slate-900">
+      <div className="relative z-50 w-full max-w-lg rounded-2xl border border-slate-200 bg-white p-6 shadow-2xl transition-all dark:border-slate-800 dark:bg-[#0a0a0a]">
         <button
           onClick={() => onOpenChange(false)}
           className="absolute right-4 top-4 rounded-lg p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-200"

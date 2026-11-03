@@ -259,7 +259,7 @@ export default function App() {
   };
 
   return (
-    <div className="flex h-screen overflow-hidden bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 antialiased font-sans transition-colors duration-200">
+    <div className="flex h-screen overflow-hidden bg-slate-50 dark:bg-black text-slate-900 dark:text-slate-100 antialiased font-sans transition-colors duration-200">
       {/* 1. Dark Left Navigation Sidebar */}
       <AppSidebar
         currentView={currentView}

@@ -48,7 +48,7 @@ export function KanbanColumn({
   return (
     <div
       ref={columnRef}
-      className="flex flex-col rounded-2xl bg-slate-100/70 dark:bg-slate-900/40 p-3.5 border border-slate-200/60 dark:border-slate-800/60 min-w-[270px] flex-1"
+      className="flex flex-col rounded-2xl bg-slate-100/70 dark:bg-white/[0.04] p-3.5 border border-slate-200/60 dark:border-slate-800/60 min-w-[220px] w-full flex-1"
     >
       {/* Column Header */}
       <div className="flex items-center justify-between px-1.5 pb-3">
@@ -74,7 +74,7 @@ export function KanbanColumn({
             <FeedbackCard key={card.id} card={card} onVote={onVote} />
           ))
         ) : (
-          <div className="flex flex-col items-center justify-center p-6 text-center border border-dashed border-slate-200 dark:border-slate-800 rounded-xl bg-white/40 dark:bg-slate-950/20">
+          <div className="flex flex-col items-center justify-center p-6 text-center border border-dashed border-slate-200 dark:border-slate-800 rounded-xl bg-white/40 dark:bg-white/[0.03]">
             <p className="text-xs text-slate-400">No feedback in this section</p>
           </div>
         )}

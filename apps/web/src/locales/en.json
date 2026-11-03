@@ -26,6 +26,8 @@
     "analytics": "Analytics",
     "settings": "Settings",
     "helpSupport": "Help & Support",
+    "collapseSidebar": "Collapse Sidebar",
+    "expandSidebar": "Expand Sidebar",
     "createWorkspace": "New Workspace",
     "documentation": "Docs",
     "health": "System Status",

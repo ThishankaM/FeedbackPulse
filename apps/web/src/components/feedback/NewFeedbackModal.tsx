@@ -102,7 +102,7 @@ export function NewFeedbackModal({
             <select
               value={boardId}
               onChange={(e) => setBoardId(e.target.value)}
-              className="flex h-9 w-full rounded-lg border border-slate-200 bg-white px-3 py-1 text-sm shadow-xs transition-colors dark:border-slate-800 dark:bg-slate-950 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="flex h-9 w-full rounded-lg border border-slate-200 bg-white px-3 py-1 text-sm shadow-xs transition-colors dark:border-slate-800 dark:bg-[#0a0a0a] dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               {boards.map((b) => (
                 <option key={b.id} value={b.id}>
@@ -123,7 +123,7 @@ export function NewFeedbackModal({
             placeholder={t('feedback.contentPlaceholder')}
             rows={4}
             required
-            className="flex w-full rounded-lg border border-slate-200 bg-white p-3 text-sm shadow-xs transition-colors placeholder:text-slate-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-100 dark:placeholder:text-slate-500"
+            className="flex w-full rounded-lg border border-slate-200 bg-white p-3 text-sm shadow-xs transition-colors placeholder:text-slate-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:border-slate-800 dark:bg-[#0a0a0a] dark:text-slate-100 dark:placeholder:text-slate-500"
           />
         </div>
 
