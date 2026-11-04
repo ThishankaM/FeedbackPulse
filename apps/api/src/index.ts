@@ -235,12 +235,13 @@ const routes = app
         name: z.string().min(2, 'Name must be at least 2 characters').max(255),
         slug: z.string().min(2).max(100).regex(/^[a-z0-9-]+$/, 'Slug must be lowercase alphanumeric with hyphens'),
         primaryColor: z.string().regex(/^#([0-9a-fA-F]{3}){1,2}$/, 'Must be a valid hex color').default('#4F46E5'),
+        logoUrl: z.string().url('Must be a valid URL').optional().or(z.literal('')),
         ownerEmail: z.string().email().optional(),
         ownerName: z.string().optional(),
       })
     ),
     async (c) => {
-      const { name, slug, primaryColor, ownerEmail, ownerName } = c.req.valid('json');
+      const { name, slug, primaryColor, logoUrl, ownerEmail, ownerName } = c.req.valid('json');
 
       try {
         // 1. If auth header is provided, use authenticated user as owner
@@ -281,6 +282,7 @@ const routes = app
             name,
             slug,
             primaryColor,
+            logoUrl: logoUrl && logoUrl.trim().length > 0 ? logoUrl : null,
           })
           .returning();
 
