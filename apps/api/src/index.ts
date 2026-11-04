@@ -5,14 +5,23 @@ import { logger } from 'hono/logger';
 import { zValidator } from '@hono/zod-validator';
 import { z } from 'zod';
 import { db } from './db/index';
-import { workspaces, users, workspaceMembers } from './db/schema';
-import { eq } from 'drizzle-orm';
+import { workspaces, users, workspaceMembers, boards, posts, changelogs, postVotes, comments } from './db/schema';
+import { eq, and, isNull, desc, gte, lt } from 'drizzle-orm';
+import { toggleVote } from './db/queries/feedback';
 import { hashPassword, verifyPassword, createToken, verifyAuthToken } from './lib/auth';
 import * as dotenv from 'dotenv';
 
 dotenv.config();
 
 const app = new Hono();
+
+const percentDelta = (current: number, previous: number): string => {
+  if (previous <= 0) {
+    return current > 0 ? '+100%' : '+0%';
+  }
+  const delta = Math.round(((current - previous) / previous) * 100);
+  return `${delta >= 0 ? '+' : ''}${delta}%`;
+};
 
 // Middlewares
 app.use('*', logger());
@@ -121,16 +130,19 @@ const routes = app
 
       try {
         const [user] = await db.select().from(users).where(eq(users.email, email));
-        if (!user) {
+        if (!user || user.deletedAt || user.status !== 'ACTIVE') {
           return c.json({ error: 'Invalid email or password' }, 401);
         }
 
-        // Check password if set
-        if (user.passwordHash) {
-          const isValid = await verifyPassword(password, user.passwordHash);
-          if (!isValid) {
-            return c.json({ error: 'Invalid email or password' }, 401);
-          }
+        // Password sign-in requires a password to verify against; accounts
+        // created without one (SSO/seeded demo users) cannot use it.
+        if (!user.passwordHash) {
+          return c.json({ error: 'This account has no password set' }, 401);
+        }
+
+        const isValid = await verifyPassword(password, user.passwordHash);
+        if (!isValid) {
+          return c.json({ error: 'Invalid email or password' }, 401);
         }
 
         const safeUser = {
@@ -193,6 +205,18 @@ const routes = app
   })
 
   // 5. Workspaces
+  .get('/api/workspaces', async (c) => {
+    const allWorkspaces = await db
+      .select({
+        id: workspaces.id,
+        name: workspaces.name,
+        slug: workspaces.slug,
+        primaryColor: workspaces.primaryColor,
+      })
+      .from(workspaces)
+      .limit(20);
+    return c.json({ workspaces: allWorkspaces }, 200);
+  })
   .get('/api/workspaces/:slug', async (c) => {
     const slug = c.req.param('slug');
     const [workspace] = await db.select().from(workspaces).where(eq(workspaces.slug, slug));
@@ -211,38 +235,85 @@ const routes = app
         name: z.string().min(2, 'Name must be at least 2 characters').max(255),
         slug: z.string().min(2).max(100).regex(/^[a-z0-9-]+$/, 'Slug must be lowercase alphanumeric with hyphens'),
         primaryColor: z.string().regex(/^#([0-9a-fA-F]{3}){1,2}$/, 'Must be a valid hex color').default('#4F46E5'),
-        ownerEmail: z.string().email(),
+        logoUrl: z.string().url('Must be a valid URL').optional().or(z.literal('')),
+        ownerEmail: z.string().email().optional(),
         ownerName: z.string().optional(),
       })
     ),
     async (c) => {
-      const { name, slug, primaryColor, ownerEmail, ownerName } = c.req.valid('json');
+      const { name, slug, primaryColor, logoUrl, ownerEmail, ownerName } = c.req.valid('json');
 
       try {
-        // Find or create owner user
-        let [owner] = await db.select().from(users).where(eq(users.email, ownerEmail));
-        if (!owner) {
-          [owner] = await db.insert(users).values({
-            email: ownerEmail,
-            name: ownerName || ownerEmail.split('@')[0],
-          }).returning();
+        // 1. If auth header is provided, use authenticated user as owner
+        let owner: any = null;
+        const authHeader = c.req.header('Authorization');
+        if (authHeader && authHeader.startsWith('Bearer ')) {
+          const payload = await verifyAuthToken(authHeader.substring(7));
+          if (payload?.sub) {
+            const [existingAuthUser] = await db.select().from(users).where(eq(users.id, payload.sub as string));
+            if (existingAuthUser) {
+              owner = existingAuthUser;
+            }
+          }
         }
 
-        // Create workspace
-        const [workspace] = await db.insert(workspaces).values({
-          name,
-          slug,
-          primaryColor,
-        }).returning();
+        // 2. If not authenticated, find or create user by ownerEmail
+        if (!owner) {
+          const emailToUse = ownerEmail || `${slug}-admin@feedbackpulse.dev`;
+          const [existing] = await db.select().from(users).where(eq(users.email, emailToUse));
+          if (existing) {
+            owner = existing;
+          } else {
+            [owner] = await db
+              .insert(users)
+              .values({
+                email: emailToUse,
+                name: ownerName || emailToUse.split('@')[0],
+                status: 'ACTIVE',
+              })
+              .returning();
+          }
+        }
 
-        // Assign user as OWNER
+        // 3. Create workspace
+        const [workspace] = await db
+          .insert(workspaces)
+          .values({
+            name,
+            slug,
+            primaryColor,
+            logoUrl: logoUrl && logoUrl.trim().length > 0 ? logoUrl : null,
+          })
+          .returning();
+
+        // 4. Assign user as OWNER
         await db.insert(workspaceMembers).values({
           workspaceId: workspace.id,
           userId: owner.id,
           role: 'OWNER',
         });
 
-        return c.json({ workspace, owner }, 201);
+        // 5. Create default feedback board for this workspace
+        const [defaultBoard] = await db
+          .insert(boards)
+          .values({
+            workspaceId: workspace.id,
+            name: 'Feature Requests',
+            slug: 'features',
+            description: 'General feedback and feature requests',
+            isDefault: true,
+            isPublic: true,
+          })
+          .returning();
+
+        // 6. Issue JWT token for the owner
+        const token = await createToken({
+          id: owner.id,
+          email: owner.email,
+          name: owner.name,
+        });
+
+        return c.json({ workspace, owner, defaultBoard, token }, 201);
       } catch (error: any) {
         if (error?.code === '23505') { // Postgres unique violation
           return c.json({ error: 'A workspace with this slug already exists' }, 409);
@@ -250,7 +321,326 @@ const routes = app
         return c.json({ error: error.message || 'Failed to create workspace' }, 500);
       }
     }
-  );
+  )
+
+  // 6. Workspace Dashboard Data (KPI Metrics + Status Columns + Boards)
+  .get('/api/workspaces/:slug/dashboard', async (c) => {
+    const slug = c.req.param('slug');
+
+    try {
+      const [workspace] = await db.select().from(workspaces).where(eq(workspaces.slug, slug));
+      if (!workspace) {
+        return c.json({ error: 'Workspace not found' }, 404);
+      }
+
+      const workspaceBoards = await db
+        .select({
+          id: boards.id,
+          name: boards.name,
+          slug: boards.slug,
+          description: boards.description,
+          isDefault: boards.isDefault,
+        })
+        .from(boards)
+        .where(and(eq(boards.workspaceId, workspace.id), isNull(boards.archivedAt)));
+
+      // Fetch approved, non-deleted posts for this workspace
+      const workspacePosts = await db
+        .select({
+          id: posts.id,
+          boardId: posts.boardId,
+          title: posts.title,
+          content: posts.content,
+          status: posts.status,
+          voteCount: posts.voteCount,
+          commentCount: posts.commentCount,
+          createdAt: posts.createdAt,
+          authorName: users.name,
+          authorAvatar: users.avatarUrl,
+        })
+        .from(posts)
+        .leftJoin(users, eq(posts.authorUserId, users.id))
+        .where(
+          and(
+            eq(posts.workspaceId, workspace.id),
+            isNull(posts.deletedAt),
+            eq(posts.moderationStatus, 'APPROVED')
+          )
+        )
+        .orderBy(desc(posts.voteCount), desc(posts.createdAt));
+
+      // Calculate real KPI metrics from database
+      const totalFeedback = workspacePosts.length;
+      const totalVotes = workspacePosts.reduce((acc, p) => acc + (p.voteCount || 0), 0);
+      const totalComments = workspacePosts.reduce((acc, p) => acc + (p.commentCount || 0), 0);
+
+      // Month-over-month deltas for the KPI cards
+      const now = new Date();
+      const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+      const prevMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+
+      const feedbackThisMonth = await db
+        .select({ id: posts.id })
+        .from(posts)
+        .where(
+          and(
+            eq(posts.workspaceId, workspace.id),
+            isNull(posts.deletedAt),
+            gte(posts.createdAt, monthStart)
+          )
+        );
+
+      const feedbackLastMonth = await db
+        .select({ id: posts.id })
+        .from(posts)
+        .where(
+          and(
+            eq(posts.workspaceId, workspace.id),
+            isNull(posts.deletedAt),
+            gte(posts.createdAt, prevMonthStart),
+            lt(posts.createdAt, monthStart)
+          )
+        );
+
+      const votesThisMonth = await db
+        .select({ id: postVotes.id })
+        .from(postVotes)
+        .where(
+          and(
+            eq(postVotes.workspaceId, workspace.id),
+            gte(postVotes.createdAt, monthStart)
+          )
+        );
+
+      const votesLastMonth = await db
+        .select({ id: postVotes.id })
+        .from(postVotes)
+        .where(
+          and(
+            eq(postVotes.workspaceId, workspace.id),
+            gte(postVotes.createdAt, prevMonthStart),
+            lt(postVotes.createdAt, monthStart)
+          )
+        );
+
+      const commentsThisMonth = await db
+        .select({ id: comments.id })
+        .from(comments)
+        .where(
+          and(
+            eq(comments.workspaceId, workspace.id),
+            eq(comments.isInternal, false),
+            isNull(comments.deletedAt),
+            gte(comments.createdAt, monthStart)
+          )
+        );
+
+      const commentsLastMonth = await db
+        .select({ id: comments.id })
+        .from(comments)
+        .where(
+          and(
+            eq(comments.workspaceId, workspace.id),
+            eq(comments.isInternal, false),
+            isNull(comments.deletedAt),
+            gte(comments.createdAt, prevMonthStart),
+            lt(comments.createdAt, monthStart)
+          )
+        );
+
+      const releasesThisMonth = await db
+        .select({ id: changelogs.id })
+        .from(changelogs)
+        .where(
+          and(
+            eq(changelogs.workspaceId, workspace.id),
+            eq(changelogs.status, 'PUBLISHED'),
+            gte(changelogs.publishedAt, monthStart)
+          )
+        );
+
+      const releasesLastMonth = await db
+        .select({ id: changelogs.id })
+        .from(changelogs)
+        .where(
+          and(
+            eq(changelogs.workspaceId, workspace.id),
+            eq(changelogs.status, 'PUBLISHED'),
+            gte(changelogs.publishedAt, prevMonthStart),
+            lt(changelogs.publishedAt, monthStart)
+          )
+        );
+
+      const thisMonthReleases = releasesThisMonth.length;
+
+      // Group posts by status
+      const columns = {
+        UNDER_REVIEW: workspacePosts.filter((p) => p.status === 'UNDER_REVIEW'),
+        PLANNED: workspacePosts.filter((p) => p.status === 'PLANNED'),
+        IN_PROGRESS: workspacePosts.filter((p) => p.status === 'IN_PROGRESS'),
+        COMPLETED: workspacePosts.filter((p) => p.status === 'COMPLETED'),
+        CLOSED: workspacePosts.filter((p) => p.status === 'CLOSED'),
+      };
+
+      return c.json({
+        workspace,
+        metrics: {
+          totalFeedback,
+          totalVotes,
+          totalComments,
+          thisMonthReleases,
+          deltas: {
+            feedback: percentDelta(feedbackThisMonth.length, feedbackLastMonth.length),
+            votes: percentDelta(votesThisMonth.length, votesLastMonth.length),
+            comments: percentDelta(commentsThisMonth.length, commentsLastMonth.length),
+            releases: percentDelta(releasesThisMonth.length, releasesLastMonth.length),
+          },
+        },
+        columns,
+        boards: workspaceBoards,
+      }, 200);
+    } catch (error: any) {
+      return c.json({ error: error.message || 'Failed to fetch dashboard data' }, 500);
+    }
+  })
+
+  // 7. Feedback: Create Post
+  .post(
+    '/api/posts',
+    zValidator(
+      'json',
+      z.object({
+        workspaceId: z.string().uuid(),
+        boardId: z.string().uuid(),
+        title: z.string().min(3, 'Title must be at least 3 characters').max(255),
+        content: z.string().min(3, 'Description must be at least 3 characters'),
+        status: z.enum(['UNDER_REVIEW', 'PLANNED', 'IN_PROGRESS', 'COMPLETED', 'CLOSED']).default('UNDER_REVIEW'),
+      })
+    ),
+    async (c) => {
+      const { workspaceId, boardId, title, content, status } = c.req.valid('json');
+
+      try {
+        // Creating feedback requires an authenticated, active workspace member
+        const authHeader = c.req.header('Authorization');
+        if (!authHeader || !authHeader.startsWith('Bearer ')) {
+          return c.json({ error: 'Sign in to submit feedback' }, 401);
+        }
+
+        const payload = await verifyAuthToken(authHeader.substring(7));
+        if (!payload?.sub) {
+          return c.json({ error: 'Sign in to submit feedback' }, 401);
+        }
+
+        const [author] = await db
+          .select({ id: users.id, status: users.status })
+          .from(users)
+          .where(and(eq(users.id, payload.sub), isNull(users.deletedAt)));
+
+        if (!author || author.status !== 'ACTIVE') {
+          return c.json({ error: 'Your account is not active' }, 401);
+        }
+
+        const [membership] = await db
+          .select({ id: workspaceMembers.id })
+          .from(workspaceMembers)
+          .where(
+            and(
+              eq(workspaceMembers.workspaceId, workspaceId),
+              eq(workspaceMembers.userId, author.id)
+            )
+          );
+
+        if (!membership) {
+          return c.json({ error: 'You are not a member of this workspace' }, 403);
+        }
+
+        // Verify the target board belongs to this workspace
+        const [targetBoard] = await db
+          .select({ id: boards.id })
+          .from(boards)
+          .where(and(eq(boards.id, boardId), eq(boards.workspaceId, workspaceId)));
+
+        if (!targetBoard) {
+          return c.json({ error: 'Board not found for this workspace' }, 400);
+        }
+
+        const [newPost] = await db
+          .insert(posts)
+          .values({
+            workspaceId,
+            boardId,
+            title,
+            content,
+            status,
+            authorUserId: author.id,
+            moderationStatus: 'APPROVED',
+          })
+          .returning();
+
+        return c.json({ post: newPost }, 201);
+      } catch (error: any) {
+        return c.json({ error: error.message || 'Failed to create post' }, 500);
+      }
+    }
+  )
+
+  // 8. Feedback: Toggle Upvote (Atomic via database trigger)
+  .post('/api/posts/:id/vote', async (c) => {
+    const postId = c.req.param('id');
+
+    try {
+      const [post] = await db.select().from(posts).where(eq(posts.id, postId));
+      if (!post) {
+        return c.json({ error: 'Post not found' }, 404);
+      }
+
+      // Voting requires an authenticated, active workspace member
+      const authHeader = c.req.header('Authorization');
+      if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        return c.json({ error: 'Sign in to vote' }, 401);
+      }
+
+      const payload = await verifyAuthToken(authHeader.substring(7));
+      if (!payload?.sub) {
+        return c.json({ error: 'Sign in to vote' }, 401);
+      }
+
+      const [voter] = await db
+        .select({ id: users.id, status: users.status })
+        .from(users)
+        .where(and(eq(users.id, payload.sub), isNull(users.deletedAt)));
+
+      if (!voter || voter.status !== 'ACTIVE') {
+        return c.json({ error: 'Your account is not active' }, 401);
+      }
+
+      const [membership] = await db
+        .select({ id: workspaceMembers.id })
+        .from(workspaceMembers)
+        .where(
+          and(
+            eq(workspaceMembers.workspaceId, post.workspaceId),
+            eq(workspaceMembers.userId, voter.id)
+          )
+        );
+
+      if (!membership) {
+        return c.json({ error: 'You are not a member of this workspace' }, 403);
+      }
+
+      const result = await toggleVote({
+        workspaceId: post.workspaceId,
+        postId: post.id,
+        userId: voter.id,
+      });
+
+      return c.json(result, 200);
+    } catch (error: any) {
+      return c.json({ error: error.message || 'Failed to toggle vote' }, 500);
+    }
+  }
+);
 
 app.notFound((c) => {
   return c.json({
