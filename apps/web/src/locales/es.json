@@ -1,0 +1,309 @@
+{
+  "auth": {
+    "login": "Iniciar sesión",
+    "register": "Crear cuenta",
+    "logout": "Cerrar sesión",
+    "loginTitle": "Inicia sesión en FeedbackPulse",
+    "loginDesc": "Bienvenido de nuevo. Elige cómo quieres continuar.",
+    "registerTitle": "Crea tu cuenta de FeedbackPulse",
+    "registerDesc": "Empieza a convertir el feedback de tus clientes en un producto que les encante.",
+    "emailLabel": "Correo electrónico",
+    "emailPlaceholder": "tu@ejemplo.com",
+    "passwordLabel": "Contraseña",
+    "passwordPlaceholder": "••••••••",
+    "nameLabel": "Nombre completo",
+    "namePlaceholder": "Tu nombre",
+    "loginButton": "Iniciar sesión",
+    "loggingIn": "Iniciando sesión...",
+    "registerButton": "Crear cuenta",
+    "registering": "Creando cuenta...",
+    "dontHaveAccount": "¿No tienes una cuenta?",
+    "alreadyHaveAccount": "¿Ya tienes una cuenta?",
+    "socialDivider": "o continúa con tu correo",
+    "loginWith": "Iniciar sesión con {{provider}}",
+    "signupWith": "Registrarse con {{provider}}",
+    "workEmail": "Correo de trabajo",
+    "workEmailPlaceholder": "nombre@empresa.com",
+    "or": "O",
+    "sso": "SSO",
+    "cantLogIn": "¿No puedes iniciar sesión?",
+    "contactSupport": "Contactar con soporte",
+    "topCtaLogin": "Iniciar sesión",
+    "topCtaSignup": "Regístrate gratis",
+    "continueWith": "Continuar con {{provider}}",
+    "socialUnavailable": "El acceso con {{provider}} requiere configurar OAuth. Usa el correo por ahora.",
+    "rememberMe": "Recordarme",
+    "forgotPassword": "¿Olvidaste tu contraseña?",
+    "showPassword": "Mostrar contraseña",
+    "hidePassword": "Ocultar contraseña",
+    "modalLoading": "Preparando tu espacio seguro",
+    "secureAccess": "Acceso seguro",
+    "brandTagline": "Inteligencia de clientes",
+    "panelEyebrow": "Crea lo que tus clientes realmente quieren",
+    "panelTitle": "Todas las voces. Una dirección clara.",
+    "panelDescription": "Recoge feedback, prioriza con confianza y mantén a tus clientes cerca del producto que ayudan a crear.",
+    "panelQuote": "FeedbackPulse convirtió nuestro feedback disperso en una hoja de ruta que los clientes realmente siguen.",
+    "panelAuthor": "Maya Chen, responsable de producto",
+    "signalLabel": "Señal del cliente",
+    "signalValue": "+24%",
+    "priorityLabel": "Ideas priorizadas",
+    "priorityValue": "36",
+    "thisMonth": "Este mes",
+    "termsPrefix": "Al continuar, aceptas nuestros",
+    "terms": "Términos",
+    "and": "y",
+    "privacyPolicy": "Política de privacidad",
+    "loginSuccess": "¡Has iniciado sesión correctamente!",
+    "loginError": "Correo o contraseña incorrectos.",
+    "registerSuccess": "¡Cuenta creada correctamente!",
+    "registerError": "No se pudo crear la cuenta."
+  },
+  "landing": {
+    "nav": {
+      "product": "Producto",
+      "solutions": "Soluciones",
+      "pricing": "Precios",
+      "resources": "Recursos",
+      "logIn": "Iniciar sesión",
+      "startFree": "Empezar gratis",
+      "dashboard": "Abrir panel",
+      "openMenu": "Abrir menú",
+      "closeMenu": "Cerrar menú",
+      "toggleLanguage": "Cambiar idioma",
+      "toggleTheme": "Cambiar al modo {{theme}}"
+    },
+    "hero": {
+      "badge": "Nuevo: ya disponibles los resúmenes con IA",
+      "title": "Hay herramientas de feedback.",
+      "titleAccent": "Y está FeedbackPulse.",
+      "description": "Convierte comentarios dispersos en decisiones claras de producto. Recoge ideas, prioriza lo importante y comparte la hoja de ruta que tus clientes esperaban.",
+      "primaryCta": "Empezar a recoger feedback",
+      "secondaryCta": "Ver cómo funciona",
+      "freePlan": "Plan gratuito para siempre",
+      "noCard": "Sin tarjeta de crédito",
+      "lovedBy": "Preferido por equipos de producto",
+      "logosLabel": "Creado para equipos que escuchan",
+      "floatingShipped": "Solicitud publicada",
+      "floatingNotified": "Cliente notificado automáticamente",
+      "floatingInsight": "Idea destacada",
+      "floatingInsightText": "Los equipos quieren compartir novedades de la hoja de ruta más rápido",
+      "floatingRequests": "47 solicitudes similares"
+    },
+    "features": {
+      "eyebrow": "Recorrido por el producto",
+      "title": "Del feedback disperso a funciones publicadas.",
+      "description": "Un sistema conectado para escuchar, decidir y mantener informados a tus clientes.",
+      "explore": "Explorar este flujo",
+      "build": "Crear tu centro de feedback",
+      "rows": {
+        "capture": {
+          "eyebrow": "Captura",
+          "title": "Feedback sin trabajo extra.",
+          "description": "Da a tus clientes un lugar claro para compartir ideas y votar. FeedbackPulse organiza el ruido para que tu equipo se centre en lo importante.",
+          "points": [
+            "Paneles públicos y bandejas privadas",
+            "Detección de duplicados y etiquetas inteligentes",
+            "Votos, comentarios y contexto del cliente"
+          ]
+        },
+        "prioritize": {
+          "eyebrow": "Prioriza",
+          "title": "Una hoja de ruta en la que todos confían.",
+          "description": "Convierte la demanda de tus clientes en un plan creíble. Ordena por señales reales, alinea al equipo y publica el progreso sin otra reunión.",
+          "points": [
+            "Planificación de producto con arrastrar y soltar",
+            "Hojas de ruta públicas e integrables",
+            "Estado claro desde la idea hasta el lanzamiento"
+          ]
+        },
+        "loop": {
+          "eyebrow": "Cierra el ciclo",
+          "title": "Que tus clientes sepan que fueron escuchados.",
+          "description": "Avisa automáticamente a quienes votaron cuando se publica una idea. Comparte changelogs cuidados y convierte cada lanzamiento en un motivo para volver.",
+          "points": [
+            "Notas de lanzamiento atractivas",
+            "Seguimiento automático para quienes votaron",
+            "Datos de uso en cada actualización"
+          ]
+        }
+      },
+      "small": {
+        "source": {
+          "title": "Una única fuente de verdad",
+          "description": "Cada idea, voto y respuesta en un espacio de trabajo organizado."
+        },
+        "priorities": {
+          "title": "Prioridades claras",
+          "description": "Toma decisiones con contexto de clientes, no por intuición."
+        },
+        "teams": {
+          "title": "Para todos los equipos",
+          "description": "Producto, soporte y diseño trabajan desde la misma señal."
+        },
+        "ai": {
+          "title": "IA que ahorra tiempo",
+          "description": "Encuentra tendencias y resume feedback en segundos."
+        }
+      }
+    },
+    "platform": {
+      "eyebrow": "Creado para equipos de producto modernos",
+      "title": "Todo lo que necesitas para escuchar a escala.",
+      "description": "Tan sencillo como para un equipo pequeño. Tan potente como para miles de clientes y varios productos.",
+      "aiBadge": "Inteligencia de feedback con IA",
+      "aiTitle": "Encuentra la señal antes de que se convierta en un backlog.",
+      "aiDescription": "Agrupa ideas similares, detecta temas emergentes y descubre las solicitudes con mayor impacto para tus clientes.",
+      "trending": "Temas en tendencia",
+      "themes": [
+        "Visibilidad de la hoja de ruta",
+        "Búsqueda más rápida",
+        "Notificaciones de Slack"
+      ],
+      "thisWeek": "Esta semana",
+      "growth": "+38%",
+      "growthDescription": "más feedback procesable identificado",
+      "neverMissTitle": "No pierdas el momento",
+      "neverMissDescription": "Recibe avisos cuando tus clientes más valiosos voten, respondan o pidan algo nuevo.",
+      "enterpriseCustomer": "Cliente empresarial",
+      "votedRoadmap": "Ha votado por tu hoja de ruta",
+      "syncTitle": "Tus clientes, sincronizados",
+      "syncDescription": "Conecta el feedback del producto con las personas que lo envían y entiende qué necesita cada segmento.",
+      "cards": {
+        "setup": {
+          "title": "Configuración en minutos",
+          "description": "Crea un espacio de trabajo, añade un panel y empieza a recibir feedback de inmediato."
+        },
+        "embed": {
+          "title": "Integra donde quieras",
+          "description": "Añade el widget de feedback a tu aplicación o web con una línea de código."
+        },
+        "brand": {
+          "title": "Hazlo tuyo",
+          "description": "Adapta colores, logotipos, dominios y mensajes a tu marca."
+        },
+        "secure": {
+          "title": "Seguro por diseño",
+          "description": "Los datos por espacio de trabajo y las vistas públicas seguras protegen cada conversación."
+        }
+      },
+      "checks": {
+        "feedback": "Feedback ilimitado",
+        "changelog": "Changelog público",
+        "workspaces": "Varios espacios de trabajo",
+        "privacy": "Privacidad por espacio"
+      },
+      "launch": "Lanza en minutos",
+      "privacy": "Privacidad primero",
+      "scale": "Hecho para escalar"
+    },
+    "testimonials": {
+      "eyebrow": "Historias de clientes",
+      "title": "Preferido por equipos que escuchan a sus clientes.",
+      "proof": "Creado alrededor de conversaciones reales",
+      "viewPlans": "Ver planes",
+      "items": {
+        "maya": {
+          "quote": "Por fin tenemos un lugar donde vive cada idea de cliente. El equipo dedica menos tiempo a buscar contexto y más a lanzar mejoras.",
+          "name": "Maya Chen",
+          "role": "Responsable de producto, Northstar"
+        },
+        "alex": {
+          "quote": "La hoja de ruta pública cambió por completo nuestras conversaciones. La gente puede ver que su feedback avanza.",
+          "name": "Alex Kim",
+          "role": "Fundador, Chapter"
+        },
+        "jordan": {
+          "quote": "FeedbackPulse da a soporte una forma clara de detectar problemas de producto sin crear otra hoja de cálculo.",
+          "name": "Jordan Lee",
+          "role": "Experiencia de cliente, Orbit"
+        },
+        "priya": {
+          "quote": "El seguimiento automático cuando algo se publica es el tipo de detalle que marca la diferencia.",
+          "name": "Priya Shah",
+          "role": "Directora de diseño, Almanac"
+        },
+        "noah": {
+          "quote": "La configuración tardó minutos. El panel parece parte de nuestro producto y no otra herramienta externa.",
+          "name": "Noah Williams",
+          "role": "Responsable de ingeniería, Nimbus"
+        },
+        "sofia": {
+          "quote": "Usamos la vista de datos antes de cada planificación. Nos ayuda a explicar prioridades con evidencia real.",
+          "name": "Sofia Martínez",
+          "role": "Responsable de producto, Coastline"
+        }
+      }
+    },
+    "pricing": {
+      "title": "Empieza gratis. Crece cuando quieras.",
+      "description": "Planes claros, sin tarifas sorpresa y con todas las herramientas esenciales en el plan gratuito.",
+      "monthly": "Mensual",
+      "yearly": "Anual",
+      "save": "AHORRA 20%",
+      "perMonth": "/ mes",
+      "billedYearly": "Facturación anual de ${{price}}",
+      "freeForever": "Gratis para siempre",
+      "billedMonthly": "Facturación mensual",
+      "includes": "Incluye",
+      "trial": "Todos los planes de pago incluyen 14 días de prueba. No necesitas tarjeta.",
+      "popular": "Más popular",
+      "plans": {
+        "starter": {
+          "name": "Inicial",
+          "description": "Para equipos pequeños que están encontrando su ritmo de feedback.",
+          "cta": "Empezar gratis",
+          "features": ["1 espacio de trabajo", "Paneles de feedback públicos", "Hoja de ruta pública", "Soporte de la comunidad"]
+        },
+        "pro": {
+          "name": "Pro",
+          "description": "Para productos en crecimiento que quieren un ciclo de feedback completo.",
+          "cta": "Iniciar prueba gratis",
+          "features": ["Feedback ilimitado", "Marca personalizada", "Changelog y notificaciones", "Resúmenes y tendencias con IA", "Soporte prioritario"]
+        },
+        "scale": {
+          "name": "Escala",
+          "description": "Para equipos grandes con varios productos y clientes.",
+          "cta": "Elegir Escala",
+          "features": ["Todo lo de Pro", "Espacios ilimitados", "Permisos avanzados", "Incorporación dedicada"]
+        }
+      }
+    },
+    "cta": {
+      "title": "Las mejores ideas de tu producto ya están en tu bandeja de entrada.",
+      "description": "Dales espacio para crecer. Lanza tu centro de feedback en minutos y empieza a construir con confianza.",
+      "start": "Empezar gratis",
+      "pricing": "Ver precios",
+      "freePlan": "Plan gratuito para siempre",
+      "setup": "Configuración en minutos",
+      "noCard": "Sin tarjeta de crédito"
+    },
+    "footer": {
+      "description": "Convierte conversaciones con clientes en un producto que les encante usar.",
+      "product": "Producto",
+      "company": "Empresa",
+      "resources": "Recursos",
+      "legal": "Legal",
+      "links": {
+        "feedbackBoards": "Paneles de feedback",
+        "roadmap": "Hoja de ruta pública",
+        "changelog": "Changelog",
+        "widgets": "Widgets",
+        "about": "Nosotros",
+        "customers": "Clientes",
+        "careers": "Empleo",
+        "contact": "Contacto",
+        "help": "Centro de ayuda",
+        "updates": "Novedades",
+        "guide": "Guía de feedback",
+        "status": "Estado",
+        "privacy": "Privacidad",
+        "terms": "Términos",
+        "security": "Seguridad",
+        "dpa": "DPA"
+      },
+      "rights": "© {{year}} FeedbackPulse. Todos los derechos reservados.",
+      "madeFor": "Hecho para equipos que escuchan",
+      "operational": "Todos los sistemas operativos"
+    }
+  }
+}

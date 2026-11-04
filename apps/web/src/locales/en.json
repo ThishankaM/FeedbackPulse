@@ -38,10 +38,10 @@
     "login": "Sign In",
     "register": "Sign Up",
     "logout": "Sign Out",
-    "loginTitle": "Welcome Back",
-    "loginDesc": "Sign in to manage your workspaces and triage customer feedback.",
-    "registerTitle": "Create Your Account",
-    "registerDesc": "Get started with your dedicated feedback and roadmap hub.",
+    "loginTitle": "Log in to FeedbackPulse",
+    "loginDesc": "Welcome back. Choose how you'd like to continue.",
+    "registerTitle": "Create your FeedbackPulse account",
+    "registerDesc": "Start turning customer feedback into a product people love.",
     "emailLabel": "Email Address",
     "emailPlaceholder": "you@example.com",
     "passwordLabel": "Password",
@@ -54,6 +54,40 @@
     "registering": "Creating account...",
     "dontHaveAccount": "Don't have an account?",
     "alreadyHaveAccount": "Already have an account?",
+    "socialDivider": "or continue with email",
+    "loginWith": "Log in with {{provider}}",
+    "signupWith": "Sign up with {{provider}}",
+    "workEmail": "Work email",
+    "workEmailPlaceholder": "name@company.com",
+    "or": "OR",
+    "sso": "SSO",
+    "cantLogIn": "Can't log in?",
+    "contactSupport": "Contact support",
+    "topCtaLogin": "Log in",
+    "topCtaSignup": "Sign up for free",
+    "continueWith": "Continue with {{provider}}",
+    "socialUnavailable": "{{provider}} sign-in needs OAuth configuration. Use email for now.",
+    "rememberMe": "Remember me",
+    "forgotPassword": "Forgot password?",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password",
+    "modalLoading": "Preparing your secure workspace",
+    "secureAccess": "Secure access",
+    "brandTagline": "Customer intelligence",
+    "panelEyebrow": "Build what customers actually want",
+    "panelTitle": "Every customer voice. One clear direction.",
+    "panelDescription": "Collect feedback, prioritize with confidence, and keep customers close to the product they help shape.",
+    "panelQuote": "FeedbackPulse turned our scattered feedback into a roadmap customers actually follow.",
+    "panelAuthor": "Maya Chen, Product lead",
+    "signalLabel": "Customer signal",
+    "signalValue": "+24%",
+    "priorityLabel": "Ideas prioritized",
+    "priorityValue": "36",
+    "thisMonth": "This month",
+    "termsPrefix": "By continuing, you agree to our",
+    "terms": "Terms",
+    "and": "and",
+    "privacyPolicy": "Privacy Policy",
     "loginSuccess": "Successfully signed in!",
     "loginError": "Invalid email or password.",
     "registerSuccess": "Account created successfully!",
@@ -62,12 +96,14 @@
   "workspace": {
     "modalTitle": "Create New Workspace",
     "modalDescription": "Set up a new customer feedback hub for your product or organization.",
-    "nameLabel": "Workspace Name",
-    "namePlaceholder": "",
-    "slugLabel": "URL",
-    "slugPlaceholder": "",
-    "slugHelp": "Public boards will be available at /b/:slug",
-    "colorLabel": "Brand Accent Color",
+    "nameLabel": "Company Name",
+    "namePlaceholder": "Acme Software",
+    "slugLabel": "Slug",
+    "slugPlaceholder": "acme",
+    "slugHelp": "Public boards will be available at /dashboard/:slug",
+    "colorLabel": "Brand Color",
+    "logoUrlLabel": "Logo URL",
+    "logoUrlPlaceholder": "https://example.com/logo.png",
     "ownerEmailLabel": "Owner Email",
     "ownerEmailPlaceholder": "you@example.com",
     "ownerNameLabel": "Owner Name",
@@ -151,6 +187,254 @@
       "feature": "New Feature",
       "improvement": "Improvement",
       "fix": "Fix"
+    }
+  },
+  "landing": {
+    "nav": {
+      "product": "Product",
+      "solutions": "Solutions",
+      "pricing": "Pricing",
+      "resources": "Resources",
+      "logIn": "Log in",
+      "startFree": "Start free",
+      "dashboard": "Open dashboard",
+      "openMenu": "Open menu",
+      "closeMenu": "Close menu",
+      "toggleLanguage": "Switch language",
+      "toggleTheme": "Switch to {{theme}} mode"
+    },
+    "hero": {
+      "badge": "New: AI feedback summaries are here",
+      "title": "There are feedback tools.",
+      "titleAccent": "And there's FeedbackPulse.",
+      "description": "Turn scattered customer feedback into clear product decisions. Collect ideas, prioritize what matters, and share the roadmap your customers have been waiting for.",
+      "primaryCta": "Start collecting feedback",
+      "secondaryCta": "See how it works",
+      "freePlan": "Free forever plan",
+      "noCard": "No credit card required",
+      "lovedBy": "Loved by product teams",
+      "logosLabel": "Built for teams that listen",
+      "floatingShipped": "Request shipped",
+      "floatingNotified": "Customer notified automatically",
+      "floatingInsight": "Top insight",
+      "floatingInsightText": "Teams want a faster way to share roadmap updates",
+      "floatingRequests": "47 similar requests"
+    },
+    "features": {
+      "eyebrow": "Product tour",
+      "title": "From scattered feedback to shipped features.",
+      "description": "One connected system for listening, deciding, and keeping customers in the loop.",
+      "explore": "Explore this workflow",
+      "build": "Build your feedback hub",
+      "rows": {
+        "capture": {
+          "eyebrow": "Capture",
+          "title": "Feedback without the busywork.",
+          "description": "Give customers one clear place to share ideas and vote. FeedbackPulse organizes the noise so your team can focus on the signal.",
+          "points": [
+            "Public boards and private inboxes",
+            "Duplicate detection and smart tags",
+            "Votes, comments, and customer context"
+          ]
+        },
+        "prioritize": {
+          "eyebrow": "Prioritize",
+          "title": "A roadmap everyone can believe in.",
+          "description": "Turn customer demand into a credible plan. Sort by real signal, keep the team aligned, and publish progress without another status meeting.",
+          "points": [
+            "Drag-and-drop product planning",
+            "Public, embeddable roadmaps",
+            "Clear status from idea to shipped"
+          ]
+        },
+        "loop": {
+          "eyebrow": "Close the loop",
+          "title": "Let customers know they were heard.",
+          "description": "Automatically notify voters when an idea ships. Share polished changelogs and turn every release into a reason for customers to come back.",
+          "points": [
+            "Beautiful release notes",
+            "Automatic follow-ups for voters",
+            "Usage insights on every update"
+          ]
+        }
+      },
+      "small": {
+        "source": {
+          "title": "One source of truth",
+          "description": "Every idea, vote, and reply in one organized workspace."
+        },
+        "priorities": {
+          "title": "Clear priorities",
+          "description": "Make decisions with customer context, not gut feeling."
+        },
+        "teams": {
+          "title": "Built for every team",
+          "description": "Product, support, and design work from the same signal."
+        },
+        "ai": {
+          "title": "AI that saves time",
+          "description": "Find trends and summarize feedback in seconds."
+        }
+      }
+    },
+    "platform": {
+      "eyebrow": "Built for modern product teams",
+      "title": "Everything you need to listen at scale.",
+      "description": "Simple enough for a small team. Powerful enough for thousands of customers and multiple products.",
+      "aiBadge": "AI feedback intelligence",
+      "aiTitle": "Find the signal before it becomes a backlog.",
+      "aiDescription": "Group similar ideas, detect emerging themes, and surface the requests with the strongest customer impact.",
+      "trending": "Trending themes",
+      "themes": [
+        "Roadmap visibility",
+        "Faster search",
+        "Slack notifications"
+      ],
+      "thisWeek": "This week",
+      "growth": "+38%",
+      "growthDescription": "more actionable feedback identified",
+      "neverMissTitle": "Never miss the moment",
+      "neverMissDescription": "Get notified when high-value customers vote, reply, or ask for something new.",
+      "enterpriseCustomer": "Enterprise customer",
+      "votedRoadmap": "Voted for your roadmap",
+      "syncTitle": "Your customers, in sync",
+      "syncDescription": "Connect product feedback to the people behind it and understand what different segments need.",
+      "cards": {
+        "setup": {
+          "title": "Set up in minutes",
+          "description": "Create a workspace, add a board, and start collecting feedback right away."
+        },
+        "embed": {
+          "title": "Embed anywhere",
+          "description": "Drop the feedback widget into your app or website with a single line of code."
+        },
+        "brand": {
+          "title": "Make it yours",
+          "description": "Match your brand with custom colors, logos, domains, and messaging."
+        },
+        "secure": {
+          "title": "Secure by design",
+          "description": "Workspace-scoped data and safe public views keep every customer conversation private."
+        }
+      },
+      "checks": {
+        "feedback": "Unlimited feedback",
+        "changelog": "Public changelog",
+        "workspaces": "Multiple workspaces",
+        "privacy": "Workspace-level privacy"
+      },
+      "launch": "Launch in minutes",
+      "privacy": "Privacy-first",
+      "scale": "Built to scale"
+    },
+    "testimonials": {
+      "eyebrow": "Customer stories",
+      "title": "Loved by teams that care what customers think.",
+      "proof": "Built around real customer conversations",
+      "viewPlans": "View plans",
+      "items": {
+        "maya": {
+          "quote": "We finally have one place where every customer idea lives. The team spends less time hunting for context and more time shipping.",
+          "name": "Maya Chen",
+          "role": "Product lead, Northstar"
+        },
+        "alex": {
+          "quote": "The public roadmap completely changed our customer conversations. People can see that their feedback is moving.",
+          "name": "Alex Kim",
+          "role": "Founder, Chapter"
+        },
+        "jordan": {
+          "quote": "FeedbackPulse gives our support team a clear way to surface product pain without creating another spreadsheet.",
+          "name": "Jordan Lee",
+          "role": "Customer experience, Orbit"
+        },
+        "priya": {
+          "quote": "The automatic follow-up when something ships is the kind of small detail that makes a big difference.",
+          "name": "Priya Shah",
+          "role": "Design director, Almanac"
+        },
+        "noah": {
+          "quote": "Setup took minutes. The board looks like part of our product instead of another third-party tool.",
+          "name": "Noah Williams",
+          "role": "Engineering lead, Nimbus"
+        },
+        "sofia": {
+          "quote": "We use the insights view before every planning session. It helps us explain priorities with actual customer evidence.",
+          "name": "Sofia Martinez",
+          "role": "Head of product, Coastline"
+        }
+      }
+    },
+    "pricing": {
+      "title": "Start free. Grow when you're ready.",
+      "description": "Clear plans, no surprise fees, and every essential feedback tool in the free plan.",
+      "monthly": "Monthly",
+      "yearly": "Yearly",
+      "save": "SAVE 20%",
+      "perMonth": "/ month",
+      "billedYearly": "Billed ${{price}} yearly",
+      "freeForever": "Free forever",
+      "billedMonthly": "Billed monthly",
+      "includes": "Includes",
+      "trial": "All paid plans include a 14-day trial. No credit card required to get started.",
+      "popular": "Most popular",
+      "plans": {
+        "starter": {
+          "name": "Starter",
+          "description": "For small teams finding their feedback rhythm.",
+          "cta": "Start for free",
+          "features": ["1 workspace", "Public feedback boards", "Public roadmap", "Community support"]
+        },
+        "pro": {
+          "name": "Pro",
+          "description": "For growing products that want a complete feedback loop.",
+          "cta": "Start your free trial",
+          "features": ["Unlimited feedback", "Custom branding", "Changelog and notifications", "AI summaries and trends", "Priority support"]
+        },
+        "scale": {
+          "name": "Scale",
+          "description": "For larger teams with multiple products and customers.",
+          "cta": "Choose Scale",
+          "features": ["Everything in Pro", "Unlimited workspaces", "Advanced permissions", "Dedicated onboarding"]
+        }
+      }
+    },
+    "cta": {
+      "title": "Your best product ideas are already in your inbox.",
+      "description": "Give them a place to grow. Launch your customer feedback hub in minutes and start building with confidence.",
+      "start": "Start free",
+      "pricing": "View pricing",
+      "freePlan": "Free forever plan",
+      "setup": "Setup in minutes",
+      "noCard": "No credit card"
+    },
+    "footer": {
+      "description": "Turn customer conversations into a product people love to use.",
+      "product": "Product",
+      "company": "Company",
+      "resources": "Resources",
+      "legal": "Legal",
+      "links": {
+        "feedbackBoards": "Feedback boards",
+        "roadmap": "Public roadmap",
+        "changelog": "Changelog",
+        "widgets": "Widgets",
+        "about": "About",
+        "customers": "Customers",
+        "careers": "Careers",
+        "contact": "Contact",
+        "help": "Help center",
+        "updates": "Product updates",
+        "guide": "Feedback guide",
+        "status": "Status",
+        "privacy": "Privacy",
+        "terms": "Terms",
+        "security": "Security",
+        "dpa": "DPA"
+      },
+      "rights": "© {{year}} FeedbackPulse. All rights reserved.",
+      "madeFor": "Made for teams who listen",
+      "operational": "All systems operational"
     }
   }
 }
