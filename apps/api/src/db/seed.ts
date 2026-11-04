@@ -13,6 +13,7 @@ import {
   changelogPosts,
 } from './schema';
 import { eq, sql } from 'drizzle-orm';
+import { hashPassword } from '../lib/auth';
 
 export async function runSeed(reset: boolean = false) {
   if (reset) {
@@ -43,11 +44,15 @@ export async function runSeed(reset: boolean = false) {
   console.log('🌱 Seeding FeedbackPulse database...');
 
   // 1. Users (3 users)
+  // All seeded demo accounts share the password: demo1234
+  const demoPasswordHash = await hashPassword('demo1234');
+
   const [owner] = await db
     .insert(users)
     .values({
       email: 'owner@acme.test',
       name: 'Alice Owner',
+      passwordHash: demoPasswordHash,
       status: 'ACTIVE',
     })
     .returning();
@@ -57,6 +62,7 @@ export async function runSeed(reset: boolean = false) {
     .values({
       email: 'admin@acme.test',
       name: 'Bob Admin',
+      passwordHash: demoPasswordHash,
       status: 'ACTIVE',
     })
     .returning();
@@ -66,6 +72,7 @@ export async function runSeed(reset: boolean = false) {
     .values({
       email: 'member@acme.test',
       name: 'Charlie Member',
+      passwordHash: demoPasswordHash,
       status: 'ACTIVE',
     })
     .returning();

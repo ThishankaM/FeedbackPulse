@@ -15,3 +15,5 @@ export const api = hc<AppType>(API_URL, {
     return headers;
   },
 });
+
+export const client = api;
