@@ -47,4 +47,8 @@ i18n.on('languageChanged', (language) => {
   }
 });
 
+if (typeof document !== 'undefined') {
+  document.documentElement.lang = i18n.resolvedLanguage || i18n.language || 'en';
+}
+
 export default i18n;

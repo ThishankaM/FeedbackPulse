@@ -37,6 +37,8 @@ export function Avatar({
         <img
           src={src}
           alt={alt}
+          loading="lazy"
+          decoding="async"
           onError={() => setImageError(true)}
           className="aspect-square h-full w-full object-cover"
         />

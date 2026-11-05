@@ -5,8 +5,8 @@ import { logger } from 'hono/logger';
 import { zValidator } from '@hono/zod-validator';
 import { z } from 'zod';
 import { db } from './db/index';
-import { workspaces, users, workspaceMembers, boards, posts, changelogs, postVotes, comments } from './db/schema';
-import { eq, and, isNull, desc, gte, lt } from 'drizzle-orm';
+import { workspaces, users, workspaceMembers, boards, posts, changelogs, postVotes, comments, auditLogs } from './db/schema';
+import { eq, and, isNull, desc, asc, gte, lt } from 'drizzle-orm';
 import { toggleVote } from './db/queries/feedback';
 import { hashPassword, verifyPassword, createToken, verifyAuthToken } from './lib/auth';
 import * as dotenv from 'dotenv';
@@ -639,8 +639,361 @@ const routes = app
     } catch (error: any) {
       return c.json({ error: error.message || 'Failed to toggle vote' }, 500);
     }
-  }
-);
+  })
+
+  // 9. Feedback: Get Single Post Details
+  .get('/api/posts/:id', async (c) => {
+    const postId = c.req.param('id');
+
+    try {
+      const [post] = await db
+        .select({
+          id: posts.id,
+          workspaceId: posts.workspaceId,
+          boardId: posts.boardId,
+          title: posts.title,
+          content: posts.content,
+          status: posts.status,
+          voteCount: posts.voteCount,
+          commentCount: posts.commentCount,
+          createdAt: posts.createdAt,
+          authorName: users.name,
+          authorAvatar: users.avatarUrl,
+          authorEmail: users.email,
+        })
+        .from(posts)
+        .leftJoin(users, eq(posts.authorUserId, users.id))
+        .where(
+          and(
+            eq(posts.id, postId),
+            isNull(posts.deletedAt),
+            eq(posts.moderationStatus, 'APPROVED')
+          )
+        );
+
+      if (!post) {
+        return c.json({ error: 'Post not found' }, 404);
+      }
+
+      // Query internal notes count directly from database
+      const internalComments = await db
+        .select({ id: comments.id })
+        .from(comments)
+        .where(
+          and(
+            eq(comments.postId, postId),
+            eq(comments.workspaceId, post.workspaceId),
+            eq(comments.isInternal, true),
+            isNull(comments.deletedAt)
+          )
+        );
+
+      // Query activity count directly from auditLogs
+      const activityRecords = await db
+        .select({ id: auditLogs.id })
+        .from(auditLogs)
+        .where(
+          and(
+            eq(auditLogs.entityId, postId),
+            eq(auditLogs.workspaceId, post.workspaceId)
+          )
+        );
+
+      // Check if current user has voted
+      let hasVoted = false;
+      const authHeader = c.req.header('Authorization');
+      if (authHeader && authHeader.startsWith('Bearer ')) {
+        const payload = await verifyAuthToken(authHeader.substring(7));
+        if (payload?.sub) {
+          const [vote] = await db
+            .select({ id: postVotes.id })
+            .from(postVotes)
+            .where(
+              and(
+                eq(postVotes.postId, postId),
+                eq(postVotes.userId, payload.sub)
+              )
+            );
+          hasVoted = !!vote;
+        }
+      }
+
+      return c.json({
+        post: {
+          ...post,
+          hasVoted,
+          internalCount: internalComments.length,
+          activityCount: activityRecords.length,
+        },
+      }, 200);
+    } catch (error: any) {
+      return c.json({ error: error.message || 'Failed to fetch post' }, 500);
+    }
+  })
+
+  // 10. Feedback: Update Post Status
+  .patch(
+    '/api/posts/:id/status',
+    zValidator(
+      'json',
+      z.object({
+        status: z.enum(['UNDER_REVIEW', 'PLANNED', 'IN_PROGRESS', 'COMPLETED', 'CLOSED']),
+      })
+    ),
+    async (c) => {
+      const postId = c.req.param('id');
+      const { status } = c.req.valid('json');
+
+      try {
+        const [post] = await db.select().from(posts).where(eq(posts.id, postId));
+        if (!post) {
+          return c.json({ error: 'Post not found' }, 404);
+        }
+
+        const authHeader = c.req.header('Authorization');
+        if (!authHeader || !authHeader.startsWith('Bearer ')) {
+          return c.json({ error: 'Sign in to update status' }, 401);
+        }
+
+        const payload = await verifyAuthToken(authHeader.substring(7));
+        if (!payload?.sub) {
+          return c.json({ error: 'Sign in to update status' }, 401);
+        }
+
+        const [membership] = await db
+          .select({ role: workspaceMembers.role })
+          .from(workspaceMembers)
+          .where(
+            and(
+              eq(workspaceMembers.workspaceId, post.workspaceId),
+              eq(workspaceMembers.userId, payload.sub)
+            )
+          );
+
+        if (!membership) {
+          return c.json({ error: 'You are not a member of this workspace' }, 403);
+        }
+
+        const [updatedPost] = await db
+          .update(posts)
+          .set({ status })
+          .where(eq(posts.id, postId))
+          .returning();
+
+        // Record real audit log event in database
+        try {
+          await db.insert(auditLogs).values({
+            workspaceId: post.workspaceId,
+            actorUserId: payload.sub,
+            action: 'STATUS_CHANGED',
+            entityType: 'post',
+            entityId: post.id,
+            metadata: {
+              oldStatus: post.status,
+              newStatus: status,
+            },
+          });
+        } catch {
+          // Non-blocking for audit logging
+        }
+
+        return c.json({ post: updatedPost }, 200);
+      } catch (error: any) {
+        return c.json({ error: error.message || 'Failed to update status' }, 500);
+      }
+    }
+  )
+
+  // 11. Feedback: Get Post Comments
+  .get(
+    '/api/posts/:id/comments',
+    zValidator(
+      'query',
+      z.object({
+        sort: z.string().optional(),
+        type: z.string().optional(),
+      })
+    ),
+    async (c) => {
+      const postId = c.req.param('id');
+      const { sort = 'latest', type = 'comments' } = c.req.valid('query');
+
+    try {
+      const [post] = await db
+        .select({ id: posts.id, workspaceId: posts.workspaceId })
+        .from(posts)
+        .where(eq(posts.id, postId));
+
+      if (!post) {
+        return c.json({ error: 'Post not found' }, 404);
+      }
+
+      const isInternalFilter = type === 'internal';
+
+      const postComments = await db
+        .select({
+          id: comments.id,
+          postId: comments.postId,
+          parentId: comments.parentId,
+          content: comments.content,
+          isInternal: comments.isInternal,
+          createdAt: comments.createdAt,
+          authorName: users.name,
+          authorAvatar: users.avatarUrl,
+          authorEmail: users.email,
+          authorRole: workspaceMembers.role,
+        })
+        .from(comments)
+        .leftJoin(users, eq(comments.authorUserId, users.id))
+        .leftJoin(
+          workspaceMembers,
+          and(
+            eq(workspaceMembers.userId, comments.authorUserId),
+            eq(workspaceMembers.workspaceId, post.workspaceId)
+          )
+        )
+        .where(
+          and(
+            eq(comments.postId, postId),
+            eq(comments.workspaceId, post.workspaceId),
+            isNull(comments.deletedAt),
+            eq(comments.isInternal, isInternalFilter),
+            eq(comments.moderationStatus, 'APPROVED')
+          )
+        )
+        .orderBy(sort === 'oldest' ? asc(comments.createdAt) : desc(comments.createdAt));
+
+      return c.json({ comments: postComments }, 200);
+    } catch (error: any) {
+      return c.json({ error: error.message || 'Failed to fetch comments' }, 500);
+    }
+  })
+
+  // 12. Feedback: Post a Comment or Internal Note
+  .post(
+    '/api/posts/:id/comments',
+    zValidator(
+      'json',
+      z.object({
+        content: z.string().min(1, 'Comment cannot be empty').max(2000),
+        parentId: z.string().uuid().optional(),
+        isInternal: z.boolean().optional().default(false),
+      })
+    ),
+    async (c) => {
+      const postId = c.req.param('id');
+      const { content, parentId, isInternal } = c.req.valid('json');
+
+      try {
+        const [post] = await db.select().from(posts).where(eq(posts.id, postId));
+        if (!post) {
+          return c.json({ error: 'Post not found' }, 404);
+        }
+
+        const authHeader = c.req.header('Authorization');
+        if (!authHeader || !authHeader.startsWith('Bearer ')) {
+          return c.json({ error: 'Sign in to comment' }, 401);
+        }
+
+        const payload = await verifyAuthToken(authHeader.substring(7));
+        if (!payload?.sub) {
+          return c.json({ error: 'Sign in to comment' }, 401);
+        }
+
+        const [author] = await db
+          .select({
+            id: users.id,
+            name: users.name,
+            avatarUrl: users.avatarUrl,
+            email: users.email,
+            status: users.status,
+          })
+          .from(users)
+          .where(and(eq(users.id, payload.sub), isNull(users.deletedAt)));
+
+        if (!author || author.status !== 'ACTIVE') {
+          return c.json({ error: 'Your account is not active' }, 401);
+        }
+
+        // Get user role in workspace
+        const [member] = await db
+          .select({ role: workspaceMembers.role })
+          .from(workspaceMembers)
+          .where(
+            and(
+              eq(workspaceMembers.userId, author.id),
+              eq(workspaceMembers.workspaceId, post.workspaceId)
+            )
+          );
+
+        const [newComment] = await db
+          .insert(comments)
+          .values({
+            workspaceId: post.workspaceId,
+            postId: post.id,
+            parentId: parentId || null,
+            authorUserId: author.id,
+            content,
+            isInternal: !!isInternal,
+            moderationStatus: 'APPROVED',
+          })
+          .returning();
+
+        return c.json(
+          {
+            comment: {
+              ...newComment,
+              authorName: author.name,
+              authorAvatar: author.avatarUrl,
+              authorEmail: author.email,
+              authorRole: member?.role || 'MEMBER',
+            },
+          },
+          201
+        );
+      } catch (error: any) {
+        return c.json({ error: error.message || 'Failed to post comment' }, 500);
+      }
+    }
+  )
+
+  // 13. Feedback: Get Post Activity Timeline
+  .get('/api/posts/:id/activity', async (c) => {
+    const postId = c.req.param('id');
+    try {
+      const [post] = await db
+        .select({ id: posts.id, workspaceId: posts.workspaceId })
+        .from(posts)
+        .where(eq(posts.id, postId));
+
+      if (!post) {
+        return c.json({ error: 'Post not found' }, 404);
+      }
+
+      const activities = await db
+        .select({
+          id: auditLogs.id,
+          action: auditLogs.action,
+          metadata: auditLogs.metadata,
+          createdAt: auditLogs.createdAt,
+          actorName: users.name,
+          actorAvatar: users.avatarUrl,
+        })
+        .from(auditLogs)
+        .leftJoin(users, eq(auditLogs.actorUserId, users.id))
+        .where(
+          and(
+            eq(auditLogs.entityId, postId),
+            eq(auditLogs.workspaceId, post.workspaceId)
+          )
+        )
+        .orderBy(desc(auditLogs.createdAt));
+
+      return c.json({ activities }, 200);
+    } catch (error: any) {
+      return c.json({ error: error.message || 'Failed to fetch activity' }, 500);
+    }
+  });
 
 app.notFound((c) => {
   return c.json({

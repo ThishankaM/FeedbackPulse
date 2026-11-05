@@ -1,0 +1,450 @@
+.fp-dashboard-view {
+  position: relative;
+  isolation: isolate;
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at 16% 4%, rgba(76, 112, 255, 0.14), transparent 28rem),
+    radial-gradient(circle at 84% 10%, rgba(255, 144, 94, 0.1), transparent 24rem),
+    linear-gradient(180deg, #f8faff 0%, #f7f9fc 52%, #f3f6fa 100%);
+}
+
+.fp-dashboard-view::before {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background-image: radial-gradient(rgba(30, 64, 175, 0.07) 0.65px, transparent 0.65px);
+  background-size: 18px 18px;
+  mask-image: linear-gradient(to bottom, black, transparent 70%);
+  content: "";
+  pointer-events: none;
+}
+
+.dark .fp-dashboard-view {
+  background:
+    radial-gradient(circle at 16% 2%, rgba(45, 82, 210, 0.22), transparent 30rem),
+    radial-gradient(circle at 86% 12%, rgba(132, 64, 39, 0.13), transparent 24rem),
+    linear-gradient(180deg, #080a10 0%, #090b10 55%, #07080c 100%);
+}
+
+.dark .fp-dashboard-view::before {
+  background-image: radial-gradient(rgba(255, 255, 255, 0.065) 0.65px, transparent 0.65px);
+}
+
+.fp-glass-header,
+.fp-glass-sidebar,
+.fp-glass-card,
+.fp-glass-column,
+.fp-glass-item,
+.fp-glass-control,
+.fp-glass-popover {
+  -webkit-backdrop-filter: blur(18px) saturate(145%);
+  backdrop-filter: blur(18px) saturate(145%);
+}
+
+.fp-glass-header {
+  border-color: rgba(148, 163, 184, 0.16);
+  background:
+    linear-gradient(110deg, rgba(13, 19, 31, 0.94), rgba(15, 23, 42, 0.82)),
+    radial-gradient(circle at 50% -80%, rgba(77, 119, 255, 0.4), transparent 45%);
+  box-shadow:
+    0 12px 35px -22px rgba(2, 6, 23, 0.9),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.fp-glass-sidebar {
+  border-color: rgba(148, 163, 184, 0.15);
+  background:
+    radial-gradient(circle at 15% 2%, rgba(67, 106, 255, 0.18), transparent 16rem),
+    linear-gradient(180deg, rgba(13, 19, 31, 0.98), rgba(9, 14, 24, 0.96));
+  box-shadow:
+    14px 0 35px -28px rgba(2, 6, 23, 0.95),
+    inset -1px 0 0 rgba(255, 255, 255, 0.035);
+}
+
+.fp-glass-card {
+  border-color: rgba(255, 255, 255, 0.78);
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.78), rgba(255, 255, 255, 0.5));
+  box-shadow:
+    0 12px 28px -20px rgba(30, 41, 59, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.92),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.2);
+}
+
+.fp-glass-card:hover {
+  border-color: rgba(255, 255, 255, 0.95);
+  box-shadow:
+    0 18px 38px -24px rgba(37, 63, 146, 0.48),
+    0 0 30px -18px rgba(63, 104, 255, 0.26),
+    inset 0 1px 0 rgba(255, 255, 255, 1);
+}
+
+.dark .fp-glass-card {
+  border-color: rgba(255, 255, 255, 0.09);
+  background:
+    linear-gradient(145deg, rgba(25, 28, 38, 0.78), rgba(15, 18, 26, 0.62));
+  box-shadow:
+    0 16px 36px -24px rgba(0, 0, 0, 0.94),
+    inset 0 1px 0 rgba(255, 255, 255, 0.075);
+}
+
+.dark .fp-glass-card:hover {
+  border-color: rgba(124, 151, 255, 0.24);
+  box-shadow:
+    0 18px 40px -22px rgba(0, 0, 0, 0.96),
+    0 0 30px -18px rgba(72, 108, 255, 0.26),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.fp-glass-column {
+  border-color: rgba(255, 255, 255, 0.72);
+  background:
+    linear-gradient(155deg, rgba(255, 255, 255, 0.46), rgba(241, 245, 252, 0.3));
+  box-shadow:
+    0 10px 30px -24px rgba(30, 41, 59, 0.34),
+    inset 0 1px 0 rgba(255, 255, 255, 0.72);
+}
+
+.dark .fp-glass-column {
+  border-color: rgba(255, 255, 255, 0.075);
+  background:
+    linear-gradient(155deg, rgba(22, 26, 37, 0.64), rgba(12, 15, 22, 0.4));
+  box-shadow:
+    0 18px 38px -30px rgba(0, 0, 0, 0.94),
+    inset 0 1px 0 rgba(255, 255, 255, 0.055);
+}
+
+.fp-glass-item {
+  border-color: rgba(255, 255, 255, 0.82);
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.9), rgba(250, 252, 255, 0.65));
+  box-shadow:
+    0 8px 22px -18px rgba(30, 41, 59, 0.42),
+    inset 0 1px 0 rgba(255, 255, 255, 0.95);
+}
+
+.fp-glass-item:hover {
+  border-color: rgba(164, 190, 255, 0.72);
+  box-shadow:
+    0 14px 28px -20px rgba(30, 64, 175, 0.34),
+    0 0 26px -17px rgba(59, 130, 246, 0.25),
+    inset 0 1px 0 white;
+}
+
+.dark .fp-glass-item {
+  border-color: rgba(255, 255, 255, 0.075);
+  background:
+    linear-gradient(145deg, rgba(27, 30, 41, 0.78), rgba(16, 19, 27, 0.7));
+  box-shadow:
+    0 12px 28px -22px rgba(0, 0, 0, 0.95),
+    inset 0 1px 0 rgba(255, 255, 255, 0.055);
+}
+
+.dark .fp-glass-item:hover {
+  border-color: rgba(121, 151, 255, 0.2);
+  box-shadow:
+    0 16px 32px -22px rgba(0, 0, 0, 0.98),
+    0 0 24px -18px rgba(87, 121, 255, 0.24),
+    inset 0 1px 0 rgba(255, 255, 255, 0.075);
+}
+
+.fp-glass-control {
+  border-color: rgba(255, 255, 255, 0.7);
+  background: rgba(255, 255, 255, 0.56);
+  box-shadow:
+    0 8px 24px -22px rgba(30, 41, 59, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+.dark .fp-glass-control {
+  border-color: rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.045);
+  box-shadow:
+    0 10px 28px -24px rgba(0, 0, 0, 0.9),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.fp-glass-popover {
+  border-color: rgba(255, 255, 255, 0.1);
+  background: rgba(13, 19, 31, 0.92);
+  box-shadow:
+    0 24px 60px -24px rgba(2, 6, 23, 0.9),
+    inset 0 1px 0 rgba(255, 255, 255, 0.07);
+}
+
+.fp-glass-input {
+  border-color: rgba(255, 255, 255, 0.08);
+  background: rgba(15, 23, 42, 0.62);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.055),
+    0 8px 22px -22px rgba(0, 0, 0, 0.9);
+}
+
+.fp-glass-input:focus {
+  background: rgba(15, 23, 42, 0.78);
+  box-shadow:
+    0 0 0 3px rgba(59, 130, 246, 0.14),
+    0 0 28px -16px rgba(59, 130, 246, 0.6),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.fp-search-icon {
+  transition:
+    color 180ms ease,
+    filter 180ms ease,
+    transform 180ms ease;
+}
+
+.group:focus-within .fp-search-icon {
+  color: #7da0ff;
+  filter: drop-shadow(0 0 5px rgba(96, 145, 255, 0.55));
+  transform: translateY(-50%) scale(1.08);
+}
+
+.fp-sidebar-item {
+  position: relative;
+  overflow: hidden;
+}
+
+.fp-sidebar-item::before {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.08), transparent 65%);
+  content: "";
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 180ms ease;
+}
+
+.fp-sidebar-item:hover::before {
+  opacity: 1;
+}
+
+.fp-sidebar-active {
+  background:
+    linear-gradient(135deg, rgba(58, 101, 255, 0.96), rgba(32, 78, 230, 0.9));
+  box-shadow:
+    0 8px 24px -12px rgba(37, 99, 235, 0.85),
+    inset 0 1px 0 rgba(255, 255, 255, 0.24);
+}
+
+.fp-sidebar-icon {
+  transition:
+    color 180ms ease,
+    filter 180ms ease,
+    transform 180ms ease;
+  transform-origin: center;
+}
+
+.fp-sidebar-item:hover .fp-sidebar-icon {
+  filter: drop-shadow(0 0 6px rgba(96, 145, 255, 0.55));
+  transform: scale(1.07);
+}
+
+.fp-sidebar-item:active .fp-sidebar-icon {
+  transform: scale(0.92);
+}
+
+.fp-icon-button {
+  transition:
+    color 180ms ease,
+    background-color 180ms ease,
+    box-shadow 180ms ease;
+}
+
+.fp-icon-button .lucide {
+  transition: transform 180ms ease;
+}
+
+.fp-icon-button:hover .lucide {
+  transform: scale(1.08);
+}
+
+.fp-icon-button:active .lucide {
+  transform: scale(0.92);
+}
+
+.fp-bell-button:hover .fp-bell-icon {
+  animation: fp-bell-ring 560ms ease-in-out;
+}
+
+.fp-notification-dot {
+  animation: fp-notification-pulse 2.4s ease-in-out infinite;
+}
+
+.fp-theme-button:hover {
+  box-shadow: 0 0 22px -8px rgba(95, 134, 255, 0.55);
+}
+
+.fp-workspace-mark {
+  transition:
+    transform 180ms ease,
+    box-shadow 180ms ease;
+}
+
+.group:hover .fp-workspace-mark {
+  box-shadow: 0 0 18px -5px rgba(59, 130, 246, 0.65);
+  transform: scale(1.06);
+}
+
+.fp-metric-card {
+  overflow: hidden;
+}
+
+.fp-metric-icon {
+  transition:
+    transform 220ms cubic-bezier(0.2, 0.75, 0.25, 1),
+    box-shadow 220ms ease,
+    background-color 220ms ease;
+  transform-origin: center;
+}
+
+.fp-metric-card:hover .fp-metric-icon {
+  box-shadow: 0 0 24px -9px currentColor;
+  transform: translateY(-1px) scale(1.06);
+}
+
+.fp-metric-card:hover .fp-metric-icon .lucide {
+  transform: scale(1.06) rotate(-2deg);
+}
+
+.fp-delta-icon {
+  transition: transform 180ms ease;
+}
+
+.fp-metric-card:hover .fp-delta-icon {
+  transform: translateY(-2px);
+}
+
+.fp-status-icon,
+.fp-status-dot,
+.fp-comment-icon,
+.fp-pin-icon {
+  transform-origin: center;
+  transition:
+    transform 180ms ease,
+    filter 180ms ease;
+}
+
+.fp-kanban-column:hover .fp-status-dot {
+  box-shadow: 0 0 0 5px rgba(37, 99, 235, 0.12), 0 0 18px rgba(37, 99, 235, 0.38);
+  transform: scale(1.12);
+}
+
+.fp-kanban-column:hover .fp-status-icon {
+  filter: drop-shadow(0 0 5px currentColor);
+  transform: scale(1.08);
+}
+
+.fp-icon-rotate:hover .lucide {
+  transform: rotate(90deg);
+}
+
+.fp-feedback-card:hover .fp-comment-icon {
+  transform: translateY(-1px) scale(1.08);
+}
+
+.fp-feedback-card:hover .fp-pin-icon {
+  filter: drop-shadow(0 0 4px rgba(59, 130, 246, 0.45));
+  transform: rotate(27deg) scale(1.05);
+}
+
+.fp-vote-button .fp-vote-icon {
+  transition: transform 160ms ease;
+}
+
+.fp-vote-button:hover .fp-vote-icon {
+  transform: translateY(-2px) scale(1.1);
+}
+
+.fp-vote-button:active .fp-vote-icon {
+  transform: scale(0.9);
+}
+
+.fp-primary-action {
+  transition:
+    transform 180ms ease,
+    box-shadow 180ms ease,
+    background-color 180ms ease;
+}
+
+.fp-primary-action:hover {
+  box-shadow:
+    0 12px 24px -10px rgba(37, 99, 235, 0.72),
+    inset 0 1px 0 rgba(255, 255, 255, 0.24);
+}
+
+.fp-primary-action:active {
+  transform: scale(0.985);
+}
+
+.fp-action-icon {
+  transition: transform 180ms ease;
+}
+
+.fp-primary-action:hover .fp-action-icon {
+  transform: rotate(90deg) scale(1.08);
+}
+
+.fp-tab-active {
+  box-shadow:
+    0 7px 18px -12px rgba(37, 99, 235, 0.55),
+    inset 0 1px 0 rgba(255, 255, 255, 0.7);
+}
+
+.dark .fp-tab-active {
+  box-shadow:
+    0 7px 20px -13px rgba(59, 130, 246, 0.7),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+@keyframes fp-notification-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 0 5px rgba(59, 130, 246, 0);
+  }
+}
+
+@keyframes fp-bell-ring {
+  0%,
+  100% {
+    transform: rotate(0);
+  }
+  20% {
+    transform: rotate(10deg);
+  }
+  40% {
+    transform: rotate(-8deg);
+  }
+  60% {
+    transform: rotate(5deg);
+  }
+  80% {
+    transform: rotate(-3deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fp-notification-dot {
+    animation: none;
+  }
+
+  .fp-bell-button:hover .fp-bell-icon,
+  .fp-sidebar-item:hover .fp-sidebar-icon,
+  .fp-icon-button:hover .lucide,
+  .fp-metric-card:hover .fp-metric-icon,
+  .fp-metric-card:hover .fp-metric-icon .lucide,
+  .fp-metric-card:hover .fp-delta-icon,
+  .fp-kanban-column:hover .fp-status-dot,
+  .fp-kanban-column:hover .fp-status-icon,
+  .fp-feedback-card:hover .fp-comment-icon,
+  .fp-feedback-card:hover .fp-pin-icon,
+  .fp-vote-button:hover .fp-vote-icon,
+  .fp-primary-action:hover .fp-action-icon {
+    transform: none;
+  }
+}

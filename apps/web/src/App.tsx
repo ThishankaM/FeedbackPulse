@@ -11,6 +11,7 @@ import { Dialog, DialogHeader, DialogTitle, DialogDescription } from './componen
 import { Button } from './components/ui/button';
 import { Input } from './components/ui/input';
 import { client } from './lib/api';
+import './components/dashboard/dashboard.css';
 
 const AuthModal = lazy(() => import('./components/auth/AuthModal'));
 
@@ -299,7 +300,7 @@ export default function App() {
       />
 
       {/* 2. Main Content Canvas */}
-      <div className="flex flex-col flex-1 h-screen overflow-y-auto">
+      <div className="flex flex-col flex-1 h-screen overflow-y-auto fp-dashboard-view">
         <AppHeader
           searchQuery={searchQuery}
           onSearchChange={setSearchQuery}
@@ -308,6 +309,13 @@ export default function App() {
             setAuthMode('login');
             setIsAuthModalOpen(true);
           }}
+          activeWorkspace={activeWorkspace}
+          onSwitchWorkspace={(slug) => {
+            setActiveWorkspace((prev) => ({ ...prev, slug }));
+            window.history.pushState(null, '', `/dashboard/${slug}`);
+            setRefreshTrigger((prev) => prev + 1);
+          }}
+          onOpenCreateWorkspace={() => setIsWorkspaceModalOpen(true)}
         />
 
         <main className="flex-1 pb-16">
