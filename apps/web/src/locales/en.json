@@ -135,7 +135,45 @@
       "top": "Top Voted",
       "recent": "Most Recent"
     },
-    "searchPlaceholder": "Search feedback and feature requests..."
+    "searchPlaceholder": "Search feedback and feature requests...",
+    "discussion": "Discussion",
+    "sortBy": "Sort by",
+    "latest": "Latest",
+    "oldest": "Oldest",
+    "addCommentPlaceholder": "Add a comment...",
+    "reply": "Reply",
+    "send": "Send",
+    "noComments": "No comments yet. Start the conversation!",
+    "discussionSubtitle": "Share your thoughts and see what others are saying.",
+    "comments": "Comments",
+    "commentsCount": "Comments · {{count}}",
+    "internalNotes": "Internal Notes",
+    "internalNotesCount": "Internal Notes · {{count}}",
+    "activity": "Activity",
+    "activityCount": "Activity · {{count}}",
+    "writeCommentPlaceholder": "Write a comment...",
+    "internalNotePlaceholder": "Add an internal note (only visible to your team)...",
+    "communityMember": "Community Member",
+    "member": "Member",
+    "replyingToThread": "Replying to thread",
+    "cancelReply": "Cancel reply",
+    "addEmoji": "Add emoji",
+    "attachImage": "Attach image",
+    "attachFile": "Attach file",
+    "moreOptions": "More options",
+    "like": "Like",
+    "closeDiscussion": "Close discussion",
+    "loadingComments": "Loading conversation...",
+    "statusMenuLabel": "Change feedback status",
+    "statusUpdateFailed": "Could not update the status. Please try again.",
+    "commentFailed": "Could not send your comment. Please try again.",
+    "openDiscussion": "Open discussion for {{title}}",
+    "admin": "Admin",
+    "owner": "Owner",
+    "statusChangedTo": "Status changed to {{status}}",
+    "byUser": "by {{user}}",
+    "noActivity": "No activity recorded yet.",
+    "noInternalNotes": "No internal notes yet. Internal notes are only visible to workspace members."
   },
   "dashboard": {
     "welcome": "Welcome back, {{name}}! 👋",
@@ -383,19 +421,35 @@
           "name": "Starter",
           "description": "For small teams finding their feedback rhythm.",
           "cta": "Start for free",
-          "features": ["1 workspace", "Public feedback boards", "Public roadmap", "Community support"]
+          "features": [
+            "1 workspace",
+            "Public feedback boards",
+            "Public roadmap",
+            "Community support"
+          ]
         },
         "pro": {
           "name": "Pro",
           "description": "For growing products that want a complete feedback loop.",
           "cta": "Start your free trial",
-          "features": ["Unlimited feedback", "Custom branding", "Changelog and notifications", "AI summaries and trends", "Priority support"]
+          "features": [
+            "Unlimited feedback",
+            "Custom branding",
+            "Changelog and notifications",
+            "AI summaries and trends",
+            "Priority support"
+          ]
         },
         "scale": {
           "name": "Scale",
           "description": "For larger teams with multiple products and customers.",
           "cta": "Choose Scale",
-          "features": ["Everything in Pro", "Unlimited workspaces", "Advanced permissions", "Dedicated onboarding"]
+          "features": [
+            "Everything in Pro",
+            "Unlimited workspaces",
+            "Advanced permissions",
+            "Dedicated onboarding"
+          ]
         }
       }
     },

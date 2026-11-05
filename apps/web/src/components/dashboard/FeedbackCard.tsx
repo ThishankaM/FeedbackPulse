@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { useTranslation } from 'react-i18next';
 import { ArrowBigUp, MessageSquare, MoreVertical, Pin } from 'lucide-react';
 import { Avatar } from '../ui/avatar';
 import { cn } from '../../lib/utils';
@@ -21,10 +22,13 @@ export interface FeedbackCardData {
 export interface FeedbackCardProps {
   card: FeedbackCardData;
   onVote: (postId: string) => void;
+  onClick?: (card: FeedbackCardData) => void;
 }
 
-export function FeedbackCard({ card, onVote }: FeedbackCardProps) {
+export function FeedbackCard({ card, onVote, onClick }: FeedbackCardProps) {
+  const { t, i18n } = useTranslation();
   const voteBtnRef = React.useRef<HTMLButtonElement>(null);
+  const cardRef = React.useRef<HTMLDivElement>(null);
 
   const handleVoteClick = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -32,23 +36,42 @@ export function FeedbackCard({ card, onVote }: FeedbackCardProps) {
     onVote(card.id);
   };
 
-  // Format relative timestamp
+  const relativeTime = React.useMemo(
+    () => new Intl.RelativeTimeFormat(i18n.resolvedLanguage || 'en', { numeric: 'auto' }),
+    [i18n.resolvedLanguage]
+  );
+
   const formatTimeAgo = (dateStr: string) => {
     try {
-      const now = new Date().getTime();
-      const created = new Date(dateStr).getTime();
-      const diffHours = Math.floor((now - created) / (1000 * 60 * 60));
-      if (diffHours < 1) return 'Just now';
-      if (diffHours < 24) return `${diffHours}h ago`;
-      const diffDays = Math.floor(diffHours / 24);
-      return `${diffDays}d ago`;
+      const diffSeconds = (new Date(dateStr).getTime() - Date.now()) / 1000;
+      const absolute = Math.abs(diffSeconds);
+      if (absolute < 60) return relativeTime.format(Math.round(diffSeconds), 'second');
+      if (absolute < 3600) return relativeTime.format(Math.round(diffSeconds / 60), 'minute');
+      if (absolute < 86400) return relativeTime.format(Math.round(diffSeconds / 3600), 'hour');
+      return relativeTime.format(Math.round(diffSeconds / 86400), 'day');
     } catch {
-      return '1d ago';
+      return t('dashboard.justNow');
     }
   };
 
   return (
-    <div className="kanban-card group rounded-xl border border-slate-200/90 dark:border-slate-800/90 bg-white dark:bg-[#0a0a0a] p-4 shadow-2xs hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700 transition-all cursor-pointer">
+    <div
+      ref={cardRef}
+      role={onClick ? 'button' : undefined}
+      tabIndex={onClick ? 0 : undefined}
+      aria-label={onClick ? t('feedback.openDiscussion', { title: card.title }) : undefined}
+      onClick={() => {
+        cardRef.current?.focus({ preventScroll: true });
+        onClick?.(card);
+      }}
+      onKeyDown={(event) => {
+        if (event.target === event.currentTarget && (event.key === 'Enter' || event.key === ' ')) {
+          event.preventDefault();
+          onClick?.(card);
+        }
+      }}
+      className="kanban-card fp-glass-item fp-feedback-card group rounded-xl border border-slate-200/90 dark:border-slate-800/90 p-4 transition-all cursor-pointer"
+    >
       {/* Title & Options */}
       <div className="flex items-start justify-between gap-2 mb-1.5">
         <h4 className="text-sm font-bold text-slate-900 dark:text-slate-100 leading-snug line-clamp-1 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
@@ -56,7 +79,7 @@ export function FeedbackCard({ card, onVote }: FeedbackCardProps) {
         </h4>
         <button
           onClick={(e) => e.stopPropagation()}
-          className="opacity-0 group-hover:opacity-100 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-opacity p-0.5 rounded-sm"
+          className="fp-icon-button fp-icon-rotate opacity-0 group-hover:opacity-100 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-opacity p-0.5 rounded-sm"
         >
           <MoreVertical className="h-4 w-4" />
         </button>
@@ -73,7 +96,7 @@ export function FeedbackCard({ card, onVote }: FeedbackCardProps) {
           {/* Author Avatar */}
           <Avatar
             src={card.authorAvatar}
-            alt={card.authorName || 'Author'}
+            alt={card.authorName || t('feedback.member')}
             fallback={card.authorName || 'U'}
             size="sm"
             className="h-6 w-6"
@@ -84,26 +107,26 @@ export function FeedbackCard({ card, onVote }: FeedbackCardProps) {
             ref={voteBtnRef}
             onClick={handleVoteClick}
             className={cn(
-              'flex items-center gap-1 font-semibold transition-colors px-1.5 py-0.5 rounded-md',
+              'fp-vote-button flex items-center gap-1 font-semibold transition-colors px-1.5 py-0.5 rounded-md',
               card.hasVoted
                 ? 'text-blue-600 bg-blue-50 dark:bg-blue-950/40 dark:text-blue-400'
                 : 'text-slate-600 dark:text-slate-300 hover:text-blue-600 hover:bg-slate-100 dark:hover:bg-[#1c1c20]'
             )}
           >
-            <ArrowBigUp className={cn('h-4 w-4', card.hasVoted && 'fill-current')} />
+            <ArrowBigUp className={cn('fp-vote-icon h-4 w-4', card.hasVoted && 'fill-current')} />
             <span>{card.voteCount}</span>
           </button>
 
           {/* Comments Count */}
           <div className="flex items-center gap-1 text-slate-500 dark:text-slate-400">
-            <MessageSquare className="h-3.5 w-3.5" />
+            <MessageSquare className="fp-comment-icon h-3.5 w-3.5" />
             <span>{card.commentCount}</span>
           </div>
         </div>
 
         {/* Timestamp */}
         <div className="flex items-center gap-1.5 text-[11px] text-slate-400">
-          <Pin className="h-3 w-3 rotate-45 opacity-60" />
+          <Pin className="fp-pin-icon h-3 w-3 rotate-45 opacity-60" />
           <span>{formatTimeAgo(card.createdAt)}</span>
         </div>
       </div>

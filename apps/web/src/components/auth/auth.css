@@ -11,11 +11,22 @@
 }
 
 .auth-scrollbar {
-  scrollbar-width: none;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(140, 140, 150, 0.35) transparent;
+  overscroll-behavior: contain;
 }
 
 .auth-scrollbar::-webkit-scrollbar {
-  display: none;
+  width: 5px;
+}
+
+.auth-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.auth-scrollbar::-webkit-scrollbar-thumb {
+  background-color: rgba(140, 140, 150, 0.35);
+  border-radius: 9999px;
 }
 
 .dark .auth-glass {
@@ -26,6 +37,14 @@
     0 2px 5px rgba(0, 0, 0, 0.3),
     0 38px 110px -34px rgba(0, 0, 0, 0.92),
     inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.dark .auth-scrollbar {
+  scrollbar-color: rgba(255, 255, 255, 0.22) transparent;
+}
+
+.dark .auth-scrollbar::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.22);
 }
 
 .auth-modal-enter {

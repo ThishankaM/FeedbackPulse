@@ -39,16 +39,16 @@ export function MetricCard({
   }, [value, formattedValue]);
 
   return (
-    <Card className="p-6 transition-all hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700">
+    <Card className="fp-glass-card fp-metric-card p-6 transition-all hover:border-slate-300 dark:hover:border-slate-700">
       <div className="flex items-start gap-4">
         {/* Soft rounded icon container */}
         <div
           className={cn(
-            'flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl transition-transform hover:scale-105',
+            'fp-metric-icon flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl',
             iconBgColor
           )}
         >
-          <Icon className={cn('h-6 w-6', iconColor)} />
+          <Icon className={cn('h-6 w-6 transition-transform duration-200', iconColor)} />
         </div>
 
         <div className="flex-1 min-w-0">
@@ -71,7 +71,7 @@ export function MetricCard({
                 isPositive ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-500'
               )}
             >
-              <ArrowUp className="h-3.5 w-3.5 mr-0.5 stroke-[2.5]" />
+              <ArrowUp className="fp-delta-icon h-3.5 w-3.5 mr-0.5 stroke-[2.5]" />
               {delta}
             </span>
           </div>

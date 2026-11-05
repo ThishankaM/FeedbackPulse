@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { MetricCard } from './MetricCard';
 import { KanbanColumn } from './KanbanColumn';
+import { FeedbackDetailModal } from '../feedback/FeedbackDetailModal';
 import { Button } from '../ui/button';
 import { cn } from '../../lib/utils';
 import { useAuth } from '../../context/AuthContext';
@@ -56,6 +57,45 @@ export function DashboardView({
     COMPLETED: [],
     CLOSED: [],
   });
+
+  const [selectedPost, setSelectedPost] = React.useState<FeedbackCardData | null>(null);
+  const [isFeedbackDetailOpen, setIsFeedbackDetailOpen] = React.useState(false);
+  const detailCloseTimerRef = React.useRef<number | null>(null);
+
+  React.useEffect(() => {
+    return () => {
+      if (detailCloseTimerRef.current !== null) {
+        window.clearTimeout(detailCloseTimerRef.current);
+      }
+    };
+  }, []);
+
+  const openFeedbackDetail = React.useCallback((card: FeedbackCardData) => {
+    if (detailCloseTimerRef.current !== null) {
+      window.clearTimeout(detailCloseTimerRef.current);
+      detailCloseTimerRef.current = null;
+    }
+    setSelectedPost(card);
+    setIsFeedbackDetailOpen(true);
+  }, []);
+
+  const closeFeedbackDetail = React.useCallback(() => {
+    setIsFeedbackDetailOpen(false);
+    if (detailCloseTimerRef.current !== null) {
+      window.clearTimeout(detailCloseTimerRef.current);
+    }
+    detailCloseTimerRef.current = window.setTimeout(() => {
+      setSelectedPost(null);
+      detailCloseTimerRef.current = null;
+    }, 420);
+  }, []);
+
+  const handleFeedbackDetailOpenChange = React.useCallback(
+    (open: boolean) => {
+      if (!open) closeFeedbackDetail();
+    },
+    [closeFeedbackDetail]
+  );
 
   // Fetch live dashboard metrics & posts from API
   const fetchDashboardData = React.useCallback(async () => {
@@ -170,6 +210,13 @@ export function DashboardView({
           ...prev,
           totalVotes: prev.totalVotes + (data.voted ? 1 : -1),
         }));
+
+        // Keep modal post data in sync
+        setSelectedPost((prev) =>
+          prev && prev.id === postId
+            ? { ...prev, hasVoted: data.voted, voteCount: data.voteCount }
+            : prev
+        );
       }
     } catch {
       // Roll the optimistic update back on failure
@@ -177,6 +224,65 @@ export function DashboardView({
         setColumns(previousColumns);
       }
     }
+  };
+
+  // Status changed from detail modal
+  const handleStatusChange = (postId: string, newStatus: string) => {
+    setColumns((prev) => {
+      const next: Record<string, FeedbackCardData[]> = {
+        UNDER_REVIEW: [],
+        PLANNED: [],
+        IN_PROGRESS: [],
+        COMPLETED: [],
+        CLOSED: [],
+      };
+      let movedCard: FeedbackCardData | null = null;
+
+      Object.keys(prev).forEach((key) => {
+        prev[key].forEach((card) => {
+          if (card.id === postId) {
+            movedCard = { ...card, status: newStatus };
+          } else {
+            next[key].push(card);
+          }
+        });
+      });
+
+      if (movedCard) {
+        if (!next[newStatus]) next[newStatus] = [];
+        next[newStatus].unshift(movedCard);
+        setSelectedPost(movedCard);
+      }
+
+      return next;
+    });
+  };
+
+  // Comment added from detail modal
+  const handleCommentAdded = (postId: string) => {
+    setColumns((prev) => {
+      const next = { ...prev };
+      Object.keys(next).forEach((colKey) => {
+        next[colKey] = next[colKey].map((card) => {
+          if (card.id === postId) {
+            return { ...card, commentCount: card.commentCount + 1 };
+          }
+          return card;
+        });
+      });
+      return next;
+    });
+
+    setSelectedPost((prev) =>
+      prev && prev.id === postId
+        ? { ...prev, commentCount: prev.commentCount + 1 }
+        : prev
+    );
+
+    setMetrics((prev) => ({
+      ...prev,
+      totalComments: prev.totalComments + 1,
+    }));
   };
 
   // Filter posts based on global search query
@@ -232,7 +338,7 @@ export function DashboardView({
         </div>
 
         {/* Time Range Pills: 7D | 30D | 90D */}
-        <div className="inline-flex items-center p-1 rounded-xl bg-slate-100 dark:bg-[#0a0a0a] border border-slate-200/80 dark:border-slate-800 self-start sm:self-auto">
+        <div className="fp-glass-control inline-flex items-center p-1 rounded-xl border border-slate-200/80 dark:border-slate-800 self-start sm:self-auto">
           {(['7D', '30D', '90D'] as const).map((r) => (
             <button
               key={r}
@@ -301,7 +407,7 @@ export function DashboardView({
                 className={cn(
                   'px-3.5 py-1.5 text-sm font-semibold rounded-lg transition-all shrink-0 cursor-pointer',
                   isActive
-                    ? 'text-blue-600 dark:text-blue-400 bg-blue-50/80 dark:bg-blue-950/40 border-b-2 border-blue-600'
+                    ? 'fp-tab-active text-blue-600 dark:text-blue-400 bg-blue-50/80 dark:bg-blue-950/40 border-b-2 border-blue-600'
                     : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                 )}
               >
@@ -314,9 +420,9 @@ export function DashboardView({
         {/* "+ New Feedback" Action Button */}
         <Button
           onClick={onOpenNewFeedback}
-          className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl shadow-xs self-start sm:self-auto shrink-0"
+          className="fp-primary-action group flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl shadow-xs self-start sm:self-auto shrink-0"
         >
-          <Plus className="h-4 w-4 stroke-[2.5]" />
+          <Plus className="fp-action-icon h-4 w-4 stroke-[2.5]" />
           <span>{t('dashboard.newFeedback')}</span>
         </Button>
       </div>
@@ -340,10 +446,22 @@ export function DashboardView({
               count={filteredCards.length}
               cards={filteredCards}
               onVote={handleVote}
+              onCardClick={openFeedbackDetail}
             />
           );
         })}
       </div>
+
+      {/* 5. Feedback Detail Portal Modal */}
+      <FeedbackDetailModal
+        open={isFeedbackDetailOpen}
+        onOpenChange={handleFeedbackDetailOpenChange}
+        post={selectedPost}
+        onVote={handleVote}
+        onStatusChange={handleStatusChange}
+        onCommentAdded={handleCommentAdded}
+        onOpenAuthModal={onOpenAuthModal}
+      />
     </div>
   );
 }
