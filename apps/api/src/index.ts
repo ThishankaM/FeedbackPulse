@@ -285,21 +285,37 @@ const routes = app
         // Provisioning is atomic: a failed membership or board insert must not
         // leave behind an orphaned workspace.
         const result = await db.transaction(async (tx) => {
-          const [workspace] = await tx.insert(workspaces).values({
-            name, slug, primaryColor,
-            logoUrl: logoUrl && logoUrl.trim().length > 0 ? logoUrl : null,
-          }).returning();
+          const [workspace] = await tx
+            .insert(workspaces)
+            .values({
+              name,
+              slug,
+              primaryColor,
+              logoUrl: logoUrl && logoUrl.trim().length > 0 ? logoUrl : null,
+            })
+            .returning();
+
           await tx.insert(workspaceMembers).values({
-            workspaceId: workspace.id, userId: owner.id, role: 'OWNER',
-          });
-          const [defaultBoard] = await tx.insert(boards).values({
             workspaceId: workspace.id,
-            name: 'Feature Requests', slug: 'features',
-            description: 'General feedback and feature requests',
-            isDefault: true, isPublic: true,
-          }).returning();
+            userId: owner.id,
+            role: 'OWNER',
+          });
+
+          const [defaultBoard] = await tx
+            .insert(boards)
+            .values({
+              workspaceId: workspace.id,
+              name: 'Feature Requests',
+              slug: 'features',
+              description: 'General feedback and feature requests',
+              isDefault: true,
+              isPublic: true,
+            })
+            .returning();
+
           return { workspace, defaultBoard };
         });
+
         return c.json(result, 201);
       } catch (error: any) {
         if (error?.code === '23505') {
