@@ -1,7 +1,13 @@
 import bcrypt from 'bcryptjs';
 import { sign, verify } from 'hono/jwt';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'feedbackpulse-super-secret-jwt-key-2026';
+export function getJwtSecret(): string {
+  const secret = process.env.JWT_SECRET;
+  if (!secret || secret.length < 32) {
+    throw new Error('JWT_SECRET must be set to a secret of at least 32 characters');
+  }
+  return secret;
+}
 
 export async function hashPassword(password: string): Promise<string> {
   return bcrypt.hash(password, 10);
@@ -32,12 +38,12 @@ export async function createToken(user: { id: string; email: string; name?: stri
     exp,
   };
 
-  return sign(payload, JWT_SECRET, 'HS256');
+  return sign(payload, getJwtSecret(), 'HS256');
 }
 
 export async function verifyAuthToken(token: string): Promise<JWTPayload | null> {
   try {
-    const payload = await verify(token, JWT_SECRET, 'HS256');
+    const payload = await verify(token, getJwtSecret(), 'HS256');
     return payload as unknown as JWTPayload;
   } catch {
     return null;

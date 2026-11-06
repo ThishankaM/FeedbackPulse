@@ -65,34 +65,17 @@ export function DashboardView({
 
   const [selectedPost, setSelectedPost] = React.useState<FeedbackCardData | null>(null);
   const [isFeedbackDetailOpen, setIsFeedbackDetailOpen] = React.useState(false);
-  const detailCloseTimerRef = React.useRef<number | null>(null);
-
-  React.useEffect(() => {
-    return () => {
-      if (detailCloseTimerRef.current !== null) {
-        window.clearTimeout(detailCloseTimerRef.current);
-      }
-    };
-  }, []);
-
   const openFeedbackDetail = React.useCallback((card: FeedbackCardData) => {
-    if (detailCloseTimerRef.current !== null) {
-      window.clearTimeout(detailCloseTimerRef.current);
-      detailCloseTimerRef.current = null;
-    }
     setSelectedPost(card);
     setIsFeedbackDetailOpen(true);
   }, []);
 
   const closeFeedbackDetail = React.useCallback(() => {
     setIsFeedbackDetailOpen(false);
-    if (detailCloseTimerRef.current !== null) {
-      window.clearTimeout(detailCloseTimerRef.current);
-    }
-    detailCloseTimerRef.current = window.setTimeout(() => {
-      setSelectedPost(null);
-      detailCloseTimerRef.current = null;
-    }, 420);
+  }, []);
+
+  const handleDetailExitComplete = React.useCallback(() => {
+    setSelectedPost(null);
   }, []);
 
   const handleFeedbackDetailOpenChange = React.useCallback(
@@ -461,6 +444,7 @@ export function DashboardView({
       <FeedbackDetailModal
         open={isFeedbackDetailOpen}
         onOpenChange={handleFeedbackDetailOpenChange}
+        onExitComplete={handleDetailExitComplete}
         post={selectedPost}
         onVote={handleVote}
         onStatusChange={handleStatusChange}

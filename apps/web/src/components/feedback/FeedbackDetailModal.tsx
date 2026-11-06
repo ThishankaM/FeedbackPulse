@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { animate } from 'animejs';
 import { useTranslation } from 'react-i18next';
 import {
   ArrowUp,
@@ -47,6 +48,7 @@ export interface ActivityItem {
 export interface FeedbackDetailModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onExitComplete: () => void;
   post: FeedbackCardData | null;
   onVote: (postId: string) => void;
   onStatusChange?: (postId: string, newStatus: string) => void;
@@ -212,6 +214,7 @@ function DiscussionSkeleton() {
 export function FeedbackDetailModal({
   open,
   onOpenChange,
+  onExitComplete,
   post,
   onVote,
   onStatusChange,
@@ -240,11 +243,52 @@ export function FeedbackDetailModal({
   const postId = post?.id;
   const effectiveTab = !canManage && activeTab === 'internal' ? 'comments' : activeTab;
 
-  const drawerRef = React.useRef<HTMLDivElement>(null);
+  const drawerRef = React.useRef<HTMLElement>(null);
+  const backdropRef = React.useRef<HTMLButtonElement>(null);
   const textareaRef = React.useRef<HTMLTextAreaElement>(null);
   const statusMenuRef = React.useRef<HTMLDivElement>(null);
   const previousFocusRef = React.useRef<HTMLElement | null>(null);
   const commentsRequestRef = React.useRef(0);
+
+  // The parent keeps the selected post mounted until the exit animation ends.
+  // Pausing on cleanup preserves the current position if the drawer reverses.
+  React.useLayoutEffect(() => {
+    const drawer = drawerRef.current;
+    const backdrop = backdropRef.current;
+    if (!postId || !drawer || !backdrop) return;
+
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      drawer.style.transform = `translateX(${open ? '0%' : '100.5%'})`;
+      backdrop.style.opacity = open ? '1' : '0';
+      if (!open) onExitComplete();
+      return;
+    }
+
+    drawer.style.willChange = 'transform';
+    backdrop.style.willChange = 'opacity';
+    const slide = animate(drawer, {
+      translateX: open ? '0%' : '100.5%',
+      duration: open ? 280 : 220,
+      ease: open ? 'outCubic' : 'inCubic',
+      onComplete: () => {
+        drawer.style.willChange = '';
+        if (!open) onExitComplete();
+      },
+    });
+    const fade = animate(backdrop, {
+      opacity: open ? 1 : 0,
+      duration: open ? 220 : 180,
+      ease: 'outQuad',
+      onComplete: () => { backdrop.style.willChange = ''; },
+    });
+
+    return () => {
+      slide.pause();
+      fade.pause();
+      drawer.style.willChange = '';
+      backdrop.style.willChange = '';
+    };
+  }, [open, postId, onExitComplete]);
 
   React.useEffect(() => {
     if (post) setCurrentStatus(post.status as StatusKey);
@@ -506,6 +550,7 @@ export function FeedbackDetailModal({
       <button
         type="button"
         aria-label={t('feedback.closeDiscussion')}
+        ref={backdropRef}
         className="fp-discussion-backdrop cursor-default"
         onClick={() => onOpenChange(false)}
         tabIndex={open ? 0 : -1}
@@ -519,6 +564,7 @@ export function FeedbackDetailModal({
         aria-labelledby="discussion-drawer-title"
         inert={!open}
         className="fp-discussion-drawer"
+        style={{ transform: 'translateX(100.5%)' }}
       >
         <header className="flex shrink-0 items-start justify-between gap-4 border-b border-slate-200/75 px-5 py-4 dark:border-white/10 sm:px-6">
           <div className="flex min-w-0 items-center gap-3">

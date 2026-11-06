@@ -1,4 +1,6 @@
 import { serve } from '@hono/node-server';
+import { fileURLToPath } from 'node:url';
+import path from 'node:path';
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import { logger } from 'hono/logger';
@@ -13,6 +15,7 @@ import { authMiddleware } from './middleware/auth.js';
 import * as dotenv from 'dotenv';
 
 dotenv.config();
+getJwtSecret();
 
 const db = getDb();
 const app = new Hono();
@@ -264,6 +267,7 @@ const routes = app
   })
   .post(
     '/api/workspaces',
+    authMiddleware,
     zValidator(
       'json',
       z.object({
@@ -271,89 +275,37 @@ const routes = app
         slug: z.string().min(2).max(100).regex(/^[a-z0-9-]+$/, 'Slug must be lowercase alphanumeric with hyphens'),
         primaryColor: z.string().regex(/^#([0-9a-fA-F]{3}){1,2}$/, 'Must be a valid hex color').default('#4F46E5'),
         logoUrl: z.string().url('Must be a valid URL').optional().or(z.literal('')),
-        ownerEmail: z.string().email().optional(),
-        ownerName: z.string().optional(),
       })
     ),
     async (c) => {
-      const { name, slug, primaryColor, logoUrl, ownerEmail, ownerName } = c.req.valid('json');
+      const { name, slug, primaryColor, logoUrl } = c.req.valid('json');
+      const owner = c.get('user');
 
       try {
-        // 1. If auth header is provided, use authenticated user as owner
-        let owner: any = null;
-        const authHeader = c.req.header('Authorization');
-        if (authHeader && authHeader.startsWith('Bearer ')) {
-          const payload = await verifyAuthToken(authHeader.substring(7));
-          if (payload?.sub) {
-            const [existingAuthUser] = await db.select().from(users).where(eq(users.id, payload.sub as string));
-            if (existingAuthUser) {
-              owner = existingAuthUser;
-            }
-          }
-        }
-
-        // 2. If not authenticated, find or create user by ownerEmail
-        if (!owner) {
-          const emailToUse = ownerEmail || `${slug}-admin@feedbackpulse.dev`;
-          const [existing] = await db.select().from(users).where(eq(users.email, emailToUse));
-          if (existing) {
-            owner = existing;
-          } else {
-            [owner] = await db
-              .insert(users)
-              .values({
-                email: emailToUse,
-                name: ownerName || emailToUse.split('@')[0],
-                status: 'ACTIVE',
-              })
-              .returning();
-          }
-        }
-
-        // 3. Create workspace
-        const [workspace] = await db
-          .insert(workspaces)
-          .values({
-            name,
-            slug,
-            primaryColor,
+        // Provisioning is atomic: a failed membership or board insert must not
+        // leave behind an orphaned workspace.
+        const result = await db.transaction(async (tx) => {
+          const [workspace] = await tx.insert(workspaces).values({
+            name, slug, primaryColor,
             logoUrl: logoUrl && logoUrl.trim().length > 0 ? logoUrl : null,
-          })
-          .returning();
-
-        // 4. Assign user as OWNER
-        await db.insert(workspaceMembers).values({
-          workspaceId: workspace.id,
-          userId: owner.id,
-          role: 'OWNER',
-        });
-
-        // 5. Create default feedback board for this workspace
-        const [defaultBoard] = await db
-          .insert(boards)
-          .values({
+          }).returning();
+          await tx.insert(workspaceMembers).values({
+            workspaceId: workspace.id, userId: owner.id, role: 'OWNER',
+          });
+          const [defaultBoard] = await tx.insert(boards).values({
             workspaceId: workspace.id,
-            name: 'Feature Requests',
-            slug: 'features',
+            name: 'Feature Requests', slug: 'features',
             description: 'General feedback and feature requests',
-            isDefault: true,
-            isPublic: true,
-          })
-          .returning();
-
-        // 6. Issue JWT token for the owner
-        const token = await createToken({
-          id: owner.id,
-          email: owner.email,
-          name: owner.name,
+            isDefault: true, isPublic: true,
+          }).returning();
+          return { workspace, defaultBoard };
         });
-
-        return c.json({ workspace, owner, defaultBoard, token }, 201);
+        return c.json(result, 201);
       } catch (error: any) {
-        if (error?.code === '23505') { // Postgres unique violation
+        if (error?.code === '23505') {
           return c.json({ error: 'A workspace with this slug already exists' }, 409);
         }
-        return c.json({ error: error.message || 'Failed to create workspace' }, 500);
+        return c.json({ error: 'Failed to create workspace' }, 500);
       }
     }
   )
@@ -1035,14 +987,13 @@ app.notFound((c) => {
   }, 404);
 });
 
-const port = Number(process.env.PORT) || 3000;
-
-serve({
-  fetch: app.fetch,
-  port,
-}, (info) => {
-  console.log(`🚀 FeedbackPulse API running on http://localhost:${info.port}`);
-});
+// Importing the app for tests or RPC types must not start a server.
+if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+  const port = Number(process.env.PORT) || 3000;
+  serve({ fetch: app.fetch, port }, (info) => {
+    console.log(`🚀 FeedbackPulse API running on http://localhost:${info.port}`);
+  });
+}
 
 export default app;
 export type AppType = typeof routes;

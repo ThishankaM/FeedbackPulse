@@ -15,7 +15,8 @@
     "db:reset": "npm run db:clean && npm run db:migrate && npm run db:post-migrate",
     "test:db": "node scripts/db-invariants.mjs",
     "db:up": "docker compose up -d postgres",
-    "db:down": "docker compose down"
+    "db:down": "docker compose down",
+    "test:auth": "tsx --test tests/workspace-auth.test.ts"
   },
   "dependencies": {
     "@hono/node-server": "^2.1.3",
