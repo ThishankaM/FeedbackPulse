@@ -1,5 +1,5 @@
-import { runSeed } from './seed';
-import { pool } from './client';
+import { runSeed } from './seed.js';
+import { pool } from './client.js';
 
 const reset = process.argv.includes('--reset');
 

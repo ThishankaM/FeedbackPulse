@@ -96,7 +96,7 @@ export function AppHeader({
       <div className="flex-1 flex items-center justify-end gap-2 sm:gap-3 shrink-0">
         {/* Notifications Bell with Reactive Badge */}
         <button
-          title="Notifications"
+          title={t('common.notifications')}
           className="fp-icon-button fp-bell-button relative p-2 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-slate-100/80 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-200 transition-colors cursor-pointer"
         >
           <Bell className="fp-bell-icon h-5 w-5 transition-transform" />
@@ -142,7 +142,7 @@ export function AppHeader({
               className="flex items-center gap-2 px-2.5 py-1.5 rounded-xl bg-white/85 dark:bg-slate-900/90 border border-slate-200/90 dark:border-slate-800/80 hover:border-slate-300 dark:hover:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/70 shadow-xs transition-all text-left cursor-pointer group"
             >
               <div className="fp-workspace-mark flex items-center justify-center h-7 w-7 rounded-lg bg-blue-500/15 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400 font-bold text-[11px] uppercase shrink-0 border border-blue-500/25 dark:border-blue-500/30">
-                {activeWorkspace.slug ? activeWorkspace.slug.slice(0, 4) : 'WS'}
+                {activeWorkspace.slug ? activeWorkspace.slug.slice(0, 4) : t('workspace.initials')}
               </div>
               <div className="min-w-0 max-w-[110px] sm:max-w-[150px]">
                 <p className="text-xs font-semibold text-slate-900 dark:text-white truncate leading-tight">
@@ -163,7 +163,7 @@ export function AppHeader({
             {workspaceMenuOpen && (
               <div className="absolute right-0 top-full mt-2 w-60 sm:w-64 rounded-xl bg-white dark:bg-[#0d131f] border border-slate-200 dark:border-slate-800 shadow-xl py-1.5 z-50 animate-in fade-in zoom-in-95">
                 <div className="px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">
-                  Workspaces
+                  {t('nav.workspaces')}
                 </div>
                 <div className="max-h-48 overflow-y-auto space-y-1 px-1">
                   {memberships.length > 0 ? (

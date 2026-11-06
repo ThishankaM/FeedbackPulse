@@ -11,10 +11,10 @@ import {
   customType,
 } from 'drizzle-orm/pg-core';
 import { sql } from 'drizzle-orm';
-import { primaryUuid, timestamps, softDelete } from './_helpers';
-import { postStatusEnum, moderationStatusEnum } from './_enums';
-import { workspaces } from './workspaces';
-import { users } from './auth';
+import { primaryUuid, timestamps, softDelete } from './_helpers.js';
+import { postStatusEnum, moderationStatusEnum } from './_enums.js';
+import { workspaces } from './workspaces.js';
+import { users } from './auth.js';
 
 const tsvector = customType<{ data: string }>({
   dataType() {

@@ -357,14 +357,14 @@ export default function App() {
               </div>
               <h2 className="text-xl font-bold capitalize">{currentView}</h2>
               <p className="text-sm text-slate-500 dark:text-slate-400 mt-1 max-w-sm">
-                This section is part of the FeedbackPulse roadmap and will be loaded dynamically.
+                {t('workspace.comingSoon')}
               </p>
               <Button
                 variant="outline"
                 className="mt-6"
                 onClick={() => setCurrentView('dashboard')}
               >
-                Return to Dashboard
+                {t('workspace.returnToDashboard')}
               </Button>
             </div>
           )}

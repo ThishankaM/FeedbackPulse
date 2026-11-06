@@ -32,7 +32,12 @@ export function DashboardView({
   refreshTrigger,
 }: DashboardViewProps) {
   const { t } = useTranslation();
-  const { user } = useAuth();
+  const { user, memberships } = useAuth();
+  const canManageWorkspace = memberships.some(
+    (membership) =>
+      membership.workspaceSlug === workspaceSlug &&
+      (membership.role === 'OWNER' || membership.role === 'ADMIN')
+  );
 
   const [timeRange, setTimeRange] = React.useState<'7D' | '30D' | '90D'>('30D');
   const [activeTab, setActiveTab] = React.useState<string>('ALL');
@@ -322,7 +327,7 @@ export function DashboardView({
           { key: 'CLOSED', title: t('dashboard.tabs.closed') },
         ].filter((col) => col.key === activeTab);
 
-  const displayName = user?.name || (user?.email ? user.email.split('@')[0] : 'Guest');
+  const displayName = user?.name || (user?.email ? user.email.split('@')[0] : t('feedback.guest'));
 
   return (
     <div className="flex-1 px-6 lg:px-8 py-7 space-y-7 w-full max-w-[1920px] mx-auto">
@@ -461,6 +466,7 @@ export function DashboardView({
         onStatusChange={handleStatusChange}
         onCommentAdded={handleCommentAdded}
         onOpenAuthModal={onOpenAuthModal}
+        canManage={canManageWorkspace}
       />
     </div>
   );

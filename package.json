@@ -7,13 +7,16 @@
   "scripts": {
     "dev": "concurrently -n api,web -c cyan,magenta \"npm run dev -w @feedbackpulse/api\" \"npm run dev -w @feedbackpulse/web\"",
     "build": "npm run build --workspaces",
+    "lint": "npm run lint -w @feedbackpulse/web",
+    "test": "npm run test:db && npm run test:auth",
+    "test:auth": "npm run test:auth -w @feedbackpulse/api",
     "db:generate": "npm run db:generate -w @feedbackpulse/api",
     "db:migrate": "npm run db:migrate -w @feedbackpulse/api",
     "db:post-migrate": "npm run db:post-migrate -w @feedbackpulse/api",
     "db:clean": "npm run db:clean -w @feedbackpulse/api",
     "db:seed": "npm run db:seed -w @feedbackpulse/api",
     "db:seed:reset": "npm run db:seed:reset -w @feedbackpulse/api",
-    "db:setup": "npm run db:migrate -w @feedbackpulse/api && npm run db:post-migrate -w @feedbackpulse/api",
+    "db:setup": "npm run db:migrate -w @feedbackpulse/api && npm run db:post-migrate -w @feedbackpulse/api && npm run db:seed -w @feedbackpulse/api",
     "db:check": "npm run db:check -w @feedbackpulse/api",
     "test:db": "npm run test:db --workspace=@feedbackpulse/api"
   },

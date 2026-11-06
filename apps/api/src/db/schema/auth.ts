@@ -1,6 +1,6 @@
 import { pgTable, text, varchar, timestamp, uniqueIndex, jsonb, uuid } from 'drizzle-orm/pg-core';
-import { primaryUuid, timestamps, softDelete } from './_helpers';
-import { userStatusEnum, tokenPurposeEnum, authProviderEnum } from './_enums';
+import { primaryUuid, timestamps, softDelete } from './_helpers.js';
+import { userStatusEnum, tokenPurposeEnum, authProviderEnum } from './_enums.js';
 
 export const users = pgTable('users', {
   id: primaryUuid(),

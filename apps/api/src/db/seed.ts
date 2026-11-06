@@ -1,4 +1,4 @@
-import { db, pool } from './client';
+import { db, pool } from './client.js';
 import {
   workspaces,
   users,
@@ -11,9 +11,9 @@ import {
   tags,
   changelogTags,
   changelogPosts,
-} from './schema';
+} from './schema.js';
 import { eq, sql } from 'drizzle-orm';
-import { hashPassword } from '../lib/auth';
+import { hashPassword } from '../lib/auth.js';
 
 export async function runSeed(reset: boolean = false) {
   if (reset) {

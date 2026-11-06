@@ -32,7 +32,6 @@ export interface CommentItem {
   createdAt: string;
   authorName?: string | null;
   authorAvatar?: string | null;
-  authorEmail?: string | null;
   authorRole?: string | null;
 }
 
@@ -53,6 +52,7 @@ export interface FeedbackDetailModalProps {
   onStatusChange?: (postId: string, newStatus: string) => void;
   onCommentAdded?: (postId: string) => void;
   onOpenAuthModal?: () => void;
+  canManage?: boolean;
 }
 
 const STATUS_CONFIG = {
@@ -108,18 +108,16 @@ function CommentRow({
   onReply,
 }: CommentRowProps) {
   const { t } = useTranslation();
-  const authorHandle = comment.authorEmail
-    ? `@${comment.authorEmail.split('@')[0]}`
-    : comment.authorName
-      ? `@${comment.authorName.toLowerCase().replace(/\s+/g, '')}`
-      : '@member';
+  const authorHandle = comment.authorName
+    ? `@${comment.authorName.toLowerCase().replace(/\s+/g, '')}`
+    : `@${t('feedback.member').toLowerCase()}`;
 
   return (
     <article className={cn('group flex items-start', isReply ? 'gap-2.5' : 'gap-3')}>
       <Avatar
         src={comment.authorAvatar}
         alt={comment.authorName || t('feedback.communityMember')}
-        fallback={comment.authorName || 'U'}
+        fallback={comment.authorName || t('feedback.communityMember').slice(0, 1)}
         size={isReply ? 'sm' : 'md'}
         className={cn(
           'relative z-10 shrink-0 rounded-full ring-1 ring-slate-200/80 dark:ring-slate-700/80',
@@ -219,6 +217,7 @@ export function FeedbackDetailModal({
   onStatusChange,
   onCommentAdded,
   onOpenAuthModal,
+  canManage = false,
 }: FeedbackDetailModalProps) {
   const { t, i18n } = useTranslation();
   const { user } = useAuth();
@@ -239,6 +238,7 @@ export function FeedbackDetailModal({
   const [commentLikes, setCommentLikes] = React.useState<Record<string, { count: number; voted: boolean }>>({});
   const [actionError, setActionError] = React.useState<string | null>(null);
   const postId = post?.id;
+  const effectiveTab = !canManage && activeTab === 'internal' ? 'comments' : activeTab;
 
   const drawerRef = React.useRef<HTMLDivElement>(null);
   const textareaRef = React.useRef<HTMLTextAreaElement>(null);
@@ -336,7 +336,7 @@ export function FeedbackDetailModal({
     setLoadingContent(true);
     setActionError(null);
     try {
-      if (activeTab === 'activity') {
+      if (effectiveTab === 'activity') {
         const res = await client.api.posts[':id'].activity.$get({ param: { id: postId } });
         if (res.ok && requestId === commentsRequestRef.current) {
           const data = await res.json();
@@ -346,13 +346,13 @@ export function FeedbackDetailModal({
       } else {
         const res = await client.api.posts[':id'].comments.$get({
           param: { id: postId },
-          query: { type: activeTab === 'internal' ? 'internal' : 'comments' },
+          query: { type: effectiveTab === 'internal' ? 'internal' : 'comments' },
         });
         if (res.ok && requestId === commentsRequestRef.current) {
           const data = await res.json();
           const nextComments = data.comments || [];
           setComments(nextComments);
-          if (activeTab === 'internal') setInternalCount(nextComments.length);
+          if (effectiveTab === 'internal') setInternalCount(nextComments.length);
         }
       }
     } catch {
@@ -364,7 +364,7 @@ export function FeedbackDetailModal({
         setLoadingContent(false);
       }
     }
-  }, [activeTab, postId, t]);
+  }, [effectiveTab, postId, t]);
 
   React.useEffect(() => {
     if (open && postId) {
@@ -420,7 +420,7 @@ export function FeedbackDetailModal({
       if (!res.ok) throw new Error('Status update failed');
       onStatusChange?.(post.id, newStatus);
       void fetchPostDetails();
-      if (activeTab === 'activity') void fetchComments();
+      if (effectiveTab === 'activity') void fetchComments();
     } catch {
       setCurrentStatus(previousStatus);
       setActionError(t('feedback.statusUpdateFailed'));
@@ -430,7 +430,7 @@ export function FeedbackDetailModal({
   const handleCommentSubmit = async (event?: React.FormEvent) => {
     event?.preventDefault();
     const trimmed = commentText.trim();
-    if (!trimmed || !post || submittingComment || activeTab === 'activity') return;
+    if (!trimmed || !post || submittingComment || effectiveTab === 'activity') return;
 
     if (!user) {
       onOpenAuthModal?.();
@@ -445,7 +445,7 @@ export function FeedbackDetailModal({
         json: {
           content: trimmed,
           parentId: replyingToId || undefined,
-          isInternal: activeTab === 'internal',
+          isInternal: effectiveTab === 'internal',
         },
       });
       if (!res.ok) throw new Error('Comment submission failed');
@@ -454,7 +454,7 @@ export function FeedbackDetailModal({
       setCommentText('');
       setReplyingToId(null);
       setComments((previous) => [data.comment as CommentItem, ...previous]);
-      if (activeTab === 'internal') setInternalCount((previous) => previous + 1);
+      if (effectiveTab === 'internal') setInternalCount((previous) => previous + 1);
       onCommentAdded?.(post.id);
     } catch {
       setActionError(t('feedback.commentFailed'));
@@ -565,18 +565,20 @@ export function FeedbackDetailModal({
                     <button
                       type="button"
                       onClick={() => setStatusMenuOpen((current) => !current)}
-                      aria-label={t('feedback.statusMenuLabel')}
+                      disabled={!canManage}
+                      aria-label={canManage ? t('feedback.statusMenuLabel') : undefined}
                       className={cn(
                         'fp-status-button inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 font-semibold shadow-sm',
-                        statusInfo.badgeClass
+                        statusInfo.badgeClass,
+                        !canManage && 'cursor-default'
                       )}
                     >
                       <span className={cn('size-2 rounded-full', statusInfo.dotColor)} />
                       <span>{t(statusInfo.labelKey)}</span>
-                      <ChevronDown className="size-3 opacity-60" />
+                      {canManage && <ChevronDown className="size-3 opacity-60" />}
                     </button>
 
-                    {statusMenuOpen && (
+                    {canManage && statusMenuOpen && (
                       <div className="absolute left-0 top-full z-30 mt-2 w-44 rounded-xl border border-black/[0.08] bg-white/95 py-1 shadow-xl backdrop-blur-xl dark:border-white/10 dark:bg-[#171a22]/95">
                         {Object.entries(STATUS_CONFIG).map(([key, config]) => (
                           <button
@@ -629,19 +631,21 @@ export function FeedbackDetailModal({
           >
             {[
               { id: 'comments' as const, label: t('feedback.comments'), count: comments.length || post.commentCount },
-              { id: 'internal' as const, label: t('feedback.internalNotes'), count: internalCount },
+              ...(canManage
+                ? [{ id: 'internal' as const, label: t('feedback.internalNotes'), count: internalCount }]
+                : []),
               { id: 'activity' as const, label: t('feedback.activity'), count: activityCount },
             ].map((tab) => (
               <button
                 key={tab.id}
                 type="button"
                 role="tab"
-                aria-selected={activeTab === tab.id}
-                data-active={activeTab === tab.id}
+                aria-selected={effectiveTab === tab.id}
+                data-active={effectiveTab === tab.id}
                 onClick={() => setActiveTab(tab.id)}
                 className={cn(
                   'fp-drawer-tab flex shrink-0 items-center gap-1.5 pb-3 transition-colors',
-                  activeTab === tab.id
+                  effectiveTab === tab.id
                     ? 'text-[#0d44e8] dark:text-[#8ca8ff]'
                     : 'text-slate-500 hover:text-slate-800 dark:text-white/42 dark:hover:text-white'
                 )}
@@ -664,7 +668,7 @@ export function FeedbackDetailModal({
         <div className="fp-discussion-stream flex-1 overflow-y-auto px-4 py-4 sm:px-6">
           {loadingContent ? (
             <DiscussionSkeleton />
-          ) : activeTab === 'activity' ? (
+          ) : effectiveTab === 'activity' ? (
             activities.length > 0 ? (
               <div className="space-y-3">
                 {activities.map((activity) => {
@@ -700,7 +704,7 @@ export function FeedbackDetailModal({
                 {t('feedback.noActivity')}
               </div>
             )
-          ) : activeTab === 'internal' && comments.length === 0 ? (
+          ) : effectiveTab === 'internal' && comments.length === 0 ? (
             <div className="grid min-h-40 place-items-center text-center text-[11px] text-slate-400">
               {t('feedback.noInternalNotes')}
             </div>
@@ -754,13 +758,13 @@ export function FeedbackDetailModal({
           )}
         </div>
 
-        {activeTab !== 'activity' && (
+        {effectiveTab !== 'activity' && (
           <footer className="shrink-0 border-t border-slate-200/75 bg-white/55 px-4 py-3 backdrop-blur-xl dark:border-white/10 dark:bg-[#0d1018]/65 sm:px-6">
             <form onSubmit={(event) => void handleCommentSubmit(event)} className="flex items-start gap-2.5">
               <Avatar
                 src={user?.avatarUrl}
                 alt={user?.name || t('feedback.member')}
-                fallback={user?.name || 'U'}
+                fallback={user?.name || t('feedback.memberInitial')}
                 size="md"
                 className="mt-1 size-8 rounded-full ring-1 ring-slate-200/80 dark:ring-white/10"
               />
@@ -791,7 +795,7 @@ export function FeedbackDetailModal({
                       void handleCommentSubmit();
                     }
                   }}
-                  placeholder={t(activeTab === 'internal' ? 'feedback.internalNotePlaceholder' : 'feedback.writeCommentPlaceholder')}
+                  placeholder={t(effectiveTab === 'internal' ? 'feedback.internalNotePlaceholder' : 'feedback.writeCommentPlaceholder')}
                   className="min-h-14 w-full resize-none bg-transparent px-1 py-1 text-[11px] leading-relaxed text-slate-900 outline-none placeholder:text-slate-400 dark:text-white dark:placeholder:text-white/30"
                 />
 

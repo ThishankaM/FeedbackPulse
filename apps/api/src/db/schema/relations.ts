@@ -1,9 +1,9 @@
 import { relations } from 'drizzle-orm';
-import { users, authAccounts, sessions } from './auth';
-import { workspaces, workspaceMembers, workspaceEmbedDomains, apiKeys } from './workspaces';
-import { visitors, boards, posts, postVotes, comments } from './feedback';
-import { changelogs, changelogPosts } from './content';
-import { tags, postTags, changelogTags, postAttachments, auditLogs, notifications, emailOutbox } from './ops';
+import { users, authAccounts, sessions } from './auth.js';
+import { workspaces, workspaceMembers, workspaceEmbedDomains, apiKeys } from './workspaces.js';
+import { visitors, boards, posts, postVotes, comments } from './feedback.js';
+import { changelogs, changelogPosts } from './content.js';
+import { tags, postTags, changelogTags, postAttachments, auditLogs, notifications, emailOutbox } from './ops.js';
 
 export const usersRelations = relations(users, ({ many }) => ({
   memberships: many(workspaceMembers),

@@ -97,7 +97,7 @@ export function FeedbackCard({ card, onVote, onClick }: FeedbackCardProps) {
           <Avatar
             src={card.authorAvatar}
             alt={card.authorName || t('feedback.member')}
-            fallback={card.authorName || 'U'}
+            fallback={card.authorName || t('feedback.memberInitial')}
             size="sm"
             className="h-6 w-6"
           />
