@@ -282,6 +282,8 @@ const routes = app
       const owner = c.get('user');
 
       try {
+        // Provisioning is atomic: a failed membership or board insert must not
+        // leave behind an orphaned workspace.
         const result = await db.transaction(async (tx) => {
           const [workspace] = await tx
             .insert(workspaces)
@@ -316,10 +318,10 @@ const routes = app
 
         return c.json(result, 201);
       } catch (error: any) {
-        if (error?.code === '23505') { // Postgres unique violation
+        if (error?.code === '23505') {
           return c.json({ error: 'A workspace with this slug already exists' }, 409);
         }
-        return c.json({ error: error.message || 'Failed to create workspace' }, 500);
+        return c.json({ error: 'Failed to create workspace' }, 500);
       }
     }
   )
@@ -1001,15 +1003,12 @@ app.notFound((c) => {
   }, 404);
 });
 
+// Importing the app for tests or RPC types must not start a server.
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
-const port = Number(process.env.PORT) || 3000;
-
-serve({
-  fetch: app.fetch,
-  port,
-}, (info) => {
-  console.log(`🚀 FeedbackPulse API running on http://localhost:${info.port}`);
-});
+  const port = Number(process.env.PORT) || 3000;
+  serve({ fetch: app.fetch, port }, (info) => {
+    console.log(`🚀 FeedbackPulse API running on http://localhost:${info.port}`);
+  });
 }
 
 export default app;
