@@ -17,22 +17,10 @@
   inset: 0;
   background: rgba(8, 13, 24, 0.28);
   opacity: 0;
-  -webkit-backdrop-filter: blur(2px);
-  backdrop-filter: blur(2px);
-  transition: opacity 220ms ease-out;
 }
 
 .dark .fp-discussion-backdrop {
   background: rgba(0, 0, 0, 0.5);
-}
-
-.fp-discussion-layer[data-open="true"] .fp-discussion-backdrop {
-  opacity: 1;
-  animation: fp-discussion-backdrop-in 240ms ease-out both;
-}
-
-.fp-discussion-layer[data-open="false"] .fp-discussion-backdrop {
-  animation: fp-discussion-backdrop-out 220ms ease-in both;
 }
 
 .fp-discussion-drawer {
@@ -55,15 +43,7 @@
   color: #171921;
   contain: layout paint style;
   overscroll-behavior: contain;
-  -webkit-backdrop-filter: blur(28px) saturate(145%);
-  backdrop-filter: blur(28px) saturate(145%);
-  transform: translate3d(100.5%, 0, 0);
-  opacity: 0.98;
-  will-change: transform, opacity;
   backface-visibility: hidden;
-  transition:
-    transform 340ms cubic-bezier(0.4, 0, 0.2, 1),
-    opacity 220ms ease-out;
 }
 
 .dark .fp-discussion-drawer {
@@ -75,16 +55,6 @@
   box-shadow:
     -34px 0 100px -34px rgba(0, 0, 0, 0.96),
     inset 1px 0 0 rgba(255, 255, 255, 0.055);
-}
-
-.fp-discussion-layer[data-open="true"] .fp-discussion-drawer {
-  transform: translate3d(0, 0, 0);
-  opacity: 1;
-  animation: fp-discussion-drawer-in 460ms cubic-bezier(0.16, 1, 0.3, 1) both;
-}
-
-.fp-discussion-layer[data-open="false"] .fp-discussion-drawer {
-  animation: fp-discussion-drawer-out 340ms cubic-bezier(0.4, 0, 1, 1) both;
 }
 
 .fp-discussion-open .fp-glass-header,
@@ -235,46 +205,6 @@
 
 .fp-drawer-enter-item {
   animation: fp-drawer-item-in 360ms cubic-bezier(0.16, 1, 0.3, 1) both;
-}
-
-@keyframes fp-discussion-backdrop-in {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes fp-discussion-drawer-in {
-  from {
-    opacity: 0.96;
-    transform: translate3d(100.5%, 0, 0);
-  }
-  to {
-    opacity: 1;
-    transform: translate3d(0, 0, 0);
-  }
-}
-
-@keyframes fp-discussion-backdrop-out {
-  from {
-    opacity: 1;
-  }
-  to {
-    opacity: 0;
-  }
-}
-
-@keyframes fp-discussion-drawer-out {
-  from {
-    opacity: 1;
-    transform: translate3d(0, 0, 0);
-  }
-  to {
-    opacity: 0.96;
-    transform: translate3d(100.5%, 0, 0);
-  }
 }
 
 @keyframes fp-drawer-skeleton {

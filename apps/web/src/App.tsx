@@ -1,5 +1,6 @@
 import { lazy, Suspense, useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
+import { z } from 'zod';
 import { Briefcase, Plus } from 'lucide-react';
 import { useAuth, type User } from './context/AuthContext';
 import { AppSidebar } from './components/layout/AppSidebar';
@@ -56,15 +57,13 @@ export default function App() {
   const [newWsSlug, setNewWsSlug] = useState('');
   const [newWsColor, setNewWsColor] = useState('#4F46E5');
   const [newWsLogoUrl, setNewWsLogoUrl] = useState('');
-  const [ownerEmail, setOwnerEmail] = useState('');
-  const [ownerName, setOwnerName] = useState('');
   const [isSubmittingWs, setIsSubmittingWs] = useState(false);
   const [wsError, setWsError] = useState<string | null>(null);
 
   // Auth Form State
   const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
 
-  // Initial load: discover any available workspaces in the database or parse from URL path
+  // Initial load: resolve an explicit URL or the current user’s membership
   useEffect(() => {
     async function initWorkspace() {
       // 0. Check if URL contains /dashboard/:slug or /:slug
@@ -111,39 +110,13 @@ export default function App() {
         return;
       }
 
-      // 2. Otherwise query database for any existing workspace
-      try {
-        const res = await client.api.workspaces.$get();
-        if (res.ok) {
-          const data = await res.json();
-          if (data.workspaces && data.workspaces.length > 0) {
-            const first = data.workspaces[0];
-            setActiveWorkspace({
-              id: first.id,
-              name: first.name,
-              slug: first.slug,
-              primaryColor: first.primaryColor || '#4F46E5',
-            });
-            window.history.replaceState(null, '', `/dashboard/${first.slug}`);
-          }
-        }
-      } catch {
-        // Fresh database without workspaces
-      }
+
     }
 
     if (currentView !== 'landing' && !activeWorkspace.slug) {
       initWorkspace();
     }
   }, [currentView, memberships, activeWorkspace.slug]);
-
-  // Pre-fill owner details when user is authenticated
-  useEffect(() => {
-    if (user) {
-      setOwnerEmail(user.email);
-      if (user.name) setOwnerName(user.name);
-    }
-  }, [user]);
 
   // Fetch workspace details & boards
   const loadWorkspace = useCallback(async () => {
@@ -207,33 +180,33 @@ export default function App() {
 
   const handleOpenWorkspaceModal = () => {
     setWsError(null);
+    if (!user) {
+      handleOpenAuthModal('register');
+      return;
+    }
     setIsWorkspaceModalOpen(true);
   };
 
   // Submit Workspace Creation
   const handleCreateWorkspace = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSubmittingWs(true);
     setWsError(null);
-
+    const input = z.object({
+      name: z.string().trim().min(2).max(255),
+      slug: z.string().min(2).max(100).regex(/^[a-z0-9-]+$/),
+      primaryColor: z.string().regex(/^#([0-9a-fA-F]{3}){1,2}$/),
+      logoUrl: z.string().url().optional(),
+    }).safeParse({ name: newWsName, slug: newWsSlug, primaryColor: newWsColor, logoUrl: newWsLogoUrl.trim() || undefined });
+    if (!input.success) {
+      setWsError(t('workspace.validationError'));
+      return;
+    }
+    setIsSubmittingWs(true);
     try {
-      const res = await client.api.workspaces.$post({
-        json: {
-          name: newWsName,
-          slug: newWsSlug,
-          primaryColor: newWsColor,
-          logoUrl: newWsLogoUrl.trim() || undefined,
-          ownerEmail: user ? user.email : (ownerEmail || `${newWsSlug}-owner@feedbackpulse.dev`),
-          ownerName: user ? (user.name || undefined) : (ownerName || undefined),
-        },
-      });
+      const res = await client.api.workspaces.$post({ json: input.data });
 
       if (res.ok) {
         const data = await res.json();
-        // If unauthenticated creator, immediately log in with issued token
-        if (data.token && data.owner) {
-          login(data.token, data.owner);
-        }
         setActiveWorkspace({
           id: data.workspace.id,
           name: data.workspace.name,
@@ -250,8 +223,6 @@ export default function App() {
         setNewWsName('');
         setNewWsSlug('');
         setNewWsLogoUrl('');
-        setOwnerEmail('');
-        setOwnerName('');
         setRefreshTrigger((prev) => prev + 1);
         await refreshUser();
       } else {
@@ -292,7 +263,7 @@ export default function App() {
           window.history.pushState(null, '', `/dashboard/${slug}`);
           setRefreshTrigger((prev) => prev + 1);
         }}
-        onOpenCreateWorkspace={() => setIsWorkspaceModalOpen(true)}
+        onOpenCreateWorkspace={handleOpenWorkspaceModal}
         onOpenAuthModal={() => {
           setAuthMode('login');
           setIsAuthModalOpen(true);
@@ -315,7 +286,7 @@ export default function App() {
             window.history.pushState(null, '', `/dashboard/${slug}`);
             setRefreshTrigger((prev) => prev + 1);
           }}
-          onOpenCreateWorkspace={() => setIsWorkspaceModalOpen(true)}
+          onOpenCreateWorkspace={handleOpenWorkspaceModal}
         />
 
         <main className="flex-1 pb-16">
@@ -326,13 +297,13 @@ export default function App() {
                 <Briefcase className="h-8 w-8 stroke-[2]" />
               </div>
               <h2 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
-                No workspace found
+                {t('workspace.emptyTitle')}
               </h2>
               <p className="text-sm text-slate-500 dark:text-slate-400 mt-2 leading-relaxed">
-                Your database is clean with zero test data. Create your first workspace to start collecting customer feedback and managing your public roadmap.
+                {t('workspace.emptyDescription')}
               </p>
               <Button
-                onClick={() => setIsWorkspaceModalOpen(true)}
+                onClick={handleOpenWorkspaceModal}
                 className="mt-6 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl px-5 py-2.5 shadow-sm cursor-pointer"
               >
                 <Plus className="h-4 w-4 mr-2" />
@@ -449,7 +420,7 @@ export default function App() {
                   value={newWsColor}
                   onChange={(e) => setNewWsColor(e.target.value)}
                   className="h-8 w-8 rounded-lg cursor-pointer border border-slate-200 dark:border-slate-800 bg-transparent p-0.5"
-                  title="Choose custom color"
+                  title={t('workspace.chooseColor')}
                 />
                 <span className="ml-2 font-mono text-xs text-slate-500 dark:text-slate-400 uppercase">
                   {newWsColor}
@@ -469,20 +440,6 @@ export default function App() {
               placeholder={t('workspace.logoUrlPlaceholder')}
             />
           </div>
-
-          {!user && (
-            <div>
-              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-                {t('workspace.ownerEmailLabel')}
-              </label>
-              <Input
-                type="email"
-                value={ownerEmail}
-                onChange={(e) => setOwnerEmail(e.target.value)}
-                placeholder={t('workspace.ownerEmailPlaceholder')}
-              />
-            </div>
-          )}
 
           <div className="flex items-center justify-end gap-3 pt-3">
             <Button
