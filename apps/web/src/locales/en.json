@@ -111,7 +111,11 @@
     "submitButton": "Create Workspace",
     "submitting": "Creating Workspace...",
     "createSuccess": "Workspace created successfully!",
-    "createError": "Failed to create workspace."
+    "createError": "Failed to create workspace.",
+    "validationError": "Check the workspace name, slug, color, and logo URL and try again.",
+    "emptyTitle": "No workspace found",
+    "emptyDescription": "Create your first workspace to start collecting customer feedback and managing your public roadmap.",
+    "chooseColor": "Choose custom color"
   },
   "feedback": {
     "suggestFeature": "Suggest a Feature",

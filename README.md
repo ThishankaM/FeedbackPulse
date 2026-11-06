@@ -174,7 +174,7 @@ The API is fully documented and discoverable at `http://localhost:3000/`.
 | `POST` | `/api/auth/login` | Public | Authenticate existing credentials; returns JWT |
 | `GET` | `/api/auth/me` | Authenticated | Fetch active user profile and list of workspace memberships |
 | `GET` | `/api/workspaces/:slug` | Public | Retrieve workspace public branding and configuration |
-| `POST` | `/api/workspaces` | Public / Auth | Provision new workspace and assign caller as `OWNER` |
+| `POST` | `/api/workspaces` | Authenticated | Provision a workspace and assign the authenticated caller as `OWNER` |
 
 ---
 
@@ -212,6 +212,9 @@ PORT=3000
 CLIENT_URL=http://localhost:5173
 JWT_SECRET=your-development-jwt-secret-key-at-least-32-chars
 ```
+
+The API requires `JWT_SECRET` to be set to at least 32 characters. Generate a unique, unpredictable secret for each environment; never use an example secret in production. If the previous built-in default was used, set a new secret to invalidate existing tokens.
+
 
 ### 3. Start Local PostgreSQL Service
 
