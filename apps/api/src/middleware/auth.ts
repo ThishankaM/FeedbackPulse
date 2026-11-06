@@ -1,7 +1,7 @@
 import { createMiddleware } from 'hono/factory';
-import { verifyAuthToken } from '../lib/auth';
-import { db } from '../db';
-import { users } from '../db/schema';
+import { verifyAuthToken } from '../lib/auth.js';
+import { getDb } from '../db/runtime.js';
+import { users } from '../db/schema.js';
 import { eq, and, isNull } from 'drizzle-orm';
 
 export interface AuthContextVariables {
@@ -15,6 +15,7 @@ export interface AuthContextVariables {
 
 export const authMiddleware = createMiddleware<{ Variables: AuthContextVariables }>(
   async (c, next) => {
+    const db = getDb();
     const authHeader = c.req.header('Authorization');
 
     if (!authHeader || !authHeader.startsWith('Bearer ')) {

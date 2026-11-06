@@ -11,12 +11,12 @@ import {
   primaryKey,
   jsonb,
 } from 'drizzle-orm/pg-core';
-import { primaryUuid } from './_helpers';
-import { notificationKindEnum, emailStatusEnum } from './_enums';
-import { workspaces } from './workspaces';
-import { users } from './auth';
-import { posts } from './feedback';
-import { changelogs } from './content';
+import { primaryUuid } from './_helpers.js';
+import { notificationKindEnum, emailStatusEnum } from './_enums.js';
+import { workspaces } from './workspaces.js';
+import { users } from './auth.js';
+import { posts } from './feedback.js';
+import { changelogs } from './content.js';
 
 export const tags = pgTable('tags', {
   id: primaryUuid(),

@@ -9,6 +9,7 @@
     "submit": "Submit",
     "success": "Success",
     "error": "Error",
+    "notifications": "Notifications",
     "theme": {
       "toggle": "Toggle theme",
       "light": "Light",
@@ -18,6 +19,7 @@
   },
   "nav": {
     "brand": "FeedbackPulse",
+    "workspaces": "Workspaces",
     "dashboard": "Dashboard",
     "feedbackBoard": "Feedback Board",
     "boards": "Feedback",
@@ -115,7 +117,10 @@
     "validationError": "Check the workspace name, slug, color, and logo URL and try again.",
     "emptyTitle": "No workspace found",
     "emptyDescription": "Create your first workspace to start collecting customer feedback and managing your public roadmap.",
-    "chooseColor": "Choose custom color"
+    "chooseColor": "Choose custom color",
+    "initials": "WS",
+    "returnToDashboard": "Return to Dashboard",
+    "comingSoon": "This section is part of the FeedbackPulse roadmap and will be loaded dynamically."
   },
   "feedback": {
     "suggestFeature": "Suggest a Feature",
@@ -174,6 +179,8 @@
     "openDiscussion": "Open discussion for {{title}}",
     "admin": "Admin",
     "owner": "Owner",
+    "guest": "Guest",
+    "memberInitial": "U",
     "statusChangedTo": "Status changed to {{status}}",
     "byUser": "by {{user}}",
     "noActivity": "No activity recorded yet.",
@@ -242,6 +249,7 @@
       "dashboard": "Open dashboard",
       "openMenu": "Open menu",
       "closeMenu": "Close menu",
+      "brandHome": "FeedbackPulse home",
       "toggleLanguage": "Switch language",
       "toggleTheme": "Switch to {{theme}} mode"
     },
@@ -261,6 +269,93 @@
       "floatingInsight": "Top insight",
       "floatingInsightText": "Teams want a faster way to share roadmap updates",
       "floatingRequests": "47 similar requests"
+    },
+    "visuals": {
+      "board": {
+        "eyebrow": "Public feedback",
+        "title": "What should we build next?",
+        "submit": "Submit",
+        "search": "Search feedback",
+        "topVoted": "Most voted",
+        "request": "Request",
+        "replies": "{{count}} replies",
+        "voted": "Maya voted for an idea",
+        "justNow": "Just now",
+        "cards": {
+          "darkMode": "Dark mode for the public board",
+          "digest": "Weekly product digest",
+          "exportCsv": "Export feedback as CSV"
+        }
+      },
+      "roadmap": {
+        "eyebrow": "Public roadmap",
+        "title": "Now shipping",
+        "planned": "Planned",
+        "inProgress": "In progress",
+        "shipped": "Shipped",
+        "updatePublished": "Roadmap update published",
+        "customersNotified": "{{count}} customers notified",
+        "items": {
+          "customerSegments": "Customer segments",
+          "slackIntegration": "Slack integration",
+          "roadmapRedesign": "Roadmap redesign",
+          "aiSummaries": "AI summaries",
+          "publicChangelog": "Public changelog",
+          "widgetEmbed": "Widget embed"
+        }
+      },
+      "loop": {
+        "digestTitle": "Weekly product digest",
+        "readTime": "FeedbackPulse · 2 min read",
+        "new": "New",
+        "headline": "3 ideas you asked for are live",
+        "description": "Better filters, faster search, and a cleaner roadmap are now available in your workspace.",
+        "filters": "Filters",
+        "search": "Search",
+        "roadmap": "Roadmap",
+        "useful": "Was this update useful?",
+        "customersReplied": "28 customers replied",
+        "smarter": "The loop keeps getting smarter"
+      },
+      "preview": {
+        "search": "Search feedback, customers, and releases",
+        "workspace": "Workspace",
+        "feedback": "Feedback",
+        "aiInsights": "AI insights",
+        "trending": "23 requests are trending this week.",
+        "reviewInsights": "Review insights",
+        "customerFeedback": "Customer feedback",
+        "subtitle": "Capture the signal. Build what matters.",
+        "newFeedback": "New feedback",
+        "newThisWeek": "New this week",
+        "votesCollected": "Votes collected",
+        "ideasShipped": "Ideas shipped",
+        "allFeedback": "All feedback",
+        "recentlyActive": "Recently active",
+        "comments": "{{count}} comments",
+        "hoursAgo": "{{count}}h ago",
+        "nav": {
+          "overview": "Overview",
+          "inbox": "Inbox",
+          "roadmap": "Roadmap",
+          "changelog": "Changelog",
+          "customers": "Customers"
+        },
+        "cards": {
+          "topics": {
+            "title": "Let customers follow topics they care about",
+            "label": "Product updates"
+          },
+          "compactRoadmap": {
+            "title": "Add a compact view for the public roadmap",
+            "label": "Roadmap"
+          },
+          "notify": {
+            "title": "Notify me when an idea ships",
+            "label": "Notifications"
+          }
+        }
+      }
     },
     "features": {
       "eyebrow": "Product tour",

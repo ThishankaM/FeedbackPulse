@@ -1,26 +1,28 @@
-name: db
+name: verify
 
 on:
   pull_request:
-    paths: ['apps/api/src/db/**', 'apps/api/drizzle.config.ts', '.github/workflows/db.yml']
   push:
     branches: [main]
-    paths: ['apps/api/src/db/**', 'apps/api/drizzle.config.ts']
 
 permissions:
   contents: read
 
 jobs:
-  invariants:
+  verify:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with: { node-version: 22, cache: npm }
       - run: npm ci
-      - name: Schema typecheck
-        run: npm run build -w @feedbackpulse/api
+      - name: Build API and web
+        run: npm run build
       - name: Migration drift check
-        run: npm run db:check -w @feedbackpulse/api
-      - name: Apply migration + triggers to a real Postgres
+        run: npm run db:check
+      - name: Database invariant tests
         run: npm run test:db
+      - name: API integration tests with PGlite
+        run: npm run test:auth
+      - name: Frontend lint
+        run: npm run lint

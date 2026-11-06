@@ -1,5 +1,5 @@
 import { migrate } from 'drizzle-orm/node-postgres/migrator';
-import { db, pool } from './client';
+import { db, pool } from './client.js';
 import path from 'path';
 import { fileURLToPath } from 'url';
 

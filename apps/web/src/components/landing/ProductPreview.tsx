@@ -14,19 +14,19 @@ import {
   TrendingUp,
   Users,
 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 const navItems = [
-  { label: 'Overview', icon: LayoutDashboard, active: true },
-  { label: 'Inbox', icon: Inbox },
-  { label: 'Roadmap', icon: CircleDot },
-  { label: 'Changelog', icon: FileText },
-  { label: 'Customers', icon: Users },
+  { id: 'overview', labelKey: 'landing.visuals.preview.nav.overview', icon: LayoutDashboard, active: true },
+  { id: 'inbox', labelKey: 'landing.visuals.preview.nav.inbox', icon: Inbox },
+  { id: 'roadmap', labelKey: 'landing.visuals.preview.nav.roadmap', icon: CircleDot },
+  { id: 'changelog', labelKey: 'landing.visuals.preview.nav.changelog', icon: FileText },
+  { id: 'customers', labelKey: 'landing.visuals.preview.nav.customers', icon: Users },
 ];
 
 const feedbackCards = [
   {
-    title: 'Let customers follow topics they care about',
-    label: 'Product updates',
+    key: 'topics',
     votes: 328,
     comments: 24,
     avatar: 'MC',
@@ -34,8 +34,7 @@ const feedbackCards = [
     tagTone: 'bg-[#e8f2ff] text-[#2255c7]',
   },
   {
-    title: 'Add a compact view for the public roadmap',
-    label: 'Roadmap',
+    key: 'compactRoadmap',
     votes: 214,
     comments: 18,
     avatar: 'AK',
@@ -43,8 +42,7 @@ const feedbackCards = [
     tagTone: 'bg-[#fff1e7] text-[#a4460c]',
   },
   {
-    title: 'Notify me when an idea ships',
-    label: 'Notifications',
+    key: 'notify',
     votes: 186,
     comments: 12,
     avatar: 'JL',
@@ -54,6 +52,14 @@ const feedbackCards = [
 ];
 
 export function ProductPreview() {
+  const { t } = useTranslation();
+
+  const metrics = [
+    { key: 'newThisWeek', value: '128', change: '+18%', icon: Inbox },
+    { key: 'votesCollected', value: '2,481', change: '+24%', icon: TrendingUp },
+    { key: 'ideasShipped', value: '36', change: '+8%', icon: Check },
+  ];
+
   return (
     <div className="fp-product-shadow overflow-hidden rounded-[20px] bg-[#f8f8f6] text-left dark:bg-[#111114]" aria-hidden="true">
       <div className="flex h-11 items-center justify-between border-b border-white/10 bg-[#17171a] px-4 text-white">
@@ -64,13 +70,16 @@ export function ProductPreview() {
         </div>
         <div className="hidden min-w-72 items-center justify-center gap-2 rounded-lg bg-white/[0.07] px-4 py-1.5 text-[10px] font-medium text-white/58 sm:flex">
           <Search className="size-3" />
-          Search feedback, customers, and releases
+          {t('landing.visuals.preview.search')}
           <span className="ml-auto rounded border border-white/10 px-1.5 py-0.5 text-[8px] text-white/35">
             ⌘ K
           </span>
         </div>
         <div className="flex items-center gap-2">
-          <button className="grid size-7 place-items-center rounded-lg bg-white/[0.07] text-white/55" aria-label="Notifications">
+          <button
+            className="grid size-7 place-items-center rounded-lg bg-white/[0.07] text-white/55"
+            aria-label={t('common.notifications')}
+          >
             <Bell className="size-3.5" />
           </button>
           <div className="grid size-7 place-items-center rounded-full bg-[#0d44e8] text-[9px] font-bold text-white">
@@ -85,29 +94,25 @@ export function ProductPreview() {
             <div className="grid size-7 place-items-center rounded-[9px] bg-[#0d44e8]">
               <MessageCircle className="size-4 fill-white" />
             </div>
-            <span className="text-[12px] font-extrabold tracking-[-0.03em]">
-              FeedbackPulse
-            </span>
+            <span className="text-[12px] font-extrabold tracking-[-0.03em]">{t('nav.brand')}</span>
             <ChevronDown className="ml-auto size-3.5 text-white/35" />
           </div>
           <div className="mt-4 px-2 text-[9px] font-semibold uppercase tracking-[0.13em] text-white/30">
-            Workspace
+            {t('landing.visuals.preview.workspace')}
           </div>
           <nav className="mt-2 space-y-1">
             {navItems.map((item) => {
               const Icon = item.icon;
               return (
                 <div
-                  key={item.label}
+                  key={item.id}
                   className={`flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-[10px] font-medium ${
-                    item.active
-                      ? 'bg-white/[0.1] text-white'
-                      : 'text-white/48'
+                    item.active ? 'bg-white/[0.1] text-white' : 'text-white/48'
                   }`}
                 >
                   <Icon className="size-3.5" />
-                  {item.label}
-                  {item.label === 'Inbox' && (
+                  {t(item.labelKey)}
+                  {item.id === 'inbox' && (
                     <span className="ml-auto rounded-full bg-[#0d44e8] px-1.5 text-[8px] leading-4 text-white">
                       12
                     </span>
@@ -119,13 +124,13 @@ export function ProductPreview() {
           <div className="mt-auto rounded-xl border border-white/10 bg-white/[0.05] p-3">
             <div className="flex items-center gap-2 text-[10px] font-semibold">
               <Sparkles className="size-3.5 text-[#6d92ff]" />
-              AI insights
+              {t('landing.visuals.preview.aiInsights')}
             </div>
             <p className="mt-1.5 text-[8px] leading-relaxed text-white/38">
-              23 requests are trending this week.
+              {t('landing.visuals.preview.trending')}
             </p>
             <div className="mt-2.5 flex items-center gap-1 text-[8px] font-semibold text-[#7ea0ff]">
-              Review insights
+              {t('landing.visuals.preview.reviewInsights')}
               <span aria-hidden="true">→</span>
             </div>
           </div>
@@ -135,34 +140,30 @@ export function ProductPreview() {
           <div className="flex items-start justify-between gap-4">
             <div>
               <div className="flex items-center gap-2 text-[9px] font-medium text-[#8a8a90] dark:text-white/38">
-                <span>Workspace</span>
+                <span>{t('landing.visuals.preview.workspace')}</span>
                 <span>/</span>
-                <span>Feedback</span>
+                <span>{t('landing.visuals.preview.feedback')}</span>
               </div>
               <h3 className="mt-1.5 text-[18px] font-bold tracking-[-0.04em] text-[#161618] dark:text-white sm:text-[22px]">
-                Customer feedback
+                {t('landing.visuals.preview.customerFeedback')}
               </h3>
               <p className="mt-1 text-[9px] text-[#8a8a90] dark:text-white/38">
-                Capture the signal. Build what matters.
+                {t('landing.visuals.preview.subtitle')}
               </p>
             </div>
             <button className="flex items-center gap-1.5 rounded-lg bg-[#0d44e8] px-2.5 py-2 text-[9px] font-bold text-white shadow-sm">
               <Plus className="size-3" />
-              <span className="hidden sm:inline">New feedback</span>
+              <span className="hidden sm:inline">{t('landing.visuals.preview.newFeedback')}</span>
             </button>
           </div>
 
           <div className="mt-5 grid grid-cols-3 gap-2.5">
-            {[
-              { label: 'New this week', value: '128', change: '+18%', icon: Inbox },
-              { label: 'Votes collected', value: '2,481', change: '+24%', icon: TrendingUp },
-              { label: 'Ideas shipped', value: '36', change: '+8%', icon: Check },
-            ].map((metric) => {
+            {metrics.map((metric) => {
               const Icon = metric.icon;
               return (
-                <div key={metric.label} className="rounded-xl border border-black/[0.07] bg-white p-2.5 dark:border-white/10 dark:bg-[#19191d] sm:p-3">
+                <div key={metric.key} className="rounded-xl border border-black/[0.07] bg-white p-2.5 dark:border-white/10 dark:bg-[#19191d] sm:p-3">
                   <div className="flex items-center justify-between text-[8px] font-medium text-[#8a8a90] dark:text-white/38">
-                    <span className="truncate">{metric.label}</span>
+                    <span className="truncate">{t(`landing.visuals.preview.${metric.key}`)}</span>
                     <Icon className="size-3 text-[#b1b1b6]" />
                   </div>
                   <div className="mt-1.5 flex items-end gap-1.5">
@@ -180,16 +181,16 @@ export function ProductPreview() {
 
           <div className="mt-4 flex items-center justify-between">
             <div className="flex items-center gap-1.5">
-              {['All feedback', 'Recently active'].map((tab, index) => (
+              {['allFeedback', 'recentlyActive'].map((tabKey, index) => (
                 <span
-                  key={tab}
+                  key={tabKey}
                   className={`rounded-lg px-2.5 py-1.5 text-[8px] font-semibold ${
                     index === 0
                       ? 'bg-white text-[#161618] shadow-sm ring-1 ring-black/[0.06] dark:bg-white/10 dark:text-white dark:ring-white/10'
                       : 'text-[#8a8a90] dark:text-white/38'
                   }`}
                 >
-                  {tab}
+                  {t(`landing.visuals.preview.${tabKey}`)}
                 </span>
               ))}
             </div>
@@ -199,7 +200,7 @@ export function ProductPreview() {
           <div className="mt-2.5 grid gap-2.5 md:grid-cols-2">
             {feedbackCards.map((card, index) => (
               <div
-                key={card.title}
+                key={card.key}
                 className={`rounded-xl border border-black/[0.07] bg-white p-2.5 dark:border-white/10 dark:bg-[#19191d] sm:p-3 ${
                   index === 2 ? 'hidden md:block' : ''
                 }`}
@@ -211,18 +212,18 @@ export function ProductPreview() {
                   </div>
                   <div className="min-w-0 flex-1">
                     <span className={`rounded px-1.5 py-0.5 text-[7px] font-bold ${card.tagTone}`}>
-                      {card.label}
+                      {t(`landing.visuals.preview.cards.${card.key}.label`)}
                     </span>
                     <p className="mt-1.5 text-[10px] font-semibold leading-snug text-[#242429] dark:text-white/82 sm:text-[11px]">
-                      {card.title}
+                      {t(`landing.visuals.preview.cards.${card.key}.title`)}
                     </p>
                     <div className="mt-3 flex items-center gap-1.5 text-[8px] text-[#96969c] dark:text-white/35">
                       <span className={`grid size-5 place-items-center rounded-full text-[6px] font-bold ${card.avatarTone}`}>
                         {card.avatar}
                       </span>
                       <MessageCircle className="size-2.5" />
-                      {card.comments} comments
-                      <span className="ml-auto">2h ago</span>
+                      {t('landing.visuals.preview.comments', { count: card.comments })}
+                      <span className="ml-auto">{t('landing.visuals.preview.hoursAgo', { count: 2 })}</span>
                     </div>
                   </div>
                 </div>

@@ -1,4 +1,4 @@
-import { pool } from '../src/db/client';
+import { pool } from '../src/db/client.js';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';

@@ -6,18 +6,52 @@ import { cors } from 'hono/cors';
 import { logger } from 'hono/logger';
 import { zValidator } from '@hono/zod-validator';
 import { z } from 'zod';
-import { db } from './db/index';
-import { workspaces, users, workspaceMembers, boards, posts, changelogs, postVotes, comments, auditLogs } from './db/schema';
+import { getDb } from './db/runtime.js';
+import { workspaces, users, workspaceMembers, boards, posts, changelogs, postVotes, comments, auditLogs } from './db/schema.js';
 import { eq, and, isNull, desc, asc, gte, lt } from 'drizzle-orm';
-import { toggleVote } from './db/queries/feedback';
-import { hashPassword, verifyPassword, createToken, verifyAuthToken, getJwtSecret } from './lib/auth';
-import { authMiddleware } from './middleware/auth';
+import { toggleVote } from './db/queries/feedback.js';
+import { hashPassword, verifyPassword, createToken, verifyAuthToken, getJwtSecret } from './lib/auth.js';
+import { authMiddleware } from './middleware/auth.js';
 import * as dotenv from 'dotenv';
 
 dotenv.config();
 getJwtSecret();
 
+const db = getDb();
 const app = new Hono();
+
+async function getCurrentWorkspaceAccess(c: any, workspaceId: string) {
+  const authHeader = c.req.header('Authorization');
+  if (!authHeader?.startsWith('Bearer ')) {
+    return { authenticated: false, isAdmin: false, userId: null as string | null, role: null as string | null };
+  }
+
+  const payload = await verifyAuthToken(authHeader.substring(7));
+  if (!payload?.sub) {
+    return { authenticated: false, isAdmin: false, userId: null as string | null, role: null as string | null };
+  }
+
+  const [membership] = await db
+    .select({ role: workspaceMembers.role })
+    .from(workspaceMembers)
+    .innerJoin(users, eq(workspaceMembers.userId, users.id))
+    .where(
+      and(
+        eq(workspaceMembers.workspaceId, workspaceId),
+        eq(workspaceMembers.userId, payload.sub),
+        eq(workspaceMembers.status, 'ACTIVE'),
+        eq(users.status, 'ACTIVE'),
+        isNull(users.deletedAt)
+      )
+    );
+
+  return {
+    authenticated: true,
+    isAdmin: membership?.role === 'OWNER' || membership?.role === 'ADMIN',
+    userId: payload.sub,
+    role: membership?.role ?? null,
+  };
+}
 
 const percentDelta = (current: number, previous: number): string => {
   if (previous <= 0) {
@@ -612,7 +646,6 @@ const routes = app
           createdAt: posts.createdAt,
           authorName: users.name,
           authorAvatar: users.avatarUrl,
-          authorEmail: users.email,
         })
         .from(posts)
         .leftJoin(users, eq(posts.authorUserId, users.id))
@@ -628,18 +661,23 @@ const routes = app
         return c.json({ error: 'Post not found' }, 404);
       }
 
-      // Query internal notes count directly from database
-      const internalComments = await db
-        .select({ id: comments.id })
-        .from(comments)
-        .where(
-          and(
-            eq(comments.postId, postId),
-            eq(comments.workspaceId, post.workspaceId),
-            eq(comments.isInternal, true),
-            isNull(comments.deletedAt)
-          )
-        );
+      const access = await getCurrentWorkspaceAccess(c, post.workspaceId);
+
+      // Internal notes are only queryable by workspace admins. Public callers
+      // never cause a query against internal comment rows.
+      const internalComments = access.isAdmin
+        ? await db
+            .select({ id: comments.id })
+            .from(comments)
+            .where(
+              and(
+                eq(comments.postId, postId),
+                eq(comments.workspaceId, post.workspaceId),
+                eq(comments.isInternal, true),
+                isNull(comments.deletedAt)
+              )
+            )
+        : [];
 
       // Query activity count directly from auditLogs
       const activityRecords = await db
@@ -654,21 +692,17 @@ const routes = app
 
       // Check if current user has voted
       let hasVoted = false;
-      const authHeader = c.req.header('Authorization');
-      if (authHeader && authHeader.startsWith('Bearer ')) {
-        const payload = await verifyAuthToken(authHeader.substring(7));
-        if (payload?.sub) {
-          const [vote] = await db
-            .select({ id: postVotes.id })
-            .from(postVotes)
-            .where(
-              and(
-                eq(postVotes.postId, postId),
-                eq(postVotes.userId, payload.sub)
-              )
-            );
-          hasVoted = !!vote;
-        }
+      if (access.authenticated && access.userId) {
+        const [vote] = await db
+          .select({ id: postVotes.id })
+          .from(postVotes)
+          .where(
+            and(
+              eq(postVotes.postId, postId),
+              eq(postVotes.userId, access.userId)
+            )
+          );
+        hasVoted = !!vote;
       }
 
       return c.json({
@@ -703,28 +737,12 @@ const routes = app
           return c.json({ error: 'Post not found' }, 404);
         }
 
-        const authHeader = c.req.header('Authorization');
-        if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        const access = await getCurrentWorkspaceAccess(c, post.workspaceId);
+        if (!access.authenticated) {
           return c.json({ error: 'Sign in to update status' }, 401);
         }
-
-        const payload = await verifyAuthToken(authHeader.substring(7));
-        if (!payload?.sub) {
-          return c.json({ error: 'Sign in to update status' }, 401);
-        }
-
-        const [membership] = await db
-          .select({ role: workspaceMembers.role })
-          .from(workspaceMembers)
-          .where(
-            and(
-              eq(workspaceMembers.workspaceId, post.workspaceId),
-              eq(workspaceMembers.userId, payload.sub)
-            )
-          );
-
-        if (!membership) {
-          return c.json({ error: 'You are not a member of this workspace' }, 403);
+        if (!access.isAdmin) {
+          return c.json({ error: 'Only workspace admins can update status' }, 403);
         }
 
         const [updatedPost] = await db
@@ -737,7 +755,7 @@ const routes = app
         try {
           await db.insert(auditLogs).values({
             workspaceId: post.workspaceId,
-            actorUserId: payload.sub,
+            actorUserId: access.userId,
             action: 'STATUS_CHANGED',
             entityType: 'post',
             entityId: post.id,
@@ -764,7 +782,7 @@ const routes = app
       'query',
       z.object({
         sort: z.string().optional(),
-        type: z.string().optional(),
+        type: z.enum(['comments', 'internal']).optional(),
       })
     ),
     async (c) => {
@@ -782,6 +800,15 @@ const routes = app
       }
 
       const isInternalFilter = type === 'internal';
+      if (isInternalFilter) {
+        const access = await getCurrentWorkspaceAccess(c, post.workspaceId);
+        if (!access.authenticated) {
+          return c.json({ error: 'Sign in to view internal notes' }, 401);
+        }
+        if (!access.isAdmin) {
+          return c.json({ error: 'Only workspace admins can view internal notes' }, 403);
+        }
+      }
 
       const postComments = await db
         .select({
@@ -793,7 +820,6 @@ const routes = app
           createdAt: comments.createdAt,
           authorName: users.name,
           authorAvatar: users.avatarUrl,
-          authorEmail: users.email,
           authorRole: workspaceMembers.role,
         })
         .from(comments)
@@ -858,7 +884,6 @@ const routes = app
             id: users.id,
             name: users.name,
             avatarUrl: users.avatarUrl,
-            email: users.email,
             status: users.status,
           })
           .from(users)
@@ -866,6 +891,13 @@ const routes = app
 
         if (!author || author.status !== 'ACTIVE') {
           return c.json({ error: 'Your account is not active' }, 401);
+        }
+
+        if (isInternal) {
+          const access = await getCurrentWorkspaceAccess(c, post.workspaceId);
+          if (!access.isAdmin) {
+            return c.json({ error: 'Only workspace admins can create internal notes' }, 403);
+          }
         }
 
         // Get user role in workspace
@@ -898,7 +930,6 @@ const routes = app
               ...newComment,
               authorName: author.name,
               authorAvatar: author.avatarUrl,
-              authorEmail: author.email,
               authorRole: member?.role || 'MEMBER',
             },
           },

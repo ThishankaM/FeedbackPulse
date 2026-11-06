@@ -30,11 +30,11 @@ export function LandingFooter() {
       <div className="fp-landing-shell pb-12">
         <div className="grid gap-12 border-b border-black/[0.08] pb-12 dark:border-white/10 lg:grid-cols-[1.3fr_2fr]">
           <div>
-            <a href="#" className="flex w-fit items-center gap-2.5" aria-label="FeedbackPulse home">
+            <a href="#" className="flex w-fit items-center gap-2.5" aria-label={t('landing.nav.brandHome')}>
               <span className="grid size-9 place-items-center rounded-[11px] bg-[#0d44e8] text-white">
                 <Activity className="size-5 stroke-[2.7]" />
               </span>
-              <span className="text-[17px] font-extrabold tracking-[-0.045em]">FeedbackPulse</span>
+              <span className="text-[17px] font-extrabold tracking-[-0.045em]">{t('nav.brand')}</span>
             </a>
             <p className="mt-4 max-w-xs text-[13px] font-medium leading-[1.7] text-[#75757c] dark:text-white/45">
               {t('landing.footer.description')}

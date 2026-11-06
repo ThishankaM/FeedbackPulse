@@ -1,4 +1,4 @@
-import { pool } from '../src/db/client';
+import { pool } from '../src/db/client.js';
 
 async function cleanDatabase() {
   const dbUrl = process.env.DATABASE_URL || '';

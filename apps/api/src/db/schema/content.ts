@@ -1,9 +1,9 @@
 import { pgTable, text, varchar, timestamp, uniqueIndex, uuid, primaryKey } from 'drizzle-orm/pg-core';
-import { primaryUuid, timestamps } from './_helpers';
-import { changelogStatusEnum } from './_enums';
-import { workspaces } from './workspaces';
-import { users } from './auth';
-import { posts } from './feedback';
+import { primaryUuid, timestamps } from './_helpers.js';
+import { changelogStatusEnum } from './_enums.js';
+import { workspaces } from './workspaces.js';
+import { users } from './auth.js';
+import { posts } from './feedback.js';
 
 export const changelogs = pgTable('changelogs', {
   id: primaryUuid(),

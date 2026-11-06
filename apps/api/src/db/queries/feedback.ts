@@ -1,6 +1,6 @@
 import { eq, and } from 'drizzle-orm';
-import { db } from '../client';
-import { postVotes, posts } from '../schema';
+import { getDb } from '../runtime.js';
+import { postVotes, posts } from '../schema.js';
 
 export async function toggleVote(params: {
   workspaceId: string;
@@ -8,6 +8,7 @@ export async function toggleVote(params: {
   userId?: string;
   visitorId?: string;
 }): Promise<{ voted: boolean; voteCount: number }> {
+  const db = getDb();
   const { workspaceId, postId, userId, visitorId } = params;
 
   if (!userId && !visitorId) {
