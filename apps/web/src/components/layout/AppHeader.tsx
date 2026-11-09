@@ -71,7 +71,7 @@ export function AppHeader({
   };
 
   return (
-    <header className="fp-app-header sticky top-0 z-20 flex h-16 min-h-16 items-center justify-between gap-2 border-b border-white/[0.06] bg-[#0c1020] px-3 text-slate-300 transition-colors duration-200 sm:gap-4 sm:px-5">
+    <header className="fp-app-header sticky top-0 z-20 flex h-16 min-h-16 items-center justify-between gap-2 bg-transparent px-3 text-slate-700 transition-colors duration-200 dark:text-slate-300 sm:gap-4 sm:px-5">
       {/* Left spacer to counterbalance right controls for dead-center alignment */}
       <div className="hidden min-w-0 flex-1 md:block" />
 
@@ -84,9 +84,9 @@ export function AppHeader({
           value={searchQuery}
           onChange={(e) => onSearchChange(e.target.value)}
           placeholder={t('dashboard.searchPlaceholder')}
-          className="h-9 w-full rounded-xl border border-slate-700/70 bg-[#111729] py-2 pl-10 pr-12 text-sm text-slate-100 shadow-inner shadow-black/10 placeholder:text-slate-500 transition-all focus:border-indigo-400/70 focus:outline-none focus:ring-2 focus:ring-indigo-400/20"
+          className="h-9 w-full rounded-xl border border-slate-200/80 bg-white/65 py-2 pl-10 pr-12 text-sm text-slate-900 shadow-inner shadow-slate-900/[0.03] placeholder:text-slate-400 transition-all focus:border-indigo-400/70 focus:outline-none focus:ring-2 focus:ring-indigo-400/20 dark:border-slate-700/70 dark:bg-slate-900/55 dark:text-slate-100 dark:shadow-black/10 dark:placeholder:text-slate-500"
         />
-        <div className="pointer-events-none absolute right-2.5 top-1/2 hidden -translate-y-1/2 items-center gap-0.5 rounded-md border border-slate-700/80 bg-slate-800/90 px-1.5 py-0.5 text-[10px] font-semibold text-slate-400 shadow-2xs sm:flex">
+        <div className="pointer-events-none absolute right-2.5 top-1/2 hidden -translate-y-1/2 items-center gap-0.5 rounded-md border border-slate-200/80 bg-slate-100/90 px-1.5 py-0.5 text-[10px] font-semibold text-slate-500 shadow-2xs dark:border-slate-700/80 dark:bg-slate-800/90 dark:text-slate-400 sm:flex">
           <span>⌘</span>
           <span>K</span>
         </div>
@@ -97,10 +97,10 @@ export function AppHeader({
         {/* Notifications Bell with Reactive Badge */}
         <button
           title={t('common.notifications')}
-          className="fp-icon-button fp-bell-button relative rounded-xl p-2 text-slate-300 transition-colors hover:bg-white/5 hover:text-white"
+          className="fp-icon-button fp-bell-button relative rounded-xl p-2 text-slate-600 transition-colors hover:bg-slate-200/60 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-white/5 dark:hover:text-white"
         >
           <Bell className="fp-bell-icon h-5 w-5 transition-transform" />
-          <span className="fp-notification-dot absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-rose-500 px-1 text-[10px] font-bold text-white shadow-xs ring-2 ring-[#0c1020]">
+          <span className="fp-notification-dot absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-rose-500 px-1 text-[10px] font-bold text-white shadow-xs">
             3
           </span>
         </button>
@@ -109,7 +109,7 @@ export function AppHeader({
         <button
           onClick={toggleTheme}
           title={t('common.theme.toggle')}
-          className="fp-icon-button fp-theme-button relative overflow-hidden rounded-xl p-2 text-amber-400 transition-colors hover:bg-white/5 hover:text-amber-300"
+          className="fp-icon-button fp-theme-button relative overflow-hidden rounded-xl p-2 text-slate-600 transition-colors hover:bg-slate-200/60 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-white/5 dark:hover:text-white"
         >
           <div className="theme-toggle-icon relative h-5 w-5">
             <Sun
@@ -139,22 +139,22 @@ export function AppHeader({
                 setWorkspaceMenuOpen(!workspaceMenuOpen);
                 setUserDropdownOpen(false);
               }}
-              className="group flex items-center gap-2 rounded-xl border border-slate-700/70 bg-[#12182a] px-2.5 py-1.5 text-left shadow-xs transition-all hover:border-slate-600 hover:bg-[#171e32]"
+              className="group flex items-center gap-2 rounded-xl border border-slate-200/80 bg-white/65 px-2.5 py-1.5 text-left shadow-xs transition-all hover:border-slate-300 hover:bg-white dark:border-slate-700/70 dark:bg-slate-900/55 dark:hover:border-slate-600 dark:hover:bg-slate-900/80"
             >
               <div className="fp-workspace-mark flex items-center justify-center h-7 w-7 rounded-lg bg-blue-500/15 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400 font-bold text-[11px] uppercase shrink-0 border border-blue-500/25 dark:border-blue-500/30">
                 {activeWorkspace.slug ? activeWorkspace.slug.slice(0, 4) : t('workspace.initials')}
               </div>
               <div className="hidden min-w-0 max-w-[110px] sm:block sm:max-w-[150px]">
-                <p className="truncate text-xs font-semibold leading-tight text-white">
+                <p className="truncate text-xs font-semibold leading-tight text-slate-900 dark:text-white">
                   {activeWorkspace.name}
                 </p>
-                <p className="truncate text-[10px] leading-tight text-slate-400">
+                <p className="truncate text-[10px] leading-tight text-slate-500 dark:text-slate-400">
                   {activeWorkspace.slug}
                 </p>
               </div>
               <ChevronDown
                 className={cn(
-                  'h-3.5 w-3.5 shrink-0 text-slate-400 transition-transform duration-200 group-hover:text-slate-200',
+                  'h-3.5 w-3.5 shrink-0 text-slate-500 transition-transform duration-200 group-hover:text-slate-700 dark:text-slate-400 dark:group-hover:text-slate-200',
                   workspaceMenuOpen && 'rotate-180'
                 )}
               />
