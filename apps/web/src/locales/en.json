@@ -15,7 +15,8 @@
       "light": "Light",
       "dark": "Dark",
       "system": "System"
-    }
+    },
+    "retry": "Try again"
   },
   "nav": {
     "brand": "FeedbackPulse",
@@ -139,10 +140,11 @@
       "closed": "Closed"
     },
     "filter": {
-      "all": "All Posts",
+      "all": "All posts",
       "trending": "Trending",
-      "top": "Top Voted",
-      "recent": "Most Recent"
+      "top": "Top voted",
+      "recent": "Most recent",
+      "planned": "Planned"
     },
     "searchPlaceholder": "Search feedback and feature requests...",
     "discussion": "Discussion",
@@ -184,7 +186,24 @@
     "statusChangedTo": "Status changed to {{status}}",
     "byUser": "by {{user}}",
     "noActivity": "No activity recorded yet.",
-    "noInternalNotes": "No internal notes yet. Internal notes are only visible to workspace members."
+    "noInternalNotes": "No internal notes yet. Internal notes are only visible to workspace members.",
+    "boardEyebrow": "Community feedback",
+    "boardTitle": "Your ideas shape what comes next.",
+    "boardDescription": "Share what would make your experience better, vote for ideas you care about, and follow every update as it moves forward.",
+    "featuredEyebrow": "Community signal",
+    "featuredTitle": "Ideas the community is rallying around",
+    "viewAll": "View all feedback",
+    "filterLabel": "Filter feedback",
+    "feedTitle": "All feedback",
+    "postsCount": "{{count}} ideas",
+    "newFeedback": "New idea",
+    "postedBy": "By {{name}}",
+    "loadError": "Feedback could not be loaded",
+    "loadErrorDescription": "Check your connection and try again. Your workspace data has not been changed.",
+    "emptyTitle": "Be the first to share an idea",
+    "emptyDescription": "There are no published ideas yet. Start the conversation with your feedback.",
+    "noSearchResults": "No matching ideas",
+    "noSearchResultsDescription": "Try another search or choose a different filter."
   },
   "dashboard": {
     "welcome": "Welcome back, {{name}}! 👋",
@@ -219,7 +238,12 @@
     "submitButton": "Submit Feedback",
     "submitting": "Submitting...",
     "successMessage": "Feedback submitted successfully!",
-    "errorMessage": "Failed to submit feedback."
+    "errorMessage": "Failed to submit feedback.",
+    "overviewLabel": "Workspace overview",
+    "activityLabel": "Product activity",
+    "metricsDescription": "A live snapshot of feedback and customer engagement.",
+    "noResults": "No feedback matches your search.",
+    "dataError": "Dashboard data could not be refreshed. Showing the latest available workspace snapshot."
   },
   "roadmap": {
     "title": "Product Roadmap",

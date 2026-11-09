@@ -75,10 +75,11 @@
       "closed": "Cerrado"
     },
     "filter": {
-      "all": "Todos",
+      "all": "Todas",
       "trending": "Tendencias",
-      "top": "Más votados",
-      "recent": "Más recientes"
+      "top": "Más votadas",
+      "recent": "Más recientes",
+      "planned": "Planificadas"
     },
     "searchPlaceholder": "Buscar feedback y solicitudes...",
     "discussion": "Conversación",
@@ -118,7 +119,26 @@
     "statusChangedTo": "Estado cambiado a {{status}}",
     "byUser": "por {{user}}",
     "noActivity": "Aún no hay actividad registrada.",
-    "noInternalNotes": "Aún no hay notas internas. Solo los miembros del espacio pueden verlas."
+    "noInternalNotes": "Aún no hay notas internas. Solo los miembros del espacio pueden verlas.",
+    "boardEyebrow": "Feedback de la comunidad",
+    "boardTitle": "Tus ideas dan forma a lo que viene.",
+    "boardDescription": "Cuéntanos cómo mejorar tu experiencia, vota por las ideas que te importan y sigue su progreso en cada etapa.",
+    "featuredEyebrow": "Señal de la comunidad",
+    "featuredTitle": "Las ideas que unen a la comunidad",
+    "viewAll": "Ver todo el feedback",
+    "filterLabel": "Filtrar feedback",
+    "feedTitle": "Todo el feedback",
+    "postsCount": "{{count}} ideas",
+    "newFeedback": "Nueva idea",
+    "postedBy": "Por {{name}}",
+    "loadError": "No se pudo cargar el feedback",
+    "loadErrorDescription": "Comprueba tu conexión e inténtalo de nuevo. Los datos del espacio no se han modificado.",
+    "emptyTitle": "Comparte la primera idea",
+    "emptyDescription": "Aún no hay ideas publicadas. Inicia la conversación con tu feedback.",
+    "noSearchResults": "No hay ideas coincidentes",
+    "noSearchResultsDescription": "Prueba otra búsqueda o selecciona un filtro diferente.",
+    "guest": "Invitado",
+    "memberInitial": "U"
   },
   "landing": {
     "nav": {
@@ -314,19 +334,35 @@
           "name": "Inicial",
           "description": "Para equipos pequeños que están encontrando su ritmo de feedback.",
           "cta": "Empezar gratis",
-          "features": ["1 espacio de trabajo", "Paneles de feedback públicos", "Hoja de ruta pública", "Soporte de la comunidad"]
+          "features": [
+            "1 espacio de trabajo",
+            "Paneles de feedback públicos",
+            "Hoja de ruta pública",
+            "Soporte de la comunidad"
+          ]
         },
         "pro": {
           "name": "Pro",
           "description": "Para productos en crecimiento que quieren un ciclo de feedback completo.",
           "cta": "Iniciar prueba gratis",
-          "features": ["Feedback ilimitado", "Marca personalizada", "Changelog y notificaciones", "Resúmenes y tendencias con IA", "Soporte prioritario"]
+          "features": [
+            "Feedback ilimitado",
+            "Marca personalizada",
+            "Changelog y notificaciones",
+            "Resúmenes y tendencias con IA",
+            "Soporte prioritario"
+          ]
         },
         "scale": {
           "name": "Escala",
           "description": "Para equipos grandes con varios productos y clientes.",
           "cta": "Elegir Escala",
-          "features": ["Todo lo de Pro", "Espacios ilimitados", "Permisos avanzados", "Incorporación dedicada"]
+          "features": [
+            "Todo lo de Pro",
+            "Espacios ilimitados",
+            "Permisos avanzados",
+            "Incorporación dedicada"
+          ]
         }
       }
     },
@@ -367,5 +403,83 @@
       "madeFor": "Hecho para equipos que escuchan",
       "operational": "Todos los sistemas operativos"
     }
+  },
+  "common": {
+    "loading": "Cargando…",
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "delete": "Eliminar",
+    "edit": "Editar",
+    "close": "Cerrar",
+    "submit": "Enviar",
+    "success": "Correcto",
+    "error": "Error",
+    "notifications": "Notificaciones",
+    "retry": "Intentar de nuevo",
+    "theme": {
+      "toggle": "Cambiar tema",
+      "light": "Claro",
+      "dark": "Oscuro",
+      "system": "Sistema"
+    }
+  },
+  "nav": {
+    "brand": "FeedbackPulse",
+    "workspaces": "Espacios de trabajo",
+    "dashboard": "Panel",
+    "feedbackBoard": "Panel de feedback",
+    "boards": "Feedback",
+    "roadmap": "Hoja de ruta",
+    "changelog": "Novedades",
+    "analytics": "Analítica",
+    "settings": "Configuración",
+    "helpSupport": "Ayuda y soporte",
+    "collapseSidebar": "Contraer menú",
+    "expandSidebar": "Expandir menú",
+    "createWorkspace": "Nuevo espacio",
+    "documentation": "Documentación",
+    "health": "Estado del sistema",
+    "signIn": "Iniciar sesión",
+    "signOut": "Cerrar sesión"
+  },
+  "dashboard": {
+    "welcome": "¡Te damos la bienvenida, {{name}}! 👋",
+    "subtitle": "Esto es lo que ocurre con tu producto.",
+    "searchPlaceholder": "Buscar feedback, usuarios…",
+    "timeRange": {
+      "7d": "7D",
+      "30d": "30D",
+      "90d": "90D"
+    },
+    "totalFeedback": "Feedback total",
+    "totalVotes": "Votos totales",
+    "totalComments": "Comentarios totales",
+    "thisMonthReleases": "Lanzamientos este mes",
+    "newFeedback": "Nuevo feedback",
+    "tabs": {
+      "all": "Todo",
+      "underReview": "En revisión",
+      "planned": "Planificado",
+      "inProgress": "En progreso",
+      "completed": "Completado",
+      "closed": "Cerrado"
+    },
+    "emptyColumn": "No hay feedback en esta sección.",
+    "hoursAgo": "Hace {{count}} h",
+    "daysAgo": "Hace {{count}} d",
+    "justNow": "Ahora mismo",
+    "createFeedbackTitle": "Enviar feedback",
+    "createFeedbackDesc": "Comparte una sugerencia o informa de un problema directamente al equipo.",
+    "boardLabel": "Seleccionar panel",
+    "tagLabel": "Etiqueta / Categoría",
+    "submitButton": "Enviar feedback",
+    "submitting": "Enviando…",
+    "successMessage": "¡Feedback enviado correctamente!",
+    "errorMessage": "No se pudo enviar el feedback.",
+    "overviewLabel": "Resumen del espacio de trabajo",
+    "activityLabel": "Actividad del producto",
+    "metricsDescription": "Resumen en vivo del feedback y la participación de clientes.",
+    "noResults": "Ningún feedback coincide con tu búsqueda.",
+    "dataError": "No se pudieron actualizar los datos del panel. Se muestra la última información disponible del espacio."
   }
 }
