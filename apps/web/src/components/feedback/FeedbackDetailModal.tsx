@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { createPortal } from 'react-dom';
 import { animate } from 'animejs';
 import { useTranslation } from 'react-i18next';
 import {
@@ -545,7 +546,7 @@ export function FeedbackDetailModal({
 
   const statusInfo = STATUS_CONFIG[currentStatus] || STATUS_CONFIG.UNDER_REVIEW;
 
-  return (
+  const drawerNode = (
     <div className="fp-discussion-layer" data-open={open}>
       <button
         type="button"
@@ -874,4 +875,8 @@ export function FeedbackDetailModal({
       </aside>
     </div>
   );
+
+  return typeof document !== 'undefined'
+    ? createPortal(drawerNode, document.body)
+    : drawerNode;
 }

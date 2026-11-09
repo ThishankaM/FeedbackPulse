@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 import { cn } from '../../lib/utils';
 
@@ -27,7 +28,7 @@ export function Dialog({ open, onOpenChange, children }: DialogProps) {
 
   if (!open) return null;
 
-  return (
+  const dialogContent = (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       {/* Backdrop */}
       <div
@@ -46,6 +47,10 @@ export function Dialog({ open, onOpenChange, children }: DialogProps) {
       </div>
     </div>
   );
+
+  return typeof document !== 'undefined'
+    ? createPortal(dialogContent, document.body)
+    : dialogContent;
 }
 
 export function DialogHeader({
