@@ -7,7 +7,6 @@ import {
   Plus,
   ArrowRight,
   TrendingUp,
-  Sparkles,
   Lightbulb,
   LoaderCircle,
 } from 'lucide-react';
@@ -195,10 +194,6 @@ export function FeedbackBoardView({
         <div className="pointer-events-none absolute -bottom-28 left-1/3 -z-10 h-64 w-64 rounded-full bg-violet-400/10 blur-3xl" />
         <div className="grid items-center gap-8 md:grid-cols-[minmax(0,1fr)_auto]">
           <div className="max-w-3xl">
-            <Badge variant="purple" className="mb-4 gap-1.5 px-2.5 py-1">
-              <Sparkles aria-hidden="true" className="h-3.5 w-3.5" />
-              {t('feedback.boardEyebrow')}
-            </Badge>
             <h1 className="max-w-2xl text-3xl font-bold tracking-tight text-slate-950 dark:text-white sm:text-4xl lg:text-5xl">
               {t('feedback.boardTitle')}
             </h1>

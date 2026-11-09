@@ -7,6 +7,7 @@ import { AppSidebar } from './components/layout/AppSidebar';
 import { AppHeader } from './components/layout/AppHeader';
 import { DashboardView } from './components/dashboard/DashboardView';
 import { FeedbackBoardView } from './components/feedback/FeedbackBoardView';
+import { RoadmapView } from './components/roadmap/RoadmapView';
 import { NewFeedbackModal } from './components/feedback/NewFeedbackModal';
 import { LandingPage } from './components/landing/LandingPage';
 import { Dialog, DialogHeader, DialogTitle, DialogDescription } from './components/ui/dialog';
@@ -328,6 +329,17 @@ export default function App() {
               searchQuery={searchQuery}
               onSearchQueryChange={setSearchQuery}
               onOpenNewFeedback={() => setIsNewFeedbackModalOpen(true)}
+              refreshTrigger={refreshTrigger}
+            />
+          ) : currentView === 'roadmap' ? (
+            <RoadmapView
+              workspaceSlug={activeWorkspace.slug}
+              searchQuery={searchQuery}
+              onOpenNewFeedback={() => setIsNewFeedbackModalOpen(true)}
+              onOpenAuthModal={() => {
+                setAuthMode('login');
+                setIsAuthModalOpen(true);
+              }}
               refreshTrigger={refreshTrigger}
             />
           ) : (
