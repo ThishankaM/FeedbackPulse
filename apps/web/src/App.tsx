@@ -326,6 +326,7 @@ export default function App() {
             <FeedbackBoardView
               workspaceSlug={activeWorkspace.slug}
               searchQuery={searchQuery}
+              onSearchQueryChange={setSearchQuery}
               onOpenNewFeedback={() => setIsNewFeedbackModalOpen(true)}
               refreshTrigger={refreshTrigger}
             />

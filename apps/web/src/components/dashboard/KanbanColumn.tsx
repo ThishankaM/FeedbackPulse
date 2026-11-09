@@ -9,6 +9,7 @@ export interface KanbanColumnProps {
   title: string;
   count: number;
   cards: FeedbackCardData[];
+  loading?: boolean;
   onVote: (postId: string) => void;
   onCardClick?: (card: FeedbackCardData) => void;
   accentColor?: string;
@@ -19,6 +20,7 @@ export function KanbanColumn({
   title,
   count,
   cards,
+  loading = false,
   onVote,
   onCardClick,
 }: KanbanColumnProps) {
@@ -52,7 +54,7 @@ export function KanbanColumn({
   return (
     <div
       ref={columnRef}
-      className="fp-glass-column fp-kanban-column flex flex-col rounded-2xl p-3.5 border border-slate-200/60 dark:border-slate-800/60 min-w-[220px] w-full flex-1"
+      className="fp-glass-column fp-kanban-column flex min-w-0 w-full flex-col rounded-2xl border border-slate-200/60 p-3 dark:border-slate-800/60 sm:p-3.5"
     >
       {/* Column Header */}
       <div className="flex items-center justify-between px-1.5 pb-3">
@@ -75,8 +77,14 @@ export function KanbanColumn({
       </div>
 
       {/* Cards Scroll Container */}
-      <div className="flex flex-col gap-3 overflow-y-auto max-h-[calc(100vh-340px)] pr-0.5">
-        {cards.length > 0 ? (
+      <div className="flex flex-col gap-3 overflow-y-visible pr-0.5 lg:max-h-[calc(100vh-340px)] lg:overflow-y-auto">
+        {loading ? (
+          <div className="space-y-3" aria-label={t('common.loading')}>
+            {[0, 1].map((item) => (
+              <div key={item} className="h-32 animate-pulse rounded-xl border border-slate-200/70 bg-white/60 dark:border-white/10 dark:bg-white/5" />
+            ))}
+          </div>
+        ) : cards.length > 0 ? (
           cards.map((card) => (
             <FeedbackCard
               key={card.id}

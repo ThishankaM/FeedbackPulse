@@ -448,3 +448,66 @@
     transform: none;
   }
 }
+
+
+/* Responsive product surfaces shared by dashboard and feedback board. */
+.fp-dashboard-view {
+  width: 100%;
+  max-width: 1920px;
+  margin-inline: auto;
+}
+
+.fp-dashboard-view .fp-metric-card,
+.fp-feedback-view .fp-top-card {
+  animation-fill-mode: both;
+}
+
+.fp-dashboard-view .fp-metric-card {
+  min-width: 0;
+  border-radius: 1.25rem;
+  padding: clamp(1rem, 2vw, 1.5rem);
+}
+
+.fp-dashboard-view .fp-metric-card:hover {
+  transform: translateY(-2px);
+}
+
+.fp-kanban-column {
+  min-height: 11rem;
+}
+
+.fp-feedback-view .fp-top-card {
+  min-height: 9rem;
+}
+
+.fp-feedback-view [role="button"]:focus-visible,
+.fp-feedback-view button:focus-visible,
+.fp-dashboard-view button:focus-visible,
+.fp-dashboard-view [role="button"]:focus-visible {
+  outline: 3px solid rgba(99, 102, 241, 0.6);
+  outline-offset: 3px;
+}
+
+@media (max-width: 639px) {
+  .fp-dashboard-view {
+    padding-bottom: 1.5rem;
+  }
+
+  .fp-kanban-column {
+    min-height: auto;
+  }
+
+  .fp-feedback-view .fp-feedback-hero {
+    border-radius: 1.25rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fp-dashboard-view *,
+  .fp-feedback-view * {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

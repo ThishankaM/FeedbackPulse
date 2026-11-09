@@ -39,19 +39,20 @@ export function DashboardView({
       (membership.role === 'OWNER' || membership.role === 'ADMIN')
   );
 
-  const [timeRange, setTimeRange] = React.useState<'7D' | '30D' | '90D'>('30D');
   const [activeTab, setActiveTab] = React.useState<string>('ALL');
 
+  const [isLoading, setIsLoading] = React.useState(true);
+  const [hasLoadError, setHasLoadError] = React.useState(false);
   const [metrics, setMetrics] = React.useState({
     totalFeedback: 0,
     totalVotes: 0,
     totalComments: 0,
     thisMonthReleases: 0,
     deltas: {
-      feedback: '0%',
-      votes: '0%',
-      comments: '0%',
-      releases: '0%',
+      feedback: '',
+      votes: '',
+      comments: '',
+      releases: '',
     },
   });
 
@@ -87,6 +88,8 @@ export function DashboardView({
 
   // Fetch live dashboard metrics & posts from API
   const fetchDashboardData = React.useCallback(async () => {
+    setIsLoading(true);
+    setHasLoadError(false);
     try {
       const res = await client.api.workspaces[':slug'].dashboard.$get({
         param: { slug: workspaceSlug },
@@ -100,10 +103,10 @@ export function DashboardView({
           totalComments: data.metrics.totalComments || 0,
           thisMonthReleases: data.metrics.thisMonthReleases || 0,
           deltas: data.metrics.deltas || {
-            feedback: '0%',
-            votes: '0%',
-            comments: '0%',
-            releases: '0%',
+            feedback: '',
+            votes: '',
+            comments: '',
+            releases: '',
           },
         });
 
@@ -139,7 +142,9 @@ export function DashboardView({
         }
       }
     } catch {
-      // Graceful fallback on network error
+      setHasLoadError(true);
+    } finally {
+      setIsLoading(false);
     }
   }, [workspaceSlug]);
 
@@ -313,42 +318,42 @@ export function DashboardView({
   const displayName = user?.name || (user?.email ? user.email.split('@')[0] : t('feedback.guest'));
 
   return (
-    <div className="flex-1 px-6 lg:px-8 py-7 space-y-7 w-full max-w-[1920px] mx-auto">
-      {/* 1. Greeting & Time Range Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white font-sans">
+    <div className="fp-dashboard-view relative flex-1 space-y-7 px-4 py-5 sm:px-6 sm:py-7 lg:px-8">
+      <header className="relative flex flex-col gap-5 overflow-hidden rounded-3xl border border-indigo-200/70 bg-gradient-to-br from-white via-indigo-50/70 to-violet-50/80 p-5 shadow-sm dark:border-white/10 dark:from-slate-900 dark:via-slate-900 dark:to-indigo-950/50 sm:flex-row sm:items-center sm:justify-between sm:p-7">
+        <div className="pointer-events-none absolute -right-14 -top-24 h-64 w-64 rounded-full bg-indigo-400/15 blur-3xl" />
+        <div className="relative">
+          <span className="text-xs font-semibold uppercase tracking-[0.16em] text-indigo-600 dark:text-indigo-400">{t('dashboard.overviewLabel')}</span>
+          <h1 className="mt-2 text-2xl font-bold tracking-tight text-slate-950 dark:text-white sm:text-3xl">
             {t('dashboard.welcome', { name: displayName })}
           </h1>
-          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+          <p className="mt-1.5 text-sm text-slate-600 dark:text-slate-300">
             {t('dashboard.subtitle')}
           </p>
         </div>
-
-        {/* Time Range Pills: 7D | 30D | 90D */}
-        <div className="fp-glass-control inline-flex items-center p-1 rounded-xl border border-slate-200/80 dark:border-slate-800 self-start sm:self-auto">
-          {(['7D', '30D', '90D'] as const).map((r) => (
-            <button
-              key={r}
-              onClick={() => setTimeRange(r)}
-              className={cn(
-                'px-3.5 py-1 text-xs font-semibold rounded-lg transition-all cursor-pointer',
-                timeRange === r
-                  ? 'bg-blue-600 text-white shadow-xs'
-                  : 'text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'
-              )}
-            >
-              {r}
-            </button>
-          ))}
+        <div className="relative flex items-center gap-3 self-start rounded-2xl border border-white/70 bg-white/70 px-4 py-3 shadow-sm backdrop-blur dark:border-white/10 dark:bg-white/[0.04] sm:self-center">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-300">
+            <MessagesSquare className="h-5 w-5" aria-hidden="true" />
+          </div>
+          <div>
+            <p className="text-sm font-semibold text-slate-900 dark:text-white">{t('dashboard.activityLabel')}</p>
+            <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">{t('dashboard.metricsDescription')}</p>
+          </div>
         </div>
-      </div>
+      </header>
 
-      {/* 2. Row of 4 KPI Metric Cards */}
+      {hasLoadError && (
+        <div role="alert" className="flex flex-col gap-3 rounded-2xl border border-rose-200 bg-rose-50/80 p-4 text-sm text-rose-800 dark:border-rose-500/20 dark:bg-rose-500/10 dark:text-rose-200 sm:flex-row sm:items-center sm:justify-between">
+          <span>{t('dashboard.dataError')}</span>
+          <Button variant="outline" size="sm" onClick={fetchDashboardData} className="self-start border-rose-300 bg-white/70 dark:border-rose-400/30 dark:bg-transparent sm:self-auto">{t('common.retry')}</Button>
+        </div>
+      )}
+
+      {/* Live workspace metrics */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <MetricCard
           label={t('dashboard.totalFeedback')}
           value={metrics.totalFeedback}
+          loading={isLoading}
           delta={metrics.deltas.feedback}
           icon={MessageSquare}
           iconBgColor="bg-blue-500/15"
@@ -357,6 +362,7 @@ export function DashboardView({
         <MetricCard
           label={t('dashboard.totalVotes')}
           value={metrics.totalVotes}
+          loading={isLoading}
           formattedValue={metrics.totalVotes >= 1000 ? `${(metrics.totalVotes / 1000).toFixed(1)}K` : undefined}
           delta={metrics.deltas.votes}
           icon={ArrowUp}
@@ -366,6 +372,7 @@ export function DashboardView({
         <MetricCard
           label={t('dashboard.totalComments')}
           value={metrics.totalComments}
+          loading={isLoading}
           formattedValue={metrics.totalComments >= 1000 ? `${(metrics.totalComments / 1000).toFixed(1)}K` : undefined}
           delta={metrics.deltas.comments}
           icon={MessagesSquare}
@@ -375,6 +382,7 @@ export function DashboardView({
         <MetricCard
           label={t('dashboard.thisMonthReleases')}
           value={metrics.thisMonthReleases}
+          loading={isLoading}
           delta={metrics.deltas.releases}
           isPositive={false}
           icon={Rocket}
@@ -420,8 +428,8 @@ export function DashboardView({
         className={cn(
           'gap-4 items-start w-full',
           activeTab === 'ALL'
-            ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4'
-            : 'flex max-w-xl'
+            ? 'grid grid-cols-1 gap-4 md:grid-cols-2 2xl:grid-cols-4'
+            : 'grid max-w-2xl grid-cols-1'
         )}
       >
         {columnsToRender.map((col) => {
@@ -433,6 +441,7 @@ export function DashboardView({
               title={col.title}
               count={filteredCards.length}
               cards={filteredCards}
+              loading={isLoading}
               onVote={handleVote}
               onCardClick={openFeedbackDetail}
             />
