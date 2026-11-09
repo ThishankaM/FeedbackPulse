@@ -6,6 +6,7 @@ import { useAuth, type User } from './context/AuthContext';
 import { AppSidebar } from './components/layout/AppSidebar';
 import { AppHeader } from './components/layout/AppHeader';
 import { DashboardView } from './components/dashboard/DashboardView';
+import { FeedbackBoardView } from './components/feedback/FeedbackBoardView';
 import { NewFeedbackModal } from './components/feedback/NewFeedbackModal';
 import { LandingPage } from './components/landing/LandingPage';
 import { Dialog, DialogHeader, DialogTitle, DialogDescription } from './components/ui/dialog';
@@ -319,6 +320,13 @@ export default function App() {
                 setAuthMode('login');
                 setIsAuthModalOpen(true);
               }}
+              refreshTrigger={refreshTrigger}
+            />
+          ) : currentView === 'feedback' ? (
+            <FeedbackBoardView
+              workspaceSlug={activeWorkspace.slug}
+              searchQuery={searchQuery}
+              onOpenNewFeedback={() => setIsNewFeedbackModalOpen(true)}
               refreshTrigger={refreshTrigger}
             />
           ) : (
