@@ -1,7 +1,7 @@
 import { pgTable, text, varchar, timestamp, boolean, uniqueIndex, jsonb, uuid } from 'drizzle-orm/pg-core';
-import { primaryUuid, timestamps, softDelete } from './_helpers.ts';
-import { workspacePlanEnum, workspaceMemberRoleEnum, workspaceMemberStatusEnum } from './_enums.ts';
-import { users } from './auth.ts';
+import { primaryUuid, timestamps, softDelete } from './_helpers.js';
+import { workspacePlanEnum, workspaceMemberRoleEnum, workspaceMemberStatusEnum } from './_enums.js';
+import { users } from './auth.js';
 
 export const workspaces = pgTable('workspaces', {
   id: primaryUuid(),

@@ -8,6 +8,7 @@ import { AppHeader } from './components/layout/AppHeader';
 import { DashboardView } from './components/dashboard/DashboardView';
 import { FeedbackBoardView } from './components/feedback/FeedbackBoardView';
 import { RoadmapView } from './components/roadmap/RoadmapView';
+import { ChangelogView } from './components/changelog/ChangelogView';
 import { NewFeedbackModal } from './components/feedback/NewFeedbackModal';
 import { LandingPage } from './components/landing/LandingPage';
 import { Dialog, DialogHeader, DialogTitle, DialogDescription } from './components/ui/dialog';
@@ -340,6 +341,18 @@ export default function App() {
                 setAuthMode('login');
                 setIsAuthModalOpen(true);
               }}
+              refreshTrigger={refreshTrigger}
+            />
+          ) : currentView === 'changelog' ? (
+            <ChangelogView
+              workspaceSlug={activeWorkspace.slug}
+              searchQuery={searchQuery}
+              onOpenNewFeedback={() => setIsNewFeedbackModalOpen(true)}
+              onOpenAuthModal={() => {
+                setAuthMode('login');
+                setIsAuthModalOpen(true);
+              }}
+              onViewChange={(view) => setCurrentView(view)}
               refreshTrigger={refreshTrigger}
             />
           ) : (
