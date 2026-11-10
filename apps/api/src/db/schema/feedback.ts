@@ -11,10 +11,10 @@ import {
   customType,
 } from 'drizzle-orm/pg-core';
 import { sql } from 'drizzle-orm';
-import { primaryUuid, timestamps, softDelete } from './_helpers.js';
-import { postStatusEnum, moderationStatusEnum } from './_enums.js';
-import { workspaces } from './workspaces.js';
-import { users } from './auth.js';
+import { primaryUuid, timestamps, softDelete } from './_helpers.ts';
+import { postStatusEnum, moderationStatusEnum } from './_enums.ts';
+import { workspaces } from './workspaces.ts';
+import { users } from './auth.ts';
 
 const tsvector = customType<{ data: string }>({
   dataType() {
@@ -72,6 +72,8 @@ export const posts = pgTable('posts', {
   index('posts_workspace_status_idx').on(table.workspaceId, table.status),
   index('posts_workspace_vote_count_idx').on(table.workspaceId, table.voteCount),
   index('posts_board_feed_idx').on(table.boardId, table.status, table.voteCount),
+  // Composite index for public/anonymous reads
+  index('posts_workspace_filter_idx').on(table.workspaceId, table.deletedAt, table.moderationStatus),
 ]);
 
 export const postVotes = pgTable('post_votes', {
