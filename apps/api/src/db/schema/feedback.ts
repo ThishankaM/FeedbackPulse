@@ -72,6 +72,8 @@ export const posts = pgTable('posts', {
   index('posts_workspace_status_idx').on(table.workspaceId, table.status),
   index('posts_workspace_vote_count_idx').on(table.workspaceId, table.voteCount),
   index('posts_board_feed_idx').on(table.boardId, table.status, table.voteCount),
+  // Composite index for public/anonymous reads
+  index('posts_workspace_filter_idx').on(table.workspaceId, table.deletedAt, table.moderationStatus),
 ]);
 
 export const postVotes = pgTable('post_votes', {

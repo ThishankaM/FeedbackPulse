@@ -476,6 +476,29 @@ const routes = app
 
       const thisMonthReleases = releasesThisMonth.length;
 
+      // Fetch approved/published changelogs for this workspace
+      const workspaceChangelogs = await db
+        .select({
+          id: changelogs.id,
+          title: changelogs.title,
+          slug: changelogs.slug,
+          content: changelogs.content,
+          status: changelogs.status,
+          publishedAt: changelogs.publishedAt,
+          createdAt: changelogs.createdAt,
+          authorName: users.name,
+          authorAvatar: users.avatarUrl,
+        })
+        .from(changelogs)
+        .leftJoin(users, eq(changelogs.authorUserId, users.id))
+        .where(
+          and(
+            eq(changelogs.workspaceId, workspace.id),
+            eq(changelogs.status, 'PUBLISHED')
+          )
+        )
+        .orderBy(desc(changelogs.publishedAt), desc(changelogs.createdAt));
+
       // Group posts by status
       const columns = {
         UNDER_REVIEW: workspacePosts.filter((p) => p.status === 'UNDER_REVIEW'),
@@ -501,9 +524,49 @@ const routes = app
         },
         columns,
         boards: workspaceBoards,
+        changelogs: workspaceChangelogs,
       }, 200);
     } catch (error: any) {
       return c.json({ error: error.message || 'Failed to fetch dashboard data' }, 500);
+    }
+  })
+
+  // 6b. Workspace Changelogs List
+  .get('/api/workspaces/:slug/changelogs', async (c) => {
+    const slug = c.req.param('slug');
+
+    try {
+      const [workspace] = await db.select().from(workspaces).where(eq(workspaces.slug, slug));
+      if (!workspace) {
+        return c.json({ error: 'Workspace not found' }, 404);
+      }
+
+      const access = await getCurrentWorkspaceAccess(c, workspace.id);
+      const conditions = [eq(changelogs.workspaceId, workspace.id)];
+      if (!access.isAdmin) {
+        conditions.push(eq(changelogs.status, 'PUBLISHED'));
+      }
+
+      const items = await db
+        .select({
+          id: changelogs.id,
+          title: changelogs.title,
+          slug: changelogs.slug,
+          content: changelogs.content,
+          status: changelogs.status,
+          publishedAt: changelogs.publishedAt,
+          createdAt: changelogs.createdAt,
+          authorName: users.name,
+          authorAvatar: users.avatarUrl,
+        })
+        .from(changelogs)
+        .leftJoin(users, eq(changelogs.authorUserId, users.id))
+        .where(and(...conditions))
+        .orderBy(desc(changelogs.publishedAt), desc(changelogs.createdAt));
+
+      return c.json({ changelogs: items }, 200);
+    } catch (error: any) {
+      return c.json({ error: error.message || 'Failed to fetch changelogs' }, 500);
     }
   })
 

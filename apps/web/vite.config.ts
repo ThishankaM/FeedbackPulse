@@ -20,4 +20,24 @@ export default defineConfig({
     port: 5173,
     allowedHosts: ['.e2b.app'],
   },
+  build: {
+    target: 'es2022',
+    minify: 'esbuild',
+    chunkSizeWarningLimit: 600,
+    rollupOptions: {
+      output: {
+        manualChunks(id: string) {
+          if (id.includes('node_modules/react') || id.includes('node_modules/react-dom')) {
+            return 'react-vendor';
+          }
+          if (id.includes('node_modules/lucide-react') || id.includes('node_modules/framer-motion')) {
+            return 'ui-vendor';
+          }
+          if (id.includes('node_modules/i18next') || id.includes('node_modules/react-i18next')) {
+            return 'i18n-vendor';
+          }
+        },
+      },
+    },
+  },
 })
