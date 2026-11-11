@@ -19,20 +19,60 @@ import './components/dashboard/dashboard.css';
 
 const AuthModal = lazy(() => import('./components/auth/AuthModal'));
 
+interface ParsedRoute {
+  view: string;
+  slug: string;
+  postId: string | null;
+}
+
+function parseAppRoute(pathname: string): ParsedRoute {
+  const parts = pathname.split('/').filter(Boolean);
+  if (parts[0] === 'b' && parts[1]) {
+    const slug = parts[1];
+    if (parts[2] === 'p' && parts[3]) {
+      return { view: 'feedback', slug, postId: parts[3] };
+    }
+    if (parts[2] === 'roadmap') {
+      return { view: 'roadmap', slug, postId: null };
+    }
+    if (parts[2] === 'changelog') {
+      return { view: 'changelog', slug, postId: null };
+    }
+    return { view: 'feedback', slug, postId: null };
+  }
+  if (parts[0] === 'dashboard' && parts[1]) {
+    return { view: 'dashboard', slug: parts[1], postId: null };
+  }
+  if (parts.length === 1 && !['login', 'register', 'dashboard', 'b'].includes(parts[0])) {
+    return { view: 'dashboard', slug: parts[0], postId: null };
+  }
+  if (pathname === '/' && typeof window !== 'undefined' && !localStorage.getItem('feedbackpulse_token')) {
+    return { view: 'landing', slug: '', postId: null };
+  }
+  return { view: 'dashboard', slug: '', postId: null };
+}
+
+function buildAppUrl(view: string, slug: string, postId?: string | null): string {
+  if (!slug) return '/';
+  if (view === 'feedback') {
+    return postId ? `/b/${slug}/p/${postId}` : `/b/${slug}`;
+  }
+  if (view === 'roadmap') return `/b/${slug}/roadmap`;
+  if (view === 'changelog') return `/b/${slug}/changelog`;
+  return `/dashboard/${slug}`;
+}
+
 export default function App() {
   const { t } = useTranslation();
   const { user, memberships, login, refreshUser } = useAuth();
 
-  // Navigation & View State ('landing' for marketing homepage, 'dashboard' for app)
-  const [currentView, setCurrentView] = useState(() => {
-    if (typeof window !== 'undefined') {
-      const path = window.location.pathname;
-      if (path === '/' && !localStorage.getItem('feedbackpulse_token')) {
-        return 'landing';
-      }
-    }
-    return 'dashboard';
-  });
+  // Navigation & View State ('landing' for marketing homepage, 'dashboard' or 'feedback' for app)
+  const initialRoute = typeof window !== 'undefined'
+    ? parseAppRoute(window.location.pathname)
+    : { view: 'dashboard', slug: '', postId: null };
+
+  const [currentView, setCurrentView] = useState(initialRoute.view);
+  const [deepLinkPostId, setDeepLinkPostId] = useState<string | null>(initialRoute.postId);
   const [searchQuery, setSearchQuery] = useState('');
   const [refreshTrigger, setRefreshTrigger] = useState(0);
 
@@ -50,10 +90,11 @@ export default function App() {
   // Available Boards for New Feedback Modal
   const [boards, setBoards] = useState<Array<{ id: string; name: string }>>([]);
 
-  // Modal States
+  // Modal & Drawer States
   const [isNewFeedbackModalOpen, setIsNewFeedbackModalOpen] = useState(false);
   const [isWorkspaceModalOpen, setIsWorkspaceModalOpen] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   // Workspace Creation Form State
   const [newWsName, setNewWsName] = useState('');
@@ -66,17 +107,73 @@ export default function App() {
   // Auth Form State
   const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
 
+  // History API: popstate event listener for browser Back / Forward buttons
+  useEffect(() => {
+    const handlePopState = (e: PopStateEvent) => {
+      const parsed = parseAppRoute(window.location.pathname);
+      if (e.state && typeof e.state.view === 'string') {
+        setCurrentView(e.state.view);
+      } else {
+        setCurrentView(parsed.view);
+      }
+      setDeepLinkPostId(parsed.postId);
+
+      if (parsed.slug && parsed.slug !== activeWorkspace.slug) {
+        setActiveWorkspace((prev) => ({ ...prev, slug: parsed.slug }));
+        setRefreshTrigger((prev) => prev + 1);
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [activeWorkspace.slug]);
+
+  // View Navigation helper that syncs browser history
+  const handleViewChange = (view: string) => {
+    setCurrentView(view);
+    if (view !== 'feedback') {
+      setDeepLinkPostId(null);
+    }
+    if (typeof window !== 'undefined') {
+      const targetUrl = activeWorkspace.slug
+        ? buildAppUrl(view, activeWorkspace.slug)
+        : window.location.pathname;
+      window.history.pushState({ view, slug: activeWorkspace.slug }, '', targetUrl);
+    }
+  };
+
+  // Sync deep-link post URL (/b/:slug/p/:postId) when opening/closing post drawer
+  const handlePostIdChange = useCallback(
+    (postId: string | null) => {
+      setDeepLinkPostId(postId);
+      if (typeof window !== 'undefined' && activeWorkspace.slug) {
+        const targetUrl = buildAppUrl('feedback', activeWorkspace.slug, postId);
+        if (window.location.pathname !== targetUrl) {
+          window.history.pushState(
+            { view: 'feedback', slug: activeWorkspace.slug, postId },
+            '',
+            targetUrl
+          );
+        }
+      }
+    },
+    [activeWorkspace.slug]
+  );
+
+  // Workspace Switch helper that syncs browser history
+  const handleSwitchWorkspace = (slug: string) => {
+    setActiveWorkspace((prev) => ({ ...prev, slug }));
+    setDeepLinkPostId(null);
+    if (typeof window !== 'undefined') {
+      window.history.pushState({ view: currentView, slug }, '', buildAppUrl(currentView, slug));
+    }
+    setRefreshTrigger((prev) => prev + 1);
+  };
+
   // Initial load: resolve an explicit URL or the current user’s membership
   useEffect(() => {
     async function initWorkspace() {
-      // 0. Check if URL contains /dashboard/:slug or /:slug
-      const pathParts = window.location.pathname.split('/').filter(Boolean);
-      let urlSlug = '';
-      if (pathParts[0] === 'dashboard' && pathParts[1]) {
-        urlSlug = pathParts[1];
-      } else if (pathParts.length === 1 && !['login', 'register', 'dashboard'].includes(pathParts[0])) {
-        urlSlug = pathParts[0];
-      }
+      const { slug: urlSlug } = parseAppRoute(window.location.pathname);
 
       if (urlSlug) {
         try {
@@ -109,17 +206,19 @@ export default function App() {
           slug: first.workspaceSlug,
           primaryColor: first.primaryColor || '#4F46E5',
         });
-        window.history.replaceState(null, '', `/dashboard/${first.workspaceSlug}`);
+        window.history.replaceState(
+          { view: currentView, slug: first.workspaceSlug },
+          '',
+          buildAppUrl(currentView, first.workspaceSlug, deepLinkPostId)
+        );
         return;
       }
-
-
     }
 
     if (currentView !== 'landing' && !activeWorkspace.slug) {
       initWorkspace();
     }
-  }, [currentView, memberships, activeWorkspace.slug]);
+  }, [currentView, memberships, activeWorkspace.slug, deepLinkPostId]);
 
   // Fetch workspace details & boards
   const loadWorkspace = useCallback(async () => {
@@ -220,7 +319,7 @@ export default function App() {
           setBoards([{ id: data.defaultBoard.id, name: data.defaultBoard.name }]);
         }
         // Update URL to match user journey (/dashboard/:slug)
-        window.history.pushState(null, '', `/dashboard/${data.workspace.slug}`);
+        window.history.pushState({ view: 'dashboard', slug: data.workspace.slug }, '', `/dashboard/${data.workspace.slug}`);
         setCurrentView('dashboard');
         setIsWorkspaceModalOpen(false);
         setNewWsName('');
@@ -255,128 +354,126 @@ export default function App() {
           isLoggedIn={Boolean(user)}
         />
       ) : (
-        <div className="flex h-screen overflow-hidden bg-slate-50 dark:bg-black text-slate-900 dark:text-slate-100 antialiased font-sans transition-colors duration-200">
-      {/* 1. Dark Left Navigation Sidebar */}
-      <AppSidebar
-        currentView={currentView}
-        onViewChange={(view) => setCurrentView(view)}
-        activeWorkspace={activeWorkspace}
-        onSwitchWorkspace={(slug) => {
-          setActiveWorkspace((prev) => ({ ...prev, slug }));
-          window.history.pushState(null, '', `/dashboard/${slug}`);
-          setRefreshTrigger((prev) => prev + 1);
-        }}
-        onOpenCreateWorkspace={handleOpenWorkspaceModal}
-        onOpenAuthModal={() => {
-          setAuthMode('login');
-          setIsAuthModalOpen(true);
-        }}
-      />
+        <div className="flex h-screen overflow-hidden bg-background text-foreground antialiased font-sans transition-colors duration-200">
+          {/* 1. Modern Glassmorphic Navigation Sidebar */}
+          <AppSidebar
+            currentView={currentView}
+            onViewChange={handleViewChange}
+            activeWorkspace={activeWorkspace}
+            onSwitchWorkspace={handleSwitchWorkspace}
+            onOpenCreateWorkspace={handleOpenWorkspaceModal}
+            onOpenAuthModal={() => {
+              setAuthMode('login');
+              setIsAuthModalOpen(true);
+            }}
+            mobileOpen={mobileMenuOpen}
+            onMobileOpenChange={setMobileMenuOpen}
+          />
 
-      {/* 2. Main Content Canvas */}
-      <div className="flex flex-col flex-1 h-screen overflow-y-auto fp-dashboard-view">
-        <AppHeader
-          searchQuery={searchQuery}
-          onSearchChange={setSearchQuery}
-          onOpenNewFeedback={() => setIsNewFeedbackModalOpen(true)}
-          onOpenAuthModal={() => {
-            setAuthMode('login');
-            setIsAuthModalOpen(true);
-          }}
-          activeWorkspace={activeWorkspace}
-          onSwitchWorkspace={(slug) => {
-            setActiveWorkspace((prev) => ({ ...prev, slug }));
-            window.history.pushState(null, '', `/dashboard/${slug}`);
-            setRefreshTrigger((prev) => prev + 1);
-          }}
-          onOpenCreateWorkspace={handleOpenWorkspaceModal}
-        />
+          {/* 2. Main Content Canvas */}
+          <div className="flex flex-col flex-1 h-screen overflow-y-auto fp-dashboard-view">
+            <AppHeader
+              searchQuery={searchQuery}
+              onSearchChange={setSearchQuery}
+              onOpenNewFeedback={() => setIsNewFeedbackModalOpen(true)}
+              onOpenAuthModal={() => {
+                setAuthMode('login');
+                setIsAuthModalOpen(true);
+              }}
+              activeWorkspace={activeWorkspace}
+              onSwitchWorkspace={handleSwitchWorkspace}
+              onOpenCreateWorkspace={handleOpenWorkspaceModal}
+              onOpenMobileMenu={() => setMobileMenuOpen(true)}
+            />
 
-        <main className="flex-1 pb-16">
-          {/* If no workspace exists in the database yet, show clean initial onboarding */}
-          {!activeWorkspace.slug ? (
-            <div className="flex flex-col items-center justify-center min-h-[65vh] text-center p-8 max-w-md mx-auto">
-              <div className="h-16 w-16 rounded-3xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center mb-5 ring-8 ring-blue-500/5">
-                <Briefcase className="h-8 w-8 stroke-[2]" />
-              </div>
-              <h2 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
-                {t('workspace.emptyTitle')}
-              </h2>
-              <p className="text-sm text-slate-500 dark:text-slate-400 mt-2 leading-relaxed">
-                {t('workspace.emptyDescription')}
-              </p>
-              <Button
-                onClick={handleOpenWorkspaceModal}
-                className="mt-6 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl px-5 py-2.5 shadow-sm cursor-pointer"
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                {t('workspace.modalTitle')}
-              </Button>
-            </div>
-          ) : currentView === 'dashboard' ? (
-            <DashboardView
-              workspaceSlug={activeWorkspace.slug}
-              searchQuery={searchQuery}
-              onOpenNewFeedback={() => setIsNewFeedbackModalOpen(true)}
-              onOpenAuthModal={() => {
-                setAuthMode('login');
-                setIsAuthModalOpen(true);
-              }}
-              refreshTrigger={refreshTrigger}
-            />
-          ) : currentView === 'feedback' ? (
-            <FeedbackBoardView
-              workspaceSlug={activeWorkspace.slug}
-              searchQuery={searchQuery}
-              onSearchQueryChange={setSearchQuery}
-              onOpenNewFeedback={() => setIsNewFeedbackModalOpen(true)}
-              refreshTrigger={refreshTrigger}
-            />
-          ) : currentView === 'roadmap' ? (
-            <RoadmapView
-              workspaceSlug={activeWorkspace.slug}
-              searchQuery={searchQuery}
-              onOpenNewFeedback={() => setIsNewFeedbackModalOpen(true)}
-              onOpenAuthModal={() => {
-                setAuthMode('login');
-                setIsAuthModalOpen(true);
-              }}
-              refreshTrigger={refreshTrigger}
-            />
-          ) : currentView === 'changelog' ? (
-            <ChangelogView
-              workspaceSlug={activeWorkspace.slug}
-              searchQuery={searchQuery}
-              onOpenNewFeedback={() => setIsNewFeedbackModalOpen(true)}
-              onOpenAuthModal={() => {
-                setAuthMode('login');
-                setIsAuthModalOpen(true);
-              }}
-              onViewChange={(view) => setCurrentView(view)}
-              refreshTrigger={refreshTrigger}
-            />
-          ) : (
-            <div className="flex flex-col items-center justify-center min-h-[60vh] text-center p-8">
-              <div className="h-14 w-14 rounded-2xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center mb-4">
-                <span className="text-xl font-bold">✨</span>
-              </div>
-              <h2 className="text-xl font-bold capitalize">{currentView}</h2>
-              <p className="text-sm text-slate-500 dark:text-slate-400 mt-1 max-w-sm">
-                {t('workspace.comingSoon')}
-              </p>
-              <Button
-                variant="outline"
-                className="mt-6"
-                onClick={() => setCurrentView('dashboard')}
-              >
-                {t('workspace.returnToDashboard')}
-              </Button>
-            </div>
-          )}
-          </main>
+            <main className="flex-1 pb-16">
+              {/* If no workspace exists in the database yet, show clean initial onboarding */}
+              {!activeWorkspace.slug ? (
+                <div className="flex flex-col items-center justify-center min-h-[65vh] text-center p-8 max-w-md mx-auto">
+                  <div className="h-16 w-16 rounded-3xl bg-primary/10 text-primary flex items-center justify-center mb-5 ring-8 ring-primary/5">
+                    <Briefcase className="h-8 w-8 stroke-[2]" />
+                  </div>
+                  <h2 className="text-2xl font-bold tracking-tight text-foreground">
+                    {t('workspace.emptyTitle')}
+                  </h2>
+                  <p className="text-sm text-muted-foreground mt-2 leading-relaxed">
+                    {t('workspace.emptyDescription')}
+                  </p>
+                  <Button
+                    onClick={handleOpenWorkspaceModal}
+                    className="mt-6 font-semibold rounded-xl px-5 py-2.5 shadow-sm cursor-pointer"
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    {t('workspace.modalTitle')}
+                  </Button>
+                </div>
+              ) : currentView === 'dashboard' ? (
+                <DashboardView
+                  workspaceSlug={activeWorkspace.slug}
+                  searchQuery={searchQuery}
+                  onOpenNewFeedback={() => setIsNewFeedbackModalOpen(true)}
+                  onOpenAuthModal={() => {
+                    setAuthMode('login');
+                    setIsAuthModalOpen(true);
+                  }}
+                  refreshTrigger={refreshTrigger}
+                />
+              ) : currentView === 'feedback' ? (
+                <FeedbackBoardView
+                  workspaceSlug={activeWorkspace.slug}
+                  searchQuery={searchQuery}
+                  onSearchQueryChange={setSearchQuery}
+                  onOpenNewFeedback={() => setIsNewFeedbackModalOpen(true)}
+                  onOpenAuthModal={() => handleOpenAuthModal('login')}
+                  initialPostId={deepLinkPostId}
+                  onPostIdChange={handlePostIdChange}
+                  refreshTrigger={refreshTrigger}
+                />
+              ) : currentView === 'roadmap' ? (
+                <RoadmapView
+                  workspaceSlug={activeWorkspace.slug}
+                  searchQuery={searchQuery}
+                  onOpenNewFeedback={() => setIsNewFeedbackModalOpen(true)}
+                  onOpenAuthModal={() => {
+                    setAuthMode('login');
+                    setIsAuthModalOpen(true);
+                  }}
+                  refreshTrigger={refreshTrigger}
+                />
+              ) : currentView === 'changelog' ? (
+                <ChangelogView
+                  workspaceSlug={activeWorkspace.slug}
+                  searchQuery={searchQuery}
+                  onOpenNewFeedback={() => setIsNewFeedbackModalOpen(true)}
+                  onOpenAuthModal={() => {
+                    setAuthMode('login');
+                    setIsAuthModalOpen(true);
+                  }}
+                  onViewChange={handleViewChange}
+                  refreshTrigger={refreshTrigger}
+                />
+              ) : (
+                <div className="flex flex-col items-center justify-center min-h-[60vh] text-center p-8">
+                  <div className="h-14 w-14 rounded-2xl bg-primary/10 text-primary flex items-center justify-center mb-4">
+                    <span className="text-xl font-bold">✨</span>
+                  </div>
+                  <h2 className="text-xl font-bold capitalize">{currentView}</h2>
+                  <p className="text-sm text-muted-foreground mt-1 max-w-sm">
+                    {t('workspace.comingSoon')}
+                  </p>
+                  <Button
+                    variant="outline"
+                    className="mt-6"
+                    onClick={() => setCurrentView('dashboard')}
+                  >
+                    {t('workspace.returnToDashboard')}
+                  </Button>
+                </div>
+              )}
+            </main>
+          </div>
         </div>
-      </div>
-    )}
+      )}
 
       {/* 3. New Feedback Modal */}
       {activeWorkspace.id && (
@@ -398,13 +495,13 @@ export default function App() {
 
         <form onSubmit={handleCreateWorkspace} className="space-y-4">
           {wsError && (
-            <div className="p-3 text-xs rounded-lg bg-red-500/10 border border-red-500/20 text-red-600 dark:text-red-400">
+            <div className="p-3 text-xs rounded-lg bg-destructive/10 border border-destructive/20 text-destructive">
               {wsError}
             </div>
           )}
 
           <div>
-            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+            <label className="block text-xs font-semibold text-foreground mb-1.5">
               {t('workspace.nameLabel')}
             </label>
             <Input
@@ -416,7 +513,7 @@ export default function App() {
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+            <label className="block text-xs font-semibold text-foreground mb-1.5">
               {t('workspace.slugLabel')}
             </label>
             <Input
@@ -425,11 +522,11 @@ export default function App() {
               placeholder={t('workspace.slugPlaceholder')}
               required
             />
-            <p className="text-[11px] text-slate-400 mt-1">{t('workspace.slugHelp')}</p>
+            <p className="text-[11px] text-muted-foreground mt-1">{t('workspace.slugHelp')}</p>
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+            <label className="block text-xs font-semibold text-foreground mb-1.5">
               {t('workspace.colorLabel')}
             </label>
             <div className="flex items-center gap-3">
@@ -442,7 +539,7 @@ export default function App() {
                     style={{ backgroundColor: color }}
                     className={`h-6 w-6 rounded-full transition-all cursor-pointer ${
                       newWsColor.toLowerCase() === color.toLowerCase()
-                        ? 'ring-2 ring-offset-2 ring-blue-500 scale-110 shadow-xs'
+                        ? 'ring-2 ring-offset-2 ring-primary scale-110 shadow-xs'
                         : 'opacity-80 hover:opacity-100 hover:scale-105'
                     }`}
                   />
@@ -453,10 +550,10 @@ export default function App() {
                   type="color"
                   value={newWsColor}
                   onChange={(e) => setNewWsColor(e.target.value)}
-                  className="h-8 w-8 rounded-lg cursor-pointer border border-slate-200 dark:border-slate-800 bg-transparent p-0.5"
+                  className="h-8 w-8 rounded-lg cursor-pointer border border-border bg-transparent p-0.5"
                   title={t('workspace.chooseColor')}
                 />
-                <span className="ml-2 font-mono text-xs text-slate-500 dark:text-slate-400 uppercase">
+                <span className="ml-2 font-mono text-xs text-muted-foreground uppercase">
                   {newWsColor}
                 </span>
               </div>
@@ -464,7 +561,7 @@ export default function App() {
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+            <label className="block text-xs font-semibold text-foreground mb-1.5">
               {t('workspace.logoUrlLabel')}
             </label>
             <Input

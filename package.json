@@ -10,6 +10,12 @@
     "lint": "npm run lint -w @feedbackpulse/web",
     "test": "npm run test:db && npm run test:auth",
     "test:auth": "npm run test:auth -w @feedbackpulse/api",
+    "test:e2e": "tsx --test tests/e2e/*.test.ts",
+    "test:e2e:api": "tsx --test tests/e2e/01-*.test.ts tests/e2e/02-*.test.ts tests/e2e/03-*.test.ts",
+    "test:e2e:ui": "tsx --test tests/e2e/06-*.test.ts tests/e2e/07-*.test.ts tests/e2e/08-*.test.ts",
+    "test:e2e:theme": "tsx --test tests/e2e/09-*.test.ts tests/e2e/10-*.test.ts",
+    "test:e2e:tier3": "tsx --test tests/e2e/11-*.test.ts",
+    "test:e2e:tier4": "tsx --test tests/e2e/12-*.test.ts",
     "db:generate": "npm run db:generate -w @feedbackpulse/api",
     "db:migrate": "npm run db:migrate -w @feedbackpulse/api",
     "db:post-migrate": "npm run db:post-migrate -w @feedbackpulse/api",
@@ -21,6 +27,7 @@
     "test:db": "npm run test:db --workspace=@feedbackpulse/api"
   },
   "devDependencies": {
-    "concurrently": "^9.1.2"
+    "concurrently": "^9.1.2",
+    "tsx": "^4.23.0"
   }
 }

@@ -29,6 +29,7 @@ export function FeedbackCard({ card, onVote, onClick }: FeedbackCardProps) {
   const { t, i18n } = useTranslation();
   const voteBtnRef = React.useRef<HTMLButtonElement>(null);
   const cardRef = React.useRef<HTMLDivElement>(null);
+  const [mountedTime] = React.useState(() => Date.now());
 
   const handleVoteClick = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -43,7 +44,7 @@ export function FeedbackCard({ card, onVote, onClick }: FeedbackCardProps) {
 
   const formatTimeAgo = (dateStr: string) => {
     try {
-      const diffSeconds = (new Date(dateStr).getTime() - Date.now()) / 1000;
+      const diffSeconds = (new Date(dateStr).getTime() - mountedTime) / 1000;
       const absolute = Math.abs(diffSeconds);
       if (absolute < 60) return relativeTime.format(Math.round(diffSeconds), 'second');
       if (absolute < 3600) return relativeTime.format(Math.round(diffSeconds / 60), 'minute');
@@ -70,47 +71,49 @@ export function FeedbackCard({ card, onVote, onClick }: FeedbackCardProps) {
           onClick?.(card);
         }
       }}
-      className="kanban-card fp-glass-item fp-feedback-card group rounded-xl border border-slate-200/90 dark:border-slate-800/90 p-4 transition-all cursor-pointer"
+      className="kanban-card fp-glass-item fp-feedback-card group relative rounded-xl border border-slate-200/80 bg-white/70 p-4 shadow-xs backdrop-blur-md transition-all duration-200 hover:-translate-y-0.5 hover:border-blue-400/50 hover:shadow-md dark:border-white/10 dark:bg-slate-900/40 dark:hover:border-blue-400/40 cursor-pointer"
     >
       {/* Title & Options */}
-      <div className="flex items-start justify-between gap-2 mb-1.5">
-        <h4 className="text-sm font-bold text-slate-900 dark:text-slate-100 leading-snug line-clamp-1 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+      <div className="mb-1.5 flex items-start justify-between gap-2">
+        <h4 className="line-clamp-1 text-sm font-bold leading-snug text-slate-900 transition-colors group-hover:text-blue-600 dark:text-slate-100 dark:group-hover:text-blue-400">
           {card.title}
         </h4>
         <button
           onClick={(e) => e.stopPropagation()}
-          className="fp-icon-button fp-icon-rotate opacity-0 group-hover:opacity-100 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-opacity p-0.5 rounded-sm"
+          className="fp-icon-button fp-icon-rotate rounded-md p-0.5 text-slate-400 opacity-0 transition-opacity hover:text-slate-600 group-hover:opacity-100 dark:hover:text-slate-200"
+          aria-label={t('feedback.moreOptions')}
         >
           <MoreVertical className="h-4 w-4" />
         </button>
       </div>
 
       {/* Description Snippet */}
-      <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 leading-relaxed mb-4">
+      <p className="mb-4 line-clamp-2 text-xs leading-relaxed text-slate-600 dark:text-slate-400">
         {card.content}
       </p>
 
       {/* Footer Info */}
-      <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-800/80 text-xs text-slate-500 dark:text-slate-400">
-        <div className="flex items-center gap-3">
+      <div className="flex items-center justify-between border-t border-slate-100 pt-2.5 text-xs text-slate-500 dark:border-white/10 dark:text-slate-400">
+        <div className="flex items-center gap-2.5">
           {/* Author Avatar */}
           <Avatar
             src={card.authorAvatar}
             alt={card.authorName || t('feedback.member')}
             fallback={card.authorName || t('feedback.memberInitial')}
             size="sm"
-            className="h-6 w-6"
+            className="h-6 w-6 ring-1 ring-slate-200/80 dark:ring-white/10"
           />
 
           {/* Upvote Button with pulse */}
           <button
             ref={voteBtnRef}
             onClick={handleVoteClick}
+            aria-pressed={card.hasVoted}
             className={cn(
-              'fp-vote-button flex items-center gap-1 font-semibold transition-colors px-1.5 py-0.5 rounded-md',
+              'fp-vote-button flex items-center gap-1 rounded-md px-1.5 py-0.5 font-semibold transition-all shadow-2xs',
               card.hasVoted
-                ? 'text-blue-600 bg-blue-50 dark:bg-blue-950/40 dark:text-blue-400'
-                : 'text-slate-600 dark:text-slate-300 hover:text-blue-600 hover:bg-slate-100 dark:hover:bg-[#1c1c20]'
+                ? 'text-blue-600 bg-blue-50 ring-1 ring-blue-500/20 dark:bg-blue-950/50 dark:text-blue-400 dark:ring-blue-500/30'
+                : 'text-slate-600 hover:bg-slate-100 hover:text-blue-600 dark:text-slate-300 dark:hover:bg-white/[0.06] dark:hover:text-blue-400'
             )}
           >
             <ArrowBigUp className={cn('fp-vote-icon h-4 w-4', card.hasVoted && 'fill-current')} />
@@ -125,7 +128,7 @@ export function FeedbackCard({ card, onVote, onClick }: FeedbackCardProps) {
         </div>
 
         {/* Timestamp */}
-        <div className="flex items-center gap-1.5 text-[11px] text-slate-400">
+        <div className="flex items-center gap-1 text-[11px] text-slate-400">
           <Pin className="fp-pin-icon h-3 w-3 rotate-45 opacity-60" />
           <span>{formatTimeAgo(card.createdAt)}</span>
         </div>

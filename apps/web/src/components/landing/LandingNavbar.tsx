@@ -88,8 +88,8 @@ export function LandingNavbar({
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full">
-      <div className="flex h-[66px] w-full items-center justify-between bg-white/55 px-5 shadow-[0_10px_35px_-16px_rgba(22,22,24,0.24),inset_0_1px_0_rgba(255,255,255,0.72)] backdrop-blur-2xl backdrop-saturate-150 dark:bg-[#0c0c0f]/72 dark:shadow-[0_10px_35px_-16px_rgba(0,0,0,0.8),inset_0_1px_0_rgba(255,255,255,0.07)] sm:px-8 lg:px-10">
+    <header className="glass-header sticky top-0 z-50 w-full backdrop-blur-md">
+      <div className="flex h-[66px] w-full items-center justify-between px-5 sm:px-8 lg:px-10">
         <a href="#" className="flex items-center gap-2.5" aria-label={t('landing.nav.brandHome')}>
           <span className="grid size-9 place-items-center rounded-[11px] bg-[#0d44e8] text-white shadow-[0_5px_15px_-6px_rgba(13,68,232,0.8)]">
             <Activity className="size-5 stroke-[2.7]" />

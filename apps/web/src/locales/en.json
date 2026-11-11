@@ -16,7 +16,12 @@
       "dark": "Dark",
       "system": "System"
     },
-    "retry": "Try again"
+    "retry": "Try again",
+    "clear": "Clear",
+    "resetFilters": "Reset filters",
+    "share": "Share",
+    "copied": "Copied!",
+    "emailPlaceholder": "you@company.com"
   },
   "nav": {
     "brand": "FeedbackPulse",
@@ -31,6 +36,7 @@
     "helpSupport": "Help & Support",
     "collapseSidebar": "Collapse Sidebar",
     "expandSidebar": "Expand Sidebar",
+    "openNavigation": "Open navigation",
     "createWorkspace": "New Workspace",
     "documentation": "Docs",
     "health": "System Status",
@@ -103,7 +109,7 @@
     "namePlaceholder": "Acme Software",
     "slugLabel": "Slug",
     "slugPlaceholder": "acme",
-    "slugHelp": "Public boards will be available at /dashboard/:slug",
+    "slugHelp": "Public boards will be available at /b/:slug",
     "colorLabel": "Brand Color",
     "logoUrlLabel": "Logo URL",
     "logoUrlPlaceholder": "https://example.com/logo.png",
@@ -203,7 +209,25 @@
     "emptyTitle": "Be the first to share an idea",
     "emptyDescription": "There are no published ideas yet. Start the conversation with your feedback.",
     "noSearchResults": "No matching ideas",
-    "noSearchResultsDescription": "Try another search or choose a different filter."
+    "noSearchResultsDescription": "Try another search or choose a different filter.",
+    "writeTab": "Write",
+    "previewTab": "Preview",
+    "previewEmpty": "Nothing to preview yet. Write your description using Markdown.",
+    "sortLabel": "Sort feedback",
+    "statusFilterLabel": "Filter by status",
+    "statusFilterAll": "All",
+    "voteError": "Could not update vote",
+    "voteErrorDesc": "Your vote was rolled back. Please try again.",
+    "signInToVote": "Sign in to vote",
+    "signInToVoteDesc": "Create an account or sign in to upvote ideas.",
+    "submitSuccess": "Feedback submitted",
+    "submitSuccessDesc": "Your idea is now live on the board.",
+    "validation": {
+      "titleMin": "Title must be at least 3 characters.",
+      "titleMax": "Title must be 255 characters or fewer.",
+      "contentMin": "Description must be at least 10 characters.",
+      "boardRequired": "Please select a board."
+    }
   },
   "dashboard": {
     "welcome": "Welcome back, {{name}}! 👋",
@@ -247,20 +271,70 @@
   },
   "roadmap": {
     "title": "Product Roadmap",
-    "subtitle": "Track our progress on upcoming features and enhancements.",
+    "subtitle": "Our development roadmap and planned features. Upvote existing items or submit new suggestions to guide our quarterly milestones.",
+    "searchPlaceholder": "Search roadmap features, analytics, slack...",
+    "subscribe": "Subscribe",
+    "submitIdea": "Submit Idea",
     "planned": "Planned",
     "inProgress": "In Progress",
     "completed": "Completed",
-    "empty": "No items in this column yet."
+    "empty": "No items in this column yet.",
+    "svgPlanned": "PLANNED",
+    "svgInProgress": "IN PROGRESS",
+    "svgCompleted": "COMPLETED",
+    "svgQuarter": "Q4",
+    "columnOptions": "Column options",
+    "emptyPlannedTitle": "No planned features",
+    "emptyPlannedDesc": "Items queued for future development will appear here.",
+    "emptyInProgressTitle": "No active tasks",
+    "emptyInProgressDesc": "Features currently in development will appear here.",
+    "emptyCompletedTitle": "No completed features",
+    "emptyCompletedDesc": "Shipped features will be archived here.",
+    "viewAll": "View all →",
+    "defaultCategory": "Roadmap",
+    "teamAuthor": "FeedbackPulse Team",
+    "subscribeModalTitle": "Subscribe to Roadmap Updates",
+    "subscribeModalDesc": "Get email digests whenever feature milestones advance from planned to shipped.",
+    "subscribeSuccess": "You have successfully subscribed to roadmap updates!"
   },
   "changelog": {
-    "title": "Product Changelog",
-    "subtitle": "Discover the latest features, improvements, and fixes shipped by our team.",
+    "title": "Changelog",
+    "subtitle": "See what's new in our product.",
+    "searchPlaceholder": "Search releases, features, fixes...",
+    "subscribe": "Subscribe",
+    "filters": {
+      "all": "All",
+      "new": "New",
+      "improvement": "Improvements",
+      "release": "Releases"
+    },
     "badge": {
+      "new": "New",
       "feature": "New Feature",
       "improvement": "Improvement",
+      "release": "Release",
       "fix": "Fix"
-    }
+    },
+    "emptyTitle": "No changelog releases yet",
+    "emptyDesc": "When new product milestones, improvements, or fixes are published to the database, they will appear here.",
+    "noMatchTitle": "No matching releases found",
+    "noMatchDesc": "Try adjusting your search query or clear the filter.",
+    "copyLinkTitle": "Copy link to this release",
+    "previewHeader": "FeedbackPulse • Roadmap Preview",
+    "previewBadge": "Preview",
+    "previewPlanned": "PLANNED",
+    "previewInProgress": "IN PROGRESS",
+    "previewCompleted": "COMPLETED",
+    "previewHint": "Modern roadmap trail & voting",
+    "previewCta": "Click to explore",
+    "subscribeModalTitle": "Subscribe to FeedbackPulse Changelog",
+    "subscribeModalDesc": "Get instant notifications and monthly digests whenever we ship new features, improvements, and performance updates.",
+    "subscribeSuccess": "You have successfully subscribed to product changelog updates!",
+    "emailLabel": "Email Address",
+    "modalBrand": "FeedbackPulse Roadmap",
+    "modalBadge": "Interactive View",
+    "modalDesc": "The redesigned public roadmap empowers your users to follow development in real-time, upvote key features, and subscribe to milestones with zero friction.",
+    "modalCta": "Open Full Roadmap View →"
   },
   "landing": {
     "nav": {

@@ -19,6 +19,7 @@ import {
   X,
 } from 'lucide-react';
 import { Avatar } from '../ui/avatar';
+import { Markdown } from '../ui/markdown';
 import { useAuth } from '../../context/AuthContext';
 import { client } from '../../lib/api';
 import { cn } from '../../lib/utils';
@@ -148,7 +149,7 @@ function CommentRow({
             isReply ? 'px-3 py-2.5 text-[11px]' : 'px-3.5 py-3 text-xs'
           )}
         >
-          {comment.content}
+          <Markdown content={comment.content} className={isReply ? 'text-[11px]' : 'text-xs'} />
         </div>
 
         <div className="mt-1.5 flex items-center gap-1.5 text-[11px] text-slate-500 dark:text-slate-400">
@@ -236,12 +237,15 @@ export function FeedbackDetailModal({
   const [replyingToId, setReplyingToId] = React.useState<string | null>(null);
   const [submittingComment, setSubmittingComment] = React.useState(false);
   const [statusMenuOpen, setStatusMenuOpen] = React.useState(false);
-  const [currentStatus, setCurrentStatus] = React.useState<StatusKey>(
-    (post?.status as StatusKey) || 'UNDER_REVIEW'
-  );
+  const [statusOverride, setStatusOverride] = React.useState<{ postId: string; status: StatusKey } | null>(null);
   const [commentLikes, setCommentLikes] = React.useState<Record<string, { count: number; voted: boolean }>>({});
   const [actionError, setActionError] = React.useState<string | null>(null);
+  const [mountedTime] = React.useState(() => Date.now());
+
   const postId = post?.id;
+  const currentStatus: StatusKey = (statusOverride && statusOverride.postId === postId
+    ? statusOverride.status
+    : (post?.status as StatusKey)) || 'UNDER_REVIEW';
   const effectiveTab = !canManage && activeTab === 'internal' ? 'comments' : activeTab;
 
   const drawerRef = React.useRef<HTMLElement>(null);
@@ -290,10 +294,6 @@ export function FeedbackDetailModal({
       backdrop.style.willChange = '';
     };
   }, [open, postId, onExitComplete]);
-
-  React.useEffect(() => {
-    if (post) setCurrentStatus(post.status as StatusKey);
-  }, [post]);
 
   React.useEffect(() => {
     if (!open) return;
@@ -378,8 +378,12 @@ export function FeedbackDetailModal({
   const fetchComments = React.useCallback(async () => {
     if (!postId) return;
     const requestId = ++commentsRequestRef.current;
-    setLoadingContent(true);
-    setActionError(null);
+    queueMicrotask(() => {
+      if (requestId === commentsRequestRef.current) {
+        setLoadingContent(true);
+        setActionError(null);
+      }
+    });
     try {
       if (effectiveTab === 'activity') {
         const res = await client.api.posts[':id'].activity.$get({ param: { id: postId } });
@@ -434,7 +438,7 @@ export function FeedbackDetailModal({
   const formatTimeAgo = (dateStr?: string) => {
     if (!dateStr) return relativeTime.format(-1, 'hour');
     try {
-      const diffSeconds = (new Date(dateStr).getTime() - Date.now()) / 1000;
+      const diffSeconds = (new Date(dateStr).getTime() - mountedTime) / 1000;
       const absolute = Math.abs(diffSeconds);
       if (absolute < 60) return relativeTime.format(Math.round(diffSeconds), 'second');
       if (absolute < 3600) return relativeTime.format(Math.round(diffSeconds / 60), 'minute');
@@ -453,7 +457,7 @@ export function FeedbackDetailModal({
     }
 
     const previousStatus = currentStatus;
-    setCurrentStatus(newStatus);
+    setStatusOverride({ postId: post.id, status: newStatus });
     setStatusMenuOpen(false);
     setActionError(null);
 
@@ -467,7 +471,7 @@ export function FeedbackDetailModal({
       void fetchPostDetails();
       if (effectiveTab === 'activity') void fetchComments();
     } catch {
-      setCurrentStatus(previousStatus);
+      setStatusOverride({ postId: post.id, status: previousStatus });
       setActionError(t('feedback.statusUpdateFailed'));
     }
   };
@@ -603,9 +607,10 @@ export function FeedbackDetailModal({
                 <h3 className="text-[15px] font-bold leading-snug tracking-[-0.02em] text-slate-950 dark:text-white">
                   {post.title}
                 </h3>
-                <p className="mt-1 text-[11px] leading-relaxed text-slate-600 dark:text-white/52">
-                  {post.content}
-                </p>
+                <Markdown
+                  content={post.content}
+                  className="mt-1 text-[11px] leading-relaxed text-slate-600 dark:text-white/52"
+                />
 
                 <div className="mt-3 flex flex-wrap items-center gap-2.5 text-[10px] text-slate-500 dark:text-white/45">
                   <div ref={statusMenuRef} className="relative">
@@ -663,10 +668,16 @@ export function FeedbackDetailModal({
               <button
                 type="button"
                 onClick={() => onVote(post.id)}
-                className="fp-primary-action inline-flex h-9 shrink-0 items-center justify-center gap-1.5 rounded-xl bg-[#0d44e8] px-3 text-[11px] font-bold text-white shadow-sm hover:bg-[#0836c4]"
+                aria-pressed={Boolean(post.hasVoted)}
+                className={cn(
+                  'fp-primary-action inline-flex h-9 shrink-0 items-center justify-center gap-1.5 rounded-xl px-3 text-[11px] font-bold shadow-sm transition-colors',
+                  post.hasVoted
+                    ? 'bg-[#0836c4] text-white ring-2 ring-blue-400/40'
+                    : 'bg-[#0d44e8] text-white hover:bg-[#0836c4]'
+                )}
               >
                 <ArrowUp className="size-3.5 stroke-[2.7]" />
-                {t('feedback.upvote')} {post.voteCount}
+                {post.hasVoted ? t('feedback.upvoted') : t('feedback.upvote')} {post.voteCount}
               </button>
             </div>
           </section>

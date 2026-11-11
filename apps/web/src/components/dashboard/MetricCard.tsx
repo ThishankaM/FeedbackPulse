@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { ArrowUp, type LucideIcon } from 'lucide-react';
 import { Card } from '../ui/card';
 import { cn } from '../../lib/utils';
-import { animateCounter } from '../../lib/motion';
+import { animateCounter, clampDuration } from '../../lib/motion';
 
 export interface MetricCardProps {
   label: string;
@@ -36,34 +36,24 @@ export function MetricCard({
       const formatter = formattedValue
         ? () => formattedValue
         : (amount: number) => new Intl.NumberFormat(i18n.resolvedLanguage || 'en').format(Math.round(amount));
-      animateCounter(numberRef.current, 0, value, 900, formatter);
+      animateCounter(numberRef.current, 0, value, clampDuration(400), formatter);
     }
   }, [value, formattedValue, loading, i18n.resolvedLanguage]);
 
   return (
-    <Card className="fp-glass-card fp-metric-card p-6 transition-all hover:border-slate-300 dark:hover:border-slate-700">
-      <div className="flex items-start gap-4">
-        {/* Soft rounded icon container */}
-        <div
-          className={cn(
-            'fp-metric-icon flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl',
-            iconBgColor
-          )}
-        >
-          <Icon className={cn('h-6 w-6 transition-transform duration-200', iconColor)} />
-        </div>
-
-        <div className="flex-1 min-w-0">
-          <p className="text-xs font-medium text-slate-500 dark:text-slate-400 truncate">
+    <Card className="fp-glass-card fp-metric-card group relative overflow-hidden rounded-2xl border border-slate-200/80 bg-white/70 p-5 shadow-xs backdrop-blur-md transition-all duration-200 hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-md dark:border-white/10 dark:bg-slate-900/40 dark:hover:border-white/20">
+      <div className="flex items-start justify-between gap-4">
+        <div className="min-w-0 flex-1">
+          <p className="truncate text-xs font-semibold tracking-wider text-slate-500 uppercase dark:text-slate-400">
             {label}
           </p>
-          <div className="flex items-baseline gap-2 mt-1">
+          <div className="mt-2 flex items-baseline gap-2">
             <span
               ref={numberRef}
               aria-label={loading ? undefined : String(value)}
               className={cn(
-                'text-2xl font-bold tracking-tight text-slate-900 dark:text-white',
-                loading && 'inline-block h-7 w-14 animate-pulse rounded-md bg-slate-200/80 dark:bg-white/10'
+                'text-2xl font-bold tracking-tight text-slate-950 sm:text-3xl dark:text-white',
+                loading && 'inline-block h-8 w-16 animate-pulse rounded-md bg-slate-200/80 dark:bg-white/10'
               )}
             >
               {loading ? '' : formattedValue || new Intl.NumberFormat(i18n.resolvedLanguage || 'en').format(value)}
@@ -71,18 +61,30 @@ export function MetricCard({
           </div>
 
           {delta ? (
-            <div className="mt-1.5 flex items-center gap-1" aria-label={delta}>
+            <div className="mt-2 flex items-center gap-1.5" aria-label={delta}>
               <span
                 className={cn(
-                  'flex items-center text-xs font-semibold',
-                  isPositive ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-500'
+                  'inline-flex items-center gap-0.5 rounded-full px-2 py-0.5 text-xs font-semibold ring-1 ring-inset',
+                  isPositive
+                    ? 'bg-emerald-500/10 text-emerald-600 ring-emerald-500/20 dark:bg-emerald-500/15 dark:text-emerald-400 dark:ring-emerald-500/30'
+                    : 'bg-slate-100 text-slate-600 ring-slate-200 dark:bg-white/10 dark:text-slate-300 dark:ring-white/10'
                 )}
               >
-                <ArrowUp className="fp-delta-icon mr-0.5 h-3.5 w-3.5 stroke-[2.5]" />
+                <ArrowUp className={cn('fp-delta-icon mr-0.5 h-3 w-3 stroke-[2.5]', !isPositive && 'rotate-180')} />
                 {delta}
               </span>
             </div>
           ) : null}
+        </div>
+
+        {/* Soft rounded icon container with micro-glow */}
+        <div
+          className={cn(
+            'fp-metric-icon flex h-11 w-11 shrink-0 items-center justify-center rounded-xl shadow-xs transition-transform duration-200 group-hover:scale-105',
+            iconBgColor
+          )}
+        >
+          <Icon className={cn('h-5 w-5 transition-transform duration-200', iconColor)} />
         </div>
       </div>
     </Card>

@@ -3,16 +3,17 @@ import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from '../../lib/utils';
 
 export const buttonVariants = cva(
-  'inline-flex items-center justify-center whitespace-nowrap rounded-lg text-sm font-medium transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 select-none cursor-pointer',
+  'inline-flex items-center justify-center whitespace-nowrap rounded-lg text-sm font-medium transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 select-none cursor-pointer',
   {
     variants: {
       variant: {
-        default: 'bg-blue-600 text-white shadow-sm hover:bg-blue-700 active:scale-[0.98]',
-        destructive: 'bg-red-600 text-white shadow-sm hover:bg-red-700 active:scale-[0.98]',
-        outline: 'border border-slate-200 dark:border-slate-800 bg-transparent hover:bg-slate-100 dark:hover:bg-[#1c1c20] text-slate-800 dark:text-slate-100',
-        secondary: 'bg-slate-100 text-slate-900 hover:bg-slate-200 dark:bg-[#17171a] dark:text-slate-100 dark:hover:bg-[#1f1f23]',
-        ghost: 'hover:bg-slate-100 dark:hover:bg-[#1c1c20] text-slate-700 dark:text-slate-300',
-        link: 'text-blue-600 underline-offset-4 hover:underline dark:text-blue-400',
+        default: 'bg-primary text-primary-foreground shadow-xs hover:bg-primary/90 active:scale-[0.98]',
+        destructive: 'bg-destructive text-destructive-foreground shadow-xs hover:bg-destructive/90 active:scale-[0.98]',
+        outline: 'border border-input bg-background/50 backdrop-blur-xs hover:bg-accent hover:text-accent-foreground active:scale-[0.98]',
+        secondary: 'bg-secondary text-secondary-foreground shadow-xs hover:bg-secondary/80 active:scale-[0.98]',
+        ghost: 'hover:bg-accent hover:text-accent-foreground',
+        link: 'text-primary underline-offset-4 hover:underline',
+        glass: 'bg-white/10 dark:bg-white/5 border border-white/20 dark:border-white/10 text-foreground backdrop-blur-md hover:bg-white/20 dark:hover:bg-white/10 shadow-xs active:scale-[0.98]',
       },
       size: {
         default: 'h-9 px-4 py-2',

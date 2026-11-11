@@ -14,7 +14,8 @@ import {
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from '../ui/tooltip';
-import { animateSidebarWidth, fadeLabels, scalePulse } from '../../lib/motion';
+import { Sheet, SheetContent } from '../ui/sheet';
+import { prefersReducedMotion, scalePulse } from '../../lib/motion';
 
 export interface AppSidebarProps {
   currentView: string;
@@ -24,26 +25,37 @@ export interface AppSidebarProps {
     name: string;
     slug: string;
     primaryColor?: string;
-  };
+  } | null;
   onSwitchWorkspace?: (slug: string) => void;
   onOpenCreateWorkspace?: () => void;
   onOpenAuthModal?: () => void;
+  onOpenNewFeedback?: () => void;
+  mobileOpen?: boolean;
+  onMobileOpenChange?: (open: boolean) => void;
 }
 
 const EXPANDED_WIDTH = 256;
 const COLLAPSED_WIDTH = 72;
+const SIDEBAR_TRANSITION_MS = 180;
 const SIDEBAR_STORAGE_KEY = 'feedbackpulse-sidebar-collapsed';
 
 export function AppSidebar({
   currentView = 'dashboard',
   onViewChange,
+  mobileOpen = false,
+  onMobileOpenChange,
 }: AppSidebarProps) {
   const { t } = useTranslation();
   const [collapsed, setCollapsed] = React.useState<boolean>(() => {
     if (typeof window === 'undefined') return false;
-    return localStorage.getItem(SIDEBAR_STORAGE_KEY) === 'true';
+    try {
+      return localStorage.getItem(SIDEBAR_STORAGE_KEY) === 'true';
+    } catch {
+      return false;
+    }
   });
   const asideRef = React.useRef<HTMLElement>(null);
+  const resizeTimerRef = React.useRef<number | null>(null);
 
   const navItems = [
     { id: 'dashboard', label: t('nav.dashboard'), icon: Home },
@@ -54,100 +66,123 @@ export function AppSidebar({
     { id: 'settings', label: t('nav.settings'), icon: Settings },
   ];
 
-  const collectLabels = () =>
-    asideRef.current
-      ? Array.from(asideRef.current.querySelectorAll<HTMLElement>('.sidebar-label'))
-      : [];
+  const stopResizing = React.useCallback(() => {
+    if (resizeTimerRef.current !== null) {
+      window.clearTimeout(resizeTimerRef.current);
+      resizeTimerRef.current = null;
+    }
+    if (typeof document !== 'undefined') {
+      document.documentElement.classList.remove('fp-sidebar-resizing');
+    }
+  }, []);
+
+  React.useEffect(() => stopResizing, [stopResizing]);
 
   const toggleCollapse = () => {
     const targetCollapsed = !collapsed;
-    if (targetCollapsed) {
-      fadeLabels(collectLabels(), false, () => setCollapsed(true));
-    } else {
-      setCollapsed(false);
+    if (typeof document !== 'undefined' && !prefersReducedMotion()) {
+      document.documentElement.classList.add('fp-sidebar-resizing');
+      if (resizeTimerRef.current !== null) {
+        window.clearTimeout(resizeTimerRef.current);
+      }
+      resizeTimerRef.current = window.setTimeout(stopResizing, SIDEBAR_TRANSITION_MS + 40);
     }
-    animateSidebarWidth(asideRef.current, targetCollapsed ? COLLAPSED_WIDTH : EXPANDED_WIDTH, 260);
-    localStorage.setItem(SIDEBAR_STORAGE_KEY, String(targetCollapsed));
+    setCollapsed(targetCollapsed);
+    try {
+      localStorage.setItem(SIDEBAR_STORAGE_KEY, String(targetCollapsed));
+    } catch {
+      // Graceful fallback for blocked storage
+    }
   };
-
-  // Fade labels back in when expanding
-  React.useEffect(() => {
-    if (!collapsed) {
-      fadeLabels(collectLabels(), true);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [collapsed]);
 
   const helpButton = (
     <button
+      type="button"
       onClick={() => onViewChange('help')}
       aria-label={collapsed ? t('nav.helpSupport') : undefined}
-      className={cn(
-        'flex items-center w-full rounded-xl text-xs font-medium text-slate-400 hover:text-white hover:bg-slate-800/40 transition-colors cursor-pointer',
-        collapsed ? 'justify-center px-0 py-2' : 'gap-3 px-3 py-2'
-      )}
+      className="flex items-center gap-3 px-4 py-2 w-full rounded-xl text-xs font-medium text-foreground/75 hover:text-foreground hover:bg-accent/60 transition-colors cursor-pointer overflow-hidden"
     >
       <HelpCircle className="h-4 w-4 shrink-0" />
-      {!collapsed && <span className="sidebar-label">{t('nav.helpSupport')}</span>}
+      <span
+        aria-hidden={collapsed}
+        className={cn(
+          'sidebar-label truncate whitespace-nowrap font-medium transition-opacity duration-150 motion-reduce:transition-none',
+          collapsed ? 'opacity-0 pointer-events-none' : 'opacity-100'
+        )}
+      >
+        {t('nav.helpSupport')}
+      </span>
     </button>
   );
 
   return (
-    <TooltipProvider delayDuration={200}>
+    <TooltipProvider delayDuration={150}>
+      {/* Desktop & Tablet Sidebar */}
       <aside
         ref={asideRef}
         style={{ width: collapsed ? COLLAPSED_WIDTH : EXPANDED_WIDTH }}
-        className="fp-glass-sidebar flex flex-col shrink-0 h-screen sticky top-0 border-r border-slate-800/80 text-slate-300 select-none z-30 overflow-hidden"
+        onTransitionEnd={(e) => {
+          if (e.target === asideRef.current && e.propertyName === 'width') {
+            stopResizing();
+          }
+        }}
+        className="fp-glass-sidebar glass-panel hidden sm:flex flex-col shrink-0 h-screen sticky top-0 border-r border-border/60 text-foreground select-none z-30 overflow-hidden transition-[width] duration-[180ms] ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none"
       >
         {/* Brand Header */}
-        <div
-          className={cn(
-            'flex items-center h-18 border-b border-slate-800/60',
-            collapsed ? 'justify-center px-0' : 'gap-3 px-6'
-          )}
-        >
-          <div className="flex items-center justify-center h-9 w-9 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-500 shadow-md shadow-blue-500/20 text-white shrink-0">
+        <div className="flex items-center gap-3 h-18 px-[18px] border-b border-border/60 shrink-0 overflow-hidden">
+          <div className="flex items-center justify-center h-9 w-9 rounded-xl bg-gradient-to-tr from-primary to-indigo-600 shadow-md shadow-primary/20 text-white shrink-0">
             <Activity className="h-5 w-5 stroke-[2.5]" />
           </div>
-          {!collapsed && (
-            <div className="flex flex-col">
-              <span className="sidebar-label text-base font-bold tracking-tight text-white font-sans">
-                {t('nav.brand')}
-              </span>
-            </div>
-          )}
+          <div
+            aria-hidden={collapsed}
+            className={cn(
+              'flex flex-col min-w-0 transition-opacity duration-150 motion-reduce:transition-none',
+              collapsed ? 'opacity-0 pointer-events-none' : 'opacity-100'
+            )}
+          >
+            <span className="sidebar-label text-base font-bold tracking-tight text-foreground font-sans truncate whitespace-nowrap">
+              {t('nav.brand')}
+            </span>
+          </div>
         </div>
 
         {/* Main Navigation */}
-        <nav className="flex-1 px-4 py-5 space-y-1.5 overflow-y-auto">
+        <nav className="flex-1 px-3 py-4 space-y-1.5 overflow-y-auto overflow-x-hidden">
           {navItems.map((item) => {
             const Icon = item.icon;
             const isActive = currentView === item.id;
-            const button = (
-              <button
-                key={item.id}
-                onClick={() => onViewChange(item.id)}
-                aria-label={collapsed ? item.label : undefined}
-                className={cn(
-                  'fp-sidebar-item flex items-center w-full rounded-xl text-sm font-medium transition-all duration-150 cursor-pointer',
-                  collapsed ? 'justify-center px-0 py-2.5' : 'gap-3.5 px-3.5 py-2.5',
-                  isActive
-                    ? 'fp-sidebar-active text-white'
-                    : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
-                )}
-              >
-                <Icon
-                  onMouseEnter={(e: React.MouseEvent<SVGSVGElement>) => scalePulse(e.currentTarget)}
-                  className={cn('fp-sidebar-icon h-4.5 w-4.5 shrink-0', isActive ? 'text-white' : 'text-slate-400')}
-                />
-                {!collapsed && <span className="sidebar-label">{item.label}</span>}
-              </button>
-            );
-
-            if (!collapsed) return button;
             return (
-              <Tooltip key={item.id}>
-                <TooltipTrigger asChild>{button}</TooltipTrigger>
+              <Tooltip key={item.id} disabled={!collapsed}>
+                <TooltipTrigger asChild>
+                  <button
+                    type="button"
+                    onClick={() => onViewChange(item.id)}
+                    aria-label={collapsed ? item.label : undefined}
+                    className={cn(
+                      'fp-sidebar-item flex items-center gap-3.5 px-[15px] py-2.5 w-full rounded-xl text-sm font-medium transition-colors duration-150 cursor-pointer overflow-hidden',
+                      isActive
+                        ? 'fp-sidebar-active bg-primary text-primary-foreground font-semibold shadow-xs'
+                        : 'text-foreground/75 hover:text-foreground hover:bg-accent/60'
+                    )}
+                  >
+                    <Icon
+                      onMouseEnter={(e: React.MouseEvent<SVGSVGElement>) => scalePulse(e.currentTarget)}
+                      className={cn(
+                        'fp-sidebar-icon h-4.5 w-4.5 shrink-0 transition-transform',
+                        isActive ? 'text-primary-foreground' : 'text-foreground/65'
+                      )}
+                    />
+                    <span
+                      aria-hidden={collapsed}
+                      className={cn(
+                        'sidebar-label truncate whitespace-nowrap font-medium transition-opacity duration-150 motion-reduce:transition-none',
+                        collapsed ? 'opacity-0 pointer-events-none' : 'opacity-100'
+                      )}
+                    >
+                      {item.label}
+                    </span>
+                  </button>
+                </TooltipTrigger>
                 <TooltipContent side="right">{item.label}</TooltipContent>
               </Tooltip>
             );
@@ -155,37 +190,101 @@ export function AppSidebar({
         </nav>
 
         {/* Bottom Section: Collapse & Help */}
-        <div className="p-4 border-t border-slate-800/60 space-y-3">
+        <div className="p-3 border-t border-border/60 space-y-2 shrink-0">
           {/* Collapse / Expand Toggle */}
           <button
+            type="button"
             onClick={toggleCollapse}
             aria-expanded={!collapsed}
             aria-label={collapsed ? t('nav.expandSidebar') : t('nav.collapseSidebar')}
             title={collapsed ? t('nav.expandSidebar') : t('nav.collapseSidebar')}
-            className={cn(
-              'flex items-center w-full rounded-xl text-xs font-medium text-slate-400 hover:text-white hover:bg-slate-800/40 transition-colors cursor-pointer',
-              collapsed ? 'justify-center px-0 py-2' : 'gap-3 px-3 py-2'
-            )}
+            className="flex items-center gap-3 px-4 py-2 w-full rounded-xl text-xs font-medium text-foreground/75 hover:text-foreground hover:bg-accent/60 transition-colors cursor-pointer overflow-hidden"
           >
             {collapsed ? (
               <PanelLeftOpen className="h-4 w-4 shrink-0" />
             ) : (
               <PanelLeftClose className="h-4 w-4 shrink-0" />
             )}
-            {!collapsed && <span className="sidebar-label">{t('nav.collapseSidebar')}</span>}
+            <span
+              aria-hidden={collapsed}
+              className={cn(
+                'sidebar-label truncate whitespace-nowrap font-medium transition-opacity duration-150 motion-reduce:transition-none',
+                collapsed ? 'opacity-0 pointer-events-none' : 'opacity-100'
+              )}
+            >
+              {t('nav.collapseSidebar')}
+            </span>
           </button>
 
           {/* Help & Support */}
-          {collapsed ? (
-            <Tooltip>
-              <TooltipTrigger asChild>{helpButton}</TooltipTrigger>
-              <TooltipContent side="right">{t('nav.helpSupport')}</TooltipContent>
-            </Tooltip>
-          ) : (
-            helpButton
-          )}
+          <Tooltip disabled={!collapsed}>
+            <TooltipTrigger asChild>{helpButton}</TooltipTrigger>
+            <TooltipContent side="right">{t('nav.helpSupport')}</TooltipContent>
+          </Tooltip>
         </div>
       </aside>
+
+      {/* Mobile Drawer (<640px) using Sheet Primitive */}
+      <Sheet open={mobileOpen} onOpenChange={onMobileOpenChange}>
+        <SheetContent
+          side="left"
+          className="w-72 p-0 flex flex-col bg-card/95 backdrop-blur-xl border-r border-border/80 text-foreground overflow-hidden"
+        >
+          {/* Brand Header */}
+          <div className="flex items-center gap-3 h-18 px-6 border-b border-border/60 shrink-0">
+            <div className="flex items-center justify-center h-9 w-9 rounded-xl bg-gradient-to-tr from-primary to-indigo-600 shadow-md shadow-primary/20 text-white shrink-0">
+              <Activity className="h-5 w-5 stroke-[2.5]" />
+            </div>
+            <div className="flex flex-col min-w-0">
+              <span className="text-base font-bold tracking-tight text-foreground font-sans truncate">
+                {t('nav.brand')}
+              </span>
+            </div>
+          </div>
+
+          {/* Navigation Items */}
+          <nav className="flex-1 px-3 py-4 space-y-1.5 overflow-y-auto">
+            {navItems.map((item) => {
+              const Icon = item.icon;
+              const isActive = currentView === item.id;
+              return (
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={() => {
+                    onViewChange(item.id);
+                    onMobileOpenChange?.(false);
+                  }}
+                  className={cn(
+                    'fp-sidebar-item flex items-center w-full rounded-xl text-sm font-medium transition-all duration-150 cursor-pointer overflow-hidden gap-3.5 px-3.5 py-2.5',
+                    isActive
+                      ? 'fp-sidebar-active bg-primary text-primary-foreground font-semibold shadow-xs'
+                      : 'text-foreground/75 hover:text-foreground hover:bg-accent/60'
+                  )}
+                >
+                  <Icon className={cn('fp-sidebar-icon h-4.5 w-4.5 shrink-0', isActive ? 'text-primary-foreground' : 'text-foreground/65')} />
+                  <span className="truncate font-medium">{item.label}</span>
+                </button>
+              );
+            })}
+          </nav>
+
+          {/* Bottom Section */}
+          <div className="p-3 border-t border-border/60 space-y-2 shrink-0">
+            <button
+              type="button"
+              onClick={() => {
+                onViewChange('help');
+                onMobileOpenChange?.(false);
+              }}
+              className="flex items-center w-full rounded-xl text-xs font-medium text-foreground/75 hover:text-foreground hover:bg-accent/60 transition-colors cursor-pointer gap-3 px-3 py-2 overflow-hidden"
+            >
+              <HelpCircle className="h-4 w-4 shrink-0" />
+              <span className="truncate font-medium">{t('nav.helpSupport')}</span>
+            </button>
+          </div>
+        </SheetContent>
+      </Sheet>
     </TooltipProvider>
   );
 }

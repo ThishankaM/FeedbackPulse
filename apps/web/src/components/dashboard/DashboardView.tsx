@@ -11,6 +11,7 @@ import { MetricCard } from './MetricCard';
 import { KanbanColumn } from './KanbanColumn';
 import { FeedbackDetailModal } from '../feedback/FeedbackDetailModal';
 import { Button } from '../ui/button';
+import { useToast } from '../ui/toast';
 import { cn } from '../../lib/utils';
 import { useAuth } from '../../context/AuthContext';
 import { client } from '../../lib/api';
@@ -33,6 +34,7 @@ export function DashboardView({
 }: DashboardViewProps) {
   const { t } = useTranslation();
   const { user, memberships } = useAuth();
+  const { toast } = useToast();
   const canManageWorkspace = memberships.some(
     (membership) =>
       membership.workspaceSlug === workspaceSlug &&
@@ -88,8 +90,10 @@ export function DashboardView({
 
   // Fetch live dashboard metrics & posts from API
   const fetchDashboardData = React.useCallback(async () => {
-    setIsLoading(true);
-    setHasLoadError(false);
+    queueMicrotask(() => {
+      setIsLoading(true);
+      setHasLoadError(false);
+    });
     try {
       const res = await client.api.workspaces[':slug'].dashboard.$get({
         param: { slug: workspaceSlug },
@@ -134,7 +138,7 @@ export function DashboardView({
                 createdAt: p.createdAt,
                 authorName: p.authorName || null,
                 authorAvatar: p.authorAvatar || null,
-                hasVoted: false,
+                hasVoted: Boolean(p.hasVoted),
               }));
             }
           });
@@ -183,39 +187,45 @@ export function DashboardView({
       const res = await client.api.posts[':id'].vote.$post({
         param: { id: postId },
       });
-      if (res.ok) {
-        const data = await res.json();
-        // Sync with actual database trigger voteCount
-        setColumns((prev) => {
-          const next = { ...prev };
-          Object.keys(next).forEach((colKey) => {
-            next[colKey] = next[colKey].map((card) => {
-              if (card.id === postId) {
-                return { ...card, hasVoted: data.voted, voteCount: data.voteCount };
-              }
-              return card;
-            });
-          });
-          return next;
-        });
-        // Also refresh metrics counter
-        setMetrics((prev) => ({
-          ...prev,
-          totalVotes: prev.totalVotes + (data.voted ? 1 : -1),
-        }));
-
-        // Keep modal post data in sync
-        setSelectedPost((prev) =>
-          prev && prev.id === postId
-            ? { ...prev, hasVoted: data.voted, voteCount: data.voteCount }
-            : prev
-        );
+      if (!res.ok) {
+        throw new Error('Vote request failed');
       }
+      const data = await res.json();
+      // Sync with actual database trigger voteCount
+      setColumns((prev) => {
+        const next = { ...prev };
+        Object.keys(next).forEach((colKey) => {
+          next[colKey] = next[colKey].map((card) => {
+            if (card.id === postId) {
+              return { ...card, hasVoted: data.voted, voteCount: data.voteCount };
+            }
+            return card;
+          });
+        });
+        return next;
+      });
+      // Also refresh metrics counter
+      setMetrics((prev) => ({
+        ...prev,
+        totalVotes: prev.totalVotes + (data.voted ? 1 : -1),
+      }));
+
+      // Keep modal post data in sync
+      setSelectedPost((prev) =>
+        prev && prev.id === postId
+          ? { ...prev, hasVoted: data.voted, voteCount: data.voteCount }
+          : prev
+      );
     } catch {
       // Roll the optimistic update back on failure
       if (previousColumns) {
         setColumns(previousColumns);
       }
+      toast({
+        title: t('feedback.voteError'),
+        description: t('feedback.voteErrorDesc'),
+        variant: 'destructive',
+      });
     }
   };
 
