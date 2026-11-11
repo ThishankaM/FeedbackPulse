@@ -4,13 +4,16 @@ import './index.css';
 import './lib/i18n';
 import { ThemeProvider } from './context/ThemeProvider';
 import { AuthProvider } from './context/AuthContext';
+import { ToastProvider } from './components/ui/toast';
 import App from './App';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <ThemeProvider defaultTheme="system" storageKey="feedbackpulse-theme">
       <AuthProvider>
-        <App />
+        <ToastProvider>
+          <App />
+        </ToastProvider>
       </AuthProvider>
     </ThemeProvider>
   </StrictMode>

@@ -3,6 +3,36 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius: var(--radius);
+
+  --font-sans: "Manrope", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+}
+
 @layer base {
   :root {
     --background: #ffffff;
@@ -24,28 +54,147 @@
     --border: #e4e4e7;
     --input: #e4e4e7;
     --ring: #4f46e5;
+    --radius: 0.625rem;
   }
 
   .dark {
-    --background: #000000;
+    --background: #09090b;
     --foreground: #fafafa;
-    --card: #0a0a0a;
+    --card: #111114;
     --card-foreground: #fafafa;
-    --popover: #0a0a0a;
+    --popover: #111114;
     --popover-foreground: #fafafa;
     --primary: #6366f1;
     --primary-foreground: #ffffff;
-    --secondary: #111113;
+    --secondary: #18181c;
     --secondary-foreground: #fafafa;
-    --muted: #111113;
+    --muted: #18181c;
     --muted-foreground: #a1a1aa;
-    --accent: #111113;
+    --accent: #1e1e24;
     --accent-foreground: #fafafa;
-    --destructive: #7f1d1d;
-    --destructive-foreground: #fafafa;
-    --border: #26262b;
-    --input: #0a0a0a;
+    --destructive: #ef4444;
+    --destructive-foreground: #ffffff;
+    --border: #27272a;
+    --input: #1e1e24;
     --ring: #6366f1;
+    --radius: 0.625rem;
+  }
+
+  * {
+    border-color: var(--border);
+  }
+
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-sans);
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+  }
+}
+
+/* Glassmorphism Utilities */
+@utility glass-panel {
+  backdrop-filter: blur(16px) saturate(140%);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.82), rgba(255, 255, 255, 0.65));
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  box-shadow: 0 8px 32px -8px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+.dark .glass-panel {
+  background: linear-gradient(135deg, rgba(20, 20, 25, 0.85), rgba(12, 12, 16, 0.70));
+  border-color: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 12px 40px -16px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+@utility glass-card {
+  backdrop-filter: blur(12px) saturate(135%);
+  -webkit-backdrop-filter: blur(12px) saturate(135%);
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.88), rgba(255, 255, 255, 0.62));
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  box-shadow: 0 4px 16px -4px rgba(15, 23, 42, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  transition: all 200ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.glass-card:hover {
+  border-color: rgba(255, 255, 255, 1);
+  box-shadow: 0 10px 28px -6px rgba(37, 99, 235, 0.12), inset 0 1px 0 #ffffff;
+}
+
+.dark .glass-card {
+  background: linear-gradient(145deg, rgba(26, 26, 32, 0.78), rgba(16, 16, 22, 0.65));
+  border-color: rgba(255, 255, 255, 0.09);
+  box-shadow: 0 8px 24px -8px rgba(0, 0, 0, 0.65), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.dark .glass-card:hover {
+  border-color: rgba(99, 102, 241, 0.3);
+  box-shadow: 0 14px 34px -8px rgba(0, 0, 0, 0.85), 0 0 24px -8px rgba(99, 102, 241, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+@utility glass-header {
+  backdrop-filter: blur(16px) saturate(150%);
+  -webkit-backdrop-filter: blur(16px) saturate(150%);
+  background: rgba(255, 255, 255, 0.80);
+  border-bottom: 1px solid rgba(228, 228, 231, 0.65);
+  box-shadow: 0 4px 20px -8px rgba(0, 0, 0, 0.05), inset 0 -1px 0 rgba(255, 255, 255, 0.6);
+}
+
+.dark .glass-header {
+  background: rgba(10, 10, 12, 0.80);
+  border-bottom-color: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 8px 24px -12px rgba(0, 0, 0, 0.7), inset 0 -1px 0 rgba(255, 255, 255, 0.04);
+}
+
+@utility glass-input {
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  background: rgba(255, 255, 255, 0.75);
+  border: 1px solid rgba(228, 228, 231, 0.8);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.04);
+  transition: all 180ms ease;
+}
+
+.glass-input:focus {
+  background: rgba(255, 255, 255, 0.95);
+  border-color: var(--primary);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15), inset 0 1px 2px rgba(0, 0, 0, 0.02);
+}
+
+.dark .glass-input {
+  background: rgba(22, 22, 28, 0.65);
+  border-color: rgba(255, 255, 255, 0.10);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+
+.dark .glass-input:focus {
+  background: rgba(28, 28, 36, 0.85);
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.25), inset 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+@utility glass-border {
+  border-color: rgba(228, 228, 231, 0.75);
+}
+
+.dark .glass-border {
+  border-color: rgba(255, 255, 255, 0.09);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .glass-card {
+    transition: none !important;
+  }
+
+  .slide-in-from-top,
+  .slide-in-from-bottom,
+  .slide-in-from-left,
+  .slide-in-from-right,
+  .animate-in {
+    animation: none !important;
   }
 }
 
@@ -56,6 +205,63 @@
   to {
     opacity: 1;
   }
+}
+
+@keyframes fp-slide-in-top {
+  from {
+    transform: translateY(-100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes fp-slide-in-bottom {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes fp-slide-in-left {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes fp-slide-in-right {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@utility slide-in-from-top {
+  animation: fp-slide-in-top 300ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@utility slide-in-from-bottom {
+  animation: fp-slide-in-bottom 300ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@utility slide-in-from-left {
+  animation: fp-slide-in-left 300ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@utility slide-in-from-right {
+  animation: fp-slide-in-right 300ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@utility animate-in {
+  animation-duration: 300ms;
+  animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 /* Native theme cross-fade: compositor-driven snapshots instead of
@@ -95,13 +301,4 @@ html.theme-transition *:not(.theme-toggle-icon):not(.theme-toggle-icon *) {
   html.theme-transition *:not(.theme-toggle-icon):not(.theme-toggle-icon *) {
     transition: none;
   }
-}
-
-body {
-  background-color: var(--background);
-  color: var(--foreground);
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-  margin: 0;
-  padding: 0;
-  min-height: 100vh;
 }

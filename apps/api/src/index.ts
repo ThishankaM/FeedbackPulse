@@ -6,9 +6,9 @@ import { cors } from 'hono/cors';
 import { logger } from 'hono/logger';
 import { zValidator } from '@hono/zod-validator';
 import { z } from 'zod';
-import { getDb } from './db/runtime.js';
+import { getDb, type RuntimeDatabase } from './db/runtime.js';
 import { workspaces, users, workspaceMembers, boards, posts, changelogs, postVotes, comments, auditLogs } from './db/schema.js';
-import { eq, and, isNull, desc, asc, gte, lt } from 'drizzle-orm';
+import { eq, and, isNull, desc, asc, gte, lt, ilike, or } from 'drizzle-orm';
 import { toggleVote } from './db/queries/feedback.js';
 import { hashPassword, verifyPassword, createToken, verifyAuthToken, getJwtSecret } from './lib/auth.js';
 import { authMiddleware } from './middleware/auth.js';
@@ -17,7 +17,13 @@ import * as dotenv from 'dotenv';
 dotenv.config();
 getJwtSecret();
 
-const db = getDb();
+const db: RuntimeDatabase = new Proxy({} as any, {
+  get: (_, prop) => {
+    const target = getDb() as any;
+    const val = target[prop];
+    return typeof val === 'function' ? val.bind(target) : val;
+  },
+});
 const app = new Hono();
 
 async function getCurrentWorkspaceAccess(c: any, workspaceId: string) {
@@ -60,6 +66,52 @@ const percentDelta = (current: number, previous: number): string => {
   const delta = Math.round(((current - previous) / previous) * 100);
   return `${delta >= 0 ? '+' : ''}${delta}%`;
 };
+
+async function getUserVotedPostIds(workspaceId: string, userId?: string | null): Promise<Set<string>> {
+  if (!userId) return new Set();
+  const rows = await db
+    .select({ postId: postVotes.postId })
+    .from(postVotes)
+    .where(and(eq(postVotes.workspaceId, workspaceId), eq(postVotes.userId, userId)));
+  return new Set(rows.map((r) => r.postId));
+}
+
+async function resolveActiveMember(c: any, workspaceId: string) {
+  const authHeader = c.req.header('Authorization');
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return { error: 'Sign in to submit feedback', status: 401 as const, userId: null };
+  }
+
+  const payload = await verifyAuthToken(authHeader.substring(7));
+  if (!payload?.sub) {
+    return { error: 'Sign in to submit feedback', status: 401 as const, userId: null };
+  }
+
+  const [author] = await db
+    .select({ id: users.id, status: users.status })
+    .from(users)
+    .where(and(eq(users.id, payload.sub), isNull(users.deletedAt)));
+
+  if (!author || author.status !== 'ACTIVE') {
+    return { error: 'Your account is not active', status: 401 as const, userId: null };
+  }
+
+  const [membership] = await db
+    .select({ id: workspaceMembers.id })
+    .from(workspaceMembers)
+    .where(
+      and(
+        eq(workspaceMembers.workspaceId, workspaceId),
+        eq(workspaceMembers.userId, author.id)
+      )
+    );
+
+  if (!membership) {
+    return { error: 'You are not a member of this workspace', status: 403 as const, userId: null };
+  }
+
+  return { error: null, status: 200 as const, userId: author.id };
+}
 
 // Middlewares
 app.use('*', logger());
@@ -499,13 +551,20 @@ const routes = app
         )
         .orderBy(desc(changelogs.publishedAt), desc(changelogs.createdAt));
 
+      const access = await getCurrentWorkspaceAccess(c, workspace.id);
+      const votedPostIds = await getUserVotedPostIds(workspace.id, access.userId);
+      const postsWithVoteState = workspacePosts.map((p) => ({
+        ...p,
+        hasVoted: votedPostIds.has(p.id),
+      }));
+
       // Group posts by status
       const columns = {
-        UNDER_REVIEW: workspacePosts.filter((p) => p.status === 'UNDER_REVIEW'),
-        PLANNED: workspacePosts.filter((p) => p.status === 'PLANNED'),
-        IN_PROGRESS: workspacePosts.filter((p) => p.status === 'IN_PROGRESS'),
-        COMPLETED: workspacePosts.filter((p) => p.status === 'COMPLETED'),
-        CLOSED: workspacePosts.filter((p) => p.status === 'CLOSED'),
+        UNDER_REVIEW: postsWithVoteState.filter((p) => p.status === 'UNDER_REVIEW'),
+        PLANNED: postsWithVoteState.filter((p) => p.status === 'PLANNED'),
+        IN_PROGRESS: postsWithVoteState.filter((p) => p.status === 'IN_PROGRESS'),
+        COMPLETED: postsWithVoteState.filter((p) => p.status === 'COMPLETED'),
+        CLOSED: postsWithVoteState.filter((p) => p.status === 'CLOSED'),
       };
 
       return c.json({
@@ -570,6 +629,185 @@ const routes = app
     }
   })
 
+  // 6c. Public Board Workspace Info & Active Public Boards
+  .get('/api/b/:workspaceSlug', async (c) => {
+    const slug = c.req.param('workspaceSlug');
+    try {
+      const [workspace] = await db
+        .select({
+          id: workspaces.id,
+          name: workspaces.name,
+          slug: workspaces.slug,
+          logoUrl: workspaces.logoUrl,
+          primaryColor: workspaces.primaryColor,
+        })
+        .from(workspaces)
+        .where(eq(workspaces.slug, slug));
+
+      if (!workspace) {
+        return c.json({ error: 'Workspace not found' }, 404);
+      }
+
+      const publicBoards = await db
+        .select({
+          id: boards.id,
+          name: boards.name,
+          slug: boards.slug,
+          description: boards.description,
+          isDefault: boards.isDefault,
+        })
+        .from(boards)
+        .where(
+          and(
+            eq(boards.workspaceId, workspace.id),
+            eq(boards.isPublic, true),
+            isNull(boards.archivedAt)
+          )
+        );
+
+      return c.json({ workspace, boards: publicBoards }, 200);
+    } catch (error: any) {
+      return c.json({ error: error.message || 'Failed to fetch public board' }, 500);
+    }
+  })
+
+  // 6d. Board-Scoped Filtered & Sorted Posts List
+  .get(
+    '/api/boards/:boardId/posts',
+    zValidator(
+      'query',
+      z.object({
+        sort: z.enum(['trending', 'top', 'recent']).optional().default('trending'),
+        status: z.enum(['UNDER_REVIEW', 'PLANNED', 'IN_PROGRESS', 'COMPLETED', 'CLOSED']).optional(),
+        q: z.string().optional(),
+      })
+    ),
+    async (c) => {
+      const boardId = c.req.param('boardId');
+      const { sort, status, q } = c.req.valid('query');
+
+      try {
+        const [board] = await db
+          .select({ id: boards.id, workspaceId: boards.workspaceId, isPublic: boards.isPublic })
+          .from(boards)
+          .where(and(eq(boards.id, boardId), isNull(boards.archivedAt)));
+
+        if (!board) {
+          return c.json({ error: 'Board not found' }, 404);
+        }
+
+        const access = await getCurrentWorkspaceAccess(c, board.workspaceId);
+        if (!board.isPublic && !access.role) {
+          return c.json({ error: 'Board not found' }, 404);
+        }
+
+        const conditions = [
+          eq(posts.workspaceId, board.workspaceId),
+          eq(posts.boardId, board.id),
+          isNull(posts.deletedAt),
+          eq(posts.moderationStatus, 'APPROVED'),
+        ];
+        if (status) {
+          conditions.push(eq(posts.status, status));
+        }
+        const trimmedQ = q?.trim();
+        if (trimmedQ) {
+          const pattern = `%${trimmedQ}%`;
+          conditions.push(or(ilike(posts.title, pattern), ilike(posts.content, pattern))!);
+        }
+
+        const rows = await db
+          .select({
+            id: posts.id,
+            boardId: posts.boardId,
+            title: posts.title,
+            content: posts.content,
+            status: posts.status,
+            voteCount: posts.voteCount,
+            commentCount: posts.commentCount,
+            createdAt: posts.createdAt,
+            authorName: users.name,
+            authorAvatar: users.avatarUrl,
+          })
+          .from(posts)
+          .leftJoin(users, eq(posts.authorUserId, users.id))
+          .where(and(...conditions))
+          .orderBy(
+            sort === 'recent' ? desc(posts.createdAt) : desc(posts.voteCount),
+            desc(posts.createdAt)
+          );
+
+        const votedIds = await getUserVotedPostIds(board.workspaceId, access.userId);
+        let mapped = rows.map((p) => ({
+          ...p,
+          hasVoted: votedIds.has(p.id),
+        }));
+
+        if (sort === 'trending') {
+          mapped = mapped.sort(
+            (a, b) =>
+              b.voteCount + b.commentCount * 2 - (a.voteCount + a.commentCount * 2) ||
+              new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+          );
+        }
+
+        return c.json({ posts: mapped }, 200);
+      } catch (error: any) {
+        return c.json({ error: error.message || 'Failed to fetch board posts' }, 500);
+      }
+    }
+  )
+
+  // 6e. Board-Scoped Create Post (Sprint 2 strict min 10 chars content validation)
+  .post(
+    '/api/boards/:boardId/posts',
+    zValidator(
+      'json',
+      z.object({
+        title: z.string().trim().min(3, 'Title must be at least 3 characters').max(255),
+        content: z.string().trim().min(10, 'Description must be at least 10 characters'),
+        status: z.enum(['UNDER_REVIEW', 'PLANNED', 'IN_PROGRESS', 'COMPLETED', 'CLOSED']).default('UNDER_REVIEW'),
+      })
+    ),
+    async (c) => {
+      const boardId = c.req.param('boardId');
+      const { title, content, status } = c.req.valid('json');
+
+      try {
+        const [targetBoard] = await db
+          .select({ id: boards.id, workspaceId: boards.workspaceId })
+          .from(boards)
+          .where(and(eq(boards.id, boardId), isNull(boards.archivedAt)));
+
+        if (!targetBoard) {
+          return c.json({ error: 'Board not found' }, 404);
+        }
+
+        const member = await resolveActiveMember(c, targetBoard.workspaceId);
+        if (member.error || !member.userId) {
+          return c.json({ error: member.error || 'Unauthorized' }, member.status);
+        }
+
+        const [newPost] = await db
+          .insert(posts)
+          .values({
+            workspaceId: targetBoard.workspaceId,
+            boardId: targetBoard.id,
+            title,
+            content,
+            status,
+            authorUserId: member.userId,
+            moderationStatus: 'APPROVED',
+          })
+          .returning();
+
+        return c.json({ post: newPost }, 201);
+      } catch (error: any) {
+        return c.json({ error: error.message || 'Failed to create post' }, 500);
+      }
+    }
+  )
+
   // 7. Feedback: Create Post
   .post(
     '/api/posts',
@@ -587,38 +825,9 @@ const routes = app
       const { workspaceId, boardId, title, content, status } = c.req.valid('json');
 
       try {
-        // Creating feedback requires an authenticated, active workspace member
-        const authHeader = c.req.header('Authorization');
-        if (!authHeader || !authHeader.startsWith('Bearer ')) {
-          return c.json({ error: 'Sign in to submit feedback' }, 401);
-        }
-
-        const payload = await verifyAuthToken(authHeader.substring(7));
-        if (!payload?.sub) {
-          return c.json({ error: 'Sign in to submit feedback' }, 401);
-        }
-
-        const [author] = await db
-          .select({ id: users.id, status: users.status })
-          .from(users)
-          .where(and(eq(users.id, payload.sub), isNull(users.deletedAt)));
-
-        if (!author || author.status !== 'ACTIVE') {
-          return c.json({ error: 'Your account is not active' }, 401);
-        }
-
-        const [membership] = await db
-          .select({ id: workspaceMembers.id })
-          .from(workspaceMembers)
-          .where(
-            and(
-              eq(workspaceMembers.workspaceId, workspaceId),
-              eq(workspaceMembers.userId, author.id)
-            )
-          );
-
-        if (!membership) {
-          return c.json({ error: 'You are not a member of this workspace' }, 403);
+        const member = await resolveActiveMember(c, workspaceId);
+        if (member.error || !member.userId) {
+          return c.json({ error: member.error || 'Unauthorized' }, member.status);
         }
 
         // Verify the target board belongs to this workspace
@@ -639,7 +848,7 @@ const routes = app
             title,
             content,
             status,
-            authorUserId: author.id,
+            authorUserId: member.userId,
             moderationStatus: 'APPROVED',
           })
           .returning();
