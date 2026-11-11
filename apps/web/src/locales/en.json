@@ -687,5 +687,132 @@
       "madeFor": "Made for teams who listen",
       "operational": "All systems operational"
     }
+  },
+  "analytics": {
+    "title": "Analytics",
+    "refresh": "Refresh analytics",
+    "ranges": {
+      "7d": "7D",
+      "30d": "30D",
+      "90d": "90D",
+      "1y": "1Y"
+    },
+    "trend": {
+      "title": "Feedback Trend",
+      "items": "items"
+    },
+    "status": {
+      "title": "Feedback by Status",
+      "underReview": "Under Review",
+      "planned": "Planned",
+      "inProgress": "In Progress",
+      "completed": "Completed"
+    },
+    "dates": {
+      "oct1": "Oct 1",
+      "oct4": "Oct 4",
+      "oct8": "Oct 8",
+      "oct11": "Oct 11",
+      "oct14": "Oct 14",
+      "oct16": "Oct 16",
+      "oct19": "Oct 19",
+      "oct22": "Oct 22",
+      "oct25": "Oct 25",
+      "oct28": "Oct 28",
+      "oct30": "Oct 30",
+      "day1": "Day 1",
+      "day2": "Day 2",
+      "day3": "Day 3",
+      "day4": "Day 4",
+      "day5": "Day 5",
+      "day6": "Day 6",
+      "day7": "Day 7",
+      "aug": "Aug",
+      "sep": "Sep",
+      "oct": "Oct",
+      "q1": "Q1",
+      "q2": "Q2",
+      "q3": "Q3",
+      "q4": "Q4"
+    }
+  },
+  "settings": {
+    "title": "Workspace Settings",
+    "subtitle": "Manage your workspace, team, branding, and integrations.",
+    "loadError": "Failed to load workspace settings.",
+    "saveSuccess": "Workspace settings saved successfully!",
+    "saveError": "Failed to save workspace settings.",
+    "tabs": {
+      "general": "General",
+      "branding": "Branding",
+      "members": "Members",
+      "integrations": "Integrations",
+      "embedWidget": "Embed Widget",
+      "apiKeys": "API Keys",
+      "billing": "Billing",
+      "advanced": "Advanced"
+    },
+    "info": {
+      "title": "Workspace Information",
+      "description": "Basic information about your workspace.",
+      "nameLabel": "Workspace Name",
+      "slugLabel": "Workspace Slug",
+      "descLabel": "Description",
+      "descPlaceholder": "Collect, prioritize, and manage feature requests for your product.",
+      "saveChanges": "Save Changes"
+    },
+    "logo": {
+      "title": "Workspace Logo",
+      "hint": "Upload a logo for your workspace. Recommended: 512 × 512px.",
+      "uploadNew": "Upload New",
+      "remove": "Remove",
+      "promptUrl": "Enter image URL for workspace logo:"
+    },
+    "url": {
+      "title": "Workspace URL",
+      "description": "This is your public workspace where users can view and submit feedback."
+    },
+    "preview": {
+      "title": "Public Workspace Preview",
+      "description": "A preview of how your workspace looks to your users.",
+      "productFeedback": "Product Feedback"
+    },
+    "team": {
+      "title": "Team Members",
+      "description": "Manage who can access this workspace and their permissions.",
+      "inviteMember": "Invite Member",
+      "inviteModalTitle": "Invite Team Member",
+      "inviteNotice": "Team invitations will be sent directly to their email.",
+      "member": "Member",
+      "email": "Email",
+      "role": "Role",
+      "joined": "Joined",
+      "noMembers": "No team members found."
+    },
+    "roles": {
+      "owner": "Owner",
+      "admin": "Admin",
+      "member": "Member"
+    },
+    "widget": {
+      "title": "Embed Widget",
+      "description": "Add the FeedbackPulse widget to your website to collect feedback and show updates.",
+      "customize": "Customize Widget",
+      "customizeNotice": "Widget customization settings available in the next release.",
+      "docs": "View Documentation"
+    },
+    "integrations": {
+      "title": "Integrations",
+      "description": "Connect FeedbackPulse with your favorite tools.",
+      "connected": "Connected",
+      "configure": "Configure",
+      "connect": "Connect",
+      "slack": "Slack",
+      "discord": "Discord",
+      "github": "GitHub",
+      "slackDesc": "Get notifications in your Slack channels.",
+      "discordDesc": "Send updates to your Discord server.",
+      "githubDesc": "Link feedback to issues and pull requests."
+    }
   }
 }

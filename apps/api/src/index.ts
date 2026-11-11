@@ -317,6 +317,102 @@ const routes = app
     
     return c.json({ workspace }, 200);
   })
+  .patch(
+    '/api/workspaces/:slug',
+    authMiddleware,
+    zValidator(
+      'json',
+      z.object({
+        name: z.string().min(2).max(255).optional(),
+        slug: z.string().min(2).max(100).regex(/^[a-z0-9-]+$/).optional(),
+        logoUrl: z.string().url().optional().nullable().or(z.literal('')),
+        primaryColor: z.string().regex(/^#([0-9a-fA-F]{3}){1,2}$/).optional(),
+        description: z.string().max(500).optional(),
+      })
+    ),
+    async (c) => {
+      const currentSlug = c.req.param('slug');
+      const updates = c.req.valid('json');
+
+      try {
+        const [workspace] = await db.select().from(workspaces).where(eq(workspaces.slug, currentSlug));
+        if (!workspace) {
+          return c.json({ error: 'Workspace not found' }, 404);
+        }
+
+        const access = await getCurrentWorkspaceAccess(c, workspace.id);
+        if (!access.isAdmin) {
+          return c.json({ error: 'Only workspace admins can update settings' }, 403);
+        }
+
+        // If slug is changing, verify uniqueness
+        if (updates.slug && updates.slug !== workspace.slug) {
+          const [existing] = await db.select().from(workspaces).where(eq(workspaces.slug, updates.slug));
+          if (existing) {
+            return c.json({ error: 'Slug already taken' }, 409);
+          }
+        }
+
+        const currentSettings = (workspace.settings as Record<string, unknown>) || {};
+        const newSettings = updates.description !== undefined
+          ? { ...currentSettings, description: updates.description }
+          : currentSettings;
+
+        const updateData: Record<string, unknown> = {
+          settings: newSettings,
+          updatedAt: new Date(),
+        };
+        if (updates.name !== undefined) updateData.name = updates.name;
+        if (updates.slug !== undefined) updateData.slug = updates.slug;
+        if (updates.logoUrl !== undefined) updateData.logoUrl = updates.logoUrl || null;
+        if (updates.primaryColor !== undefined) updateData.primaryColor = updates.primaryColor;
+
+        const [updated] = await db
+          .update(workspaces)
+          .set(updateData)
+          .where(eq(workspaces.id, workspace.id))
+          .returning();
+
+        return c.json({ workspace: updated }, 200);
+      } catch (error: any) {
+        return c.json({ error: error.message || 'Failed to update workspace' }, 500);
+      }
+    }
+  )
+  .get('/api/workspaces/:slug/members', async (c) => {
+    const slug = c.req.param('slug');
+    try {
+      const [workspace] = await db.select().from(workspaces).where(eq(workspaces.slug, slug));
+      if (!workspace) {
+        return c.json({ error: 'Workspace not found' }, 404);
+      }
+
+      const membersList = await db
+        .select({
+          id: workspaceMembers.id,
+          userId: users.id,
+          name: users.name,
+          email: users.email,
+          avatarUrl: users.avatarUrl,
+          role: workspaceMembers.role,
+          status: workspaceMembers.status,
+          joinedAt: workspaceMembers.createdAt,
+        })
+        .from(workspaceMembers)
+        .innerJoin(users, eq(workspaceMembers.userId, users.id))
+        .where(
+          and(
+            eq(workspaceMembers.workspaceId, workspace.id),
+            isNull(users.deletedAt)
+          )
+        )
+        .orderBy(asc(workspaceMembers.createdAt));
+
+      return c.json({ members: membersList }, 200);
+    } catch (error: any) {
+      return c.json({ error: error.message || 'Failed to fetch members' }, 500);
+    }
+  })
   .post(
     '/api/workspaces',
     authMiddleware,
@@ -589,6 +685,159 @@ const routes = app
       return c.json({ error: error.message || 'Failed to fetch dashboard data' }, 500);
     }
   })
+
+  // 6a-2. Workspace Analytics Data
+  .get(
+    '/api/workspaces/:slug/analytics',
+    zValidator(
+      'query',
+      z.object({
+        range: z.enum(['7D', '30D', '90D', '1Y']).optional().default('30D'),
+      })
+    ),
+    async (c) => {
+      const slug = c.req.param('slug');
+      const { range } = c.req.valid('query');
+
+      try {
+        const [workspace] = await db.select().from(workspaces).where(eq(workspaces.slug, slug));
+        if (!workspace) {
+          return c.json({ error: 'Workspace not found' }, 404);
+        }
+
+        // Query all non-deleted, approved feedback posts for this workspace
+        const allPosts = await db
+          .select({
+            id: posts.id,
+            status: posts.status,
+            createdAt: posts.createdAt,
+          })
+          .from(posts)
+          .where(
+            and(
+              eq(posts.workspaceId, workspace.id),
+              isNull(posts.deletedAt),
+              eq(posts.moderationStatus, 'APPROVED')
+            )
+          );
+
+        // Status counts and percentages
+        const statusCounts = {
+          UNDER_REVIEW: 0,
+          PLANNED: 0,
+          IN_PROGRESS: 0,
+          COMPLETED: 0,
+          CLOSED: 0,
+        };
+
+        for (const p of allPosts) {
+          if (p.status in statusCounts) {
+            statusCounts[p.status as keyof typeof statusCounts]++;
+          }
+        }
+
+        const totalPosts = allPosts.length;
+        const calcPercent = (count: number) => (totalPosts > 0 ? Math.round((count / totalPosts) * 100) : 0);
+
+        const statusBreakdown = [
+          {
+            key: 'under_review',
+            status: 'UNDER_REVIEW',
+            count: statusCounts.UNDER_REVIEW,
+            percentage: calcPercent(statusCounts.UNDER_REVIEW),
+          },
+          {
+            key: 'planned',
+            status: 'PLANNED',
+            count: statusCounts.PLANNED,
+            percentage: calcPercent(statusCounts.PLANNED),
+          },
+          {
+            key: 'in_progress',
+            status: 'IN_PROGRESS',
+            count: statusCounts.IN_PROGRESS,
+            percentage: calcPercent(statusCounts.IN_PROGRESS),
+          },
+          {
+            key: 'completed',
+            status: 'COMPLETED',
+            count: statusCounts.COMPLETED,
+            percentage: calcPercent(statusCounts.COMPLETED),
+          },
+        ];
+
+        // Trend calculation based on range
+        const now = new Date();
+        const trend: Array<{ date: string; value: number }> = [];
+
+        if (range === '7D') {
+          // Last 7 days, each day
+          for (let i = 6; i >= 0; i--) {
+            const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() - i);
+            const nextD = new Date(now.getFullYear(), now.getMonth(), now.getDate() - i + 1);
+            const count = allPosts.filter((p) => {
+              const created = new Date(p.createdAt);
+              return created >= d && created < nextD;
+            }).length;
+            const dateLabel = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            trend.push({ date: dateLabel, value: count });
+          }
+        } else if (range === '90D') {
+          // 3 monthly buckets
+          for (let i = 2; i >= 0; i--) {
+            const m = new Date(now.getFullYear(), now.getMonth() - i, 1);
+            const nextM = new Date(now.getFullYear(), now.getMonth() - i + 1, 1);
+            const count = allPosts.filter((p) => {
+              const created = new Date(p.createdAt);
+              return created >= m && created < nextM;
+            }).length;
+            const dateLabel = m.toLocaleDateString('en-US', { month: 'short' });
+            trend.push({ date: dateLabel, value: count });
+          }
+        } else if (range === '1Y') {
+          // 4 quarters
+          const currentQuarter = Math.floor(now.getMonth() / 3);
+          for (let i = 3; i >= 0; i--) {
+            const qIndex = currentQuarter - i;
+            const qYear = now.getFullYear() + Math.floor(qIndex / 4);
+            const normalizedQ = ((qIndex % 4) + 4) % 4;
+            const qStart = new Date(qYear, normalizedQ * 3, 1);
+            const qEnd = new Date(qYear, (normalizedQ + 1) * 3, 1);
+            const count = allPosts.filter((p) => {
+              const created = new Date(p.createdAt);
+              return created >= qStart && created < qEnd;
+            }).length;
+            trend.push({ date: `Q${normalizedQ + 1}`, value: count });
+          }
+        } else {
+          // Default: 30D - 5 chronological intervals from 30 days ago up to today
+          const daysBack = [30, 22, 15, 8, 0];
+          // daysBack is ordered [30, 22, 15, 8, 0] so iterating index 0..4 gives oldest to newest
+          for (let i = 0; i < daysBack.length; i++) {
+            const days = daysBack[i];
+            const targetDate = new Date(now.getTime() - days * 24 * 60 * 60 * 1000);
+            const windowEnd = i === daysBack.length - 1
+              ? now
+              : new Date(now.getTime() - daysBack[i + 1] * 24 * 60 * 60 * 1000);
+            const count = allPosts.filter((p) => {
+              const created = new Date(p.createdAt);
+              return created >= targetDate && created <= windowEnd;
+            }).length;
+            const dateLabel = targetDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            trend.push({ date: dateLabel, value: count });
+          }
+        }
+
+        return c.json({
+          totalFeedback: totalPosts,
+          statusBreakdown,
+          trend,
+        }, 200);
+      } catch (error: any) {
+        return c.json({ error: error.message || 'Failed to fetch analytics data' }, 500);
+      }
+    }
+  )
 
   // 6b. Workspace Changelogs List
   .get('/api/workspaces/:slug/changelogs', async (c) => {

@@ -9,6 +9,8 @@ import { DashboardView } from './components/dashboard/DashboardView';
 import { FeedbackBoardView } from './components/feedback/FeedbackBoardView';
 import { RoadmapView } from './components/roadmap/RoadmapView';
 import { ChangelogView } from './components/changelog/ChangelogView';
+import { AnalyticsView } from './components/analytics/AnalyticsView';
+import { SettingsView } from './components/settings/SettingsView';
 import { NewFeedbackModal } from './components/feedback/NewFeedbackModal';
 import { LandingPage } from './components/landing/LandingPage';
 import { Dialog, DialogHeader, DialogTitle, DialogDescription } from './components/ui/dialog';
@@ -37,6 +39,12 @@ function parseAppRoute(pathname: string): ParsedRoute {
     }
     if (parts[2] === 'changelog') {
       return { view: 'changelog', slug, postId: null };
+    }
+    if (parts[2] === 'analytics') {
+      return { view: 'analytics', slug, postId: null };
+    }
+    if (parts[2] === 'settings') {
+      return { view: 'settings', slug, postId: null };
     }
     return { view: 'feedback', slug, postId: null };
   }
@@ -451,6 +459,19 @@ export default function App() {
                   }}
                   onViewChange={handleViewChange}
                   refreshTrigger={refreshTrigger}
+                />
+              ) : currentView === 'analytics' ? (
+                <AnalyticsView
+                  workspaceSlug={activeWorkspace.slug}
+                />
+              ) : currentView === 'settings' ? (
+                <SettingsView
+                  workspaceSlug={activeWorkspace.slug}
+                  onWorkspaceUpdated={(newSlug) => {
+                    setActiveWorkspace((prev) => ({ ...prev, slug: newSlug }));
+                    window.history.replaceState(null, '', `/b/${newSlug}/settings`);
+                    setRefreshTrigger((prev) => prev + 1);
+                  }}
                 />
               ) : (
                 <div className="flex flex-col items-center justify-center min-h-[60vh] text-center p-8">
