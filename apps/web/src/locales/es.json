@@ -599,5 +599,132 @@
     "initials": "WS",
     "returnToDashboard": "Volver al panel",
     "comingSoon": "Esta sección forma parte de la hoja de ruta de FeedbackPulse y se cargará dinámicamente."
+  },
+  "analytics": {
+    "title": "Analítica",
+    "refresh": "Actualizar analítica",
+    "ranges": {
+      "7d": "7D",
+      "30d": "30D",
+      "90d": "90D",
+      "1y": "1Y"
+    },
+    "trend": {
+      "title": "Tendencia de feedback",
+      "items": "elementos"
+    },
+    "status": {
+      "title": "Feedback por estado",
+      "underReview": "En revisión",
+      "planned": "Planeado",
+      "inProgress": "En progreso",
+      "completed": "Completado"
+    },
+    "dates": {
+      "oct1": "1 Oct",
+      "oct4": "4 Oct",
+      "oct8": "8 Oct",
+      "oct11": "11 Oct",
+      "oct14": "14 Oct",
+      "oct16": "16 Oct",
+      "oct19": "19 Oct",
+      "oct22": "22 Oct",
+      "oct25": "25 Oct",
+      "oct28": "28 Oct",
+      "oct30": "30 Oct",
+      "day1": "Día 1",
+      "day2": "Día 2",
+      "day3": "Día 3",
+      "day4": "Día 4",
+      "day5": "Día 5",
+      "day6": "Día 6",
+      "day7": "Día 7",
+      "aug": "Ago",
+      "sep": "Sep",
+      "oct": "Oct",
+      "q1": "T1",
+      "q2": "T2",
+      "q3": "T3",
+      "q4": "T4"
+    }
+  },
+  "settings": {
+    "title": "Ajustes del espacio de trabajo",
+    "subtitle": "Gestiona tu espacio, equipo, marca e integraciones.",
+    "loadError": "Error al cargar la configuración del espacio de trabajo.",
+    "saveSuccess": "¡Ajustes guardados correctamente!",
+    "saveError": "Error al guardar los ajustes.",
+    "tabs": {
+      "general": "General",
+      "branding": "Marca",
+      "members": "Miembros",
+      "integrations": "Integraciones",
+      "embedWidget": "Widget incrustable",
+      "apiKeys": "Claves API",
+      "billing": "Facturación",
+      "advanced": "Avanzado"
+    },
+    "info": {
+      "title": "Información del espacio",
+      "description": "Información básica sobre tu espacio de trabajo.",
+      "nameLabel": "Nombre del espacio",
+      "slugLabel": "Slug del espacio",
+      "descLabel": "Descripción",
+      "descPlaceholder": "Recopila, prioriza y gestiona las solicitudes de funciones para tu producto.",
+      "saveChanges": "Guardar cambios"
+    },
+    "logo": {
+      "title": "Logotipo del espacio",
+      "hint": "Sube un logo para tu espacio. Recomendado: 512 × 512px.",
+      "uploadNew": "Subir nuevo",
+      "remove": "Eliminar",
+      "promptUrl": "Introduce la URL de la imagen del logotipo:"
+    },
+    "url": {
+      "title": "URL del espacio de trabajo",
+      "description": "Este es tu espacio público donde los usuarios pueden ver y enviar feedback."
+    },
+    "preview": {
+      "title": "Vista previa pública",
+      "description": "Una vista previa de cómo ven tus usuarios tu espacio.",
+      "productFeedback": "Feedback de producto"
+    },
+    "team": {
+      "title": "Miembros del equipo",
+      "description": "Gestiona quién tiene acceso a este espacio y sus permisos.",
+      "inviteMember": "Invitar miembro",
+      "inviteModalTitle": "Invitar miembro al equipo",
+      "inviteNotice": "Las invitaciones de equipo se enviarán directamente a su correo.",
+      "member": "Miembro",
+      "email": "Correo",
+      "role": "Rol",
+      "joined": "Fecha de unión",
+      "noMembers": "No se encontraron miembros."
+    },
+    "roles": {
+      "owner": "Propietario",
+      "admin": "Administrador",
+      "member": "Miembro"
+    },
+    "widget": {
+      "title": "Widget incrustable",
+      "description": "Añade el widget de FeedbackPulse a tu web para recopilar opiniones y mostrar novedades.",
+      "customize": "Personalizar widget",
+      "customizeNotice": "Opciones avanzadas de personalización disponibles en la próxima versión.",
+      "docs": "Ver documentación"
+    },
+    "integrations": {
+      "title": "Integraciones",
+      "description": "Conecta FeedbackPulse con tus herramientas favoritas.",
+      "connected": "Conectado",
+      "configure": "Configurar",
+      "connect": "Conectar",
+      "slack": "Slack",
+      "discord": "Discord",
+      "github": "GitHub",
+      "slackDesc": "Recibe notificaciones en tus canales de Slack.",
+      "discordDesc": "Envía actualizaciones a tu servidor de Discord.",
+      "githubDesc": "Vincula feedback con issues y pull requests."
+    }
   }
 }
