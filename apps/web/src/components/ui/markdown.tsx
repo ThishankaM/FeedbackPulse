@@ -8,12 +8,29 @@ export interface MarkdownProps {
 
 const INLINE_PATTERN = /(\*\*[^*]+\*\*|\*[^*]+\*|`[^`]+`|\[[^\]]+\]\([^)]+\))/g;
 
-function isSafeHttpUrl(rawUrl: string): boolean {
+function toSafeHttpUrl(rawUrl: string): string | null {
+  const trimmed = rawUrl.trim();
+  if (!/^https?:\/\//i.test(trimmed)) {
+    return null;
+  }
   try {
-    const parsed = new URL(rawUrl.trim());
-    return parsed.protocol === 'http:' || parsed.protocol === 'https:';
+    const parsed = new URL(trimmed);
+    const scheme =
+      parsed.protocol === 'https:'
+        ? 'https://'
+        : parsed.protocol === 'http:'
+          ? 'http://'
+          : null;
+    if (!scheme || !parsed.host) {
+      return null;
+    }
+    const pathname =
+      parsed.pathname === '/' && !trimmed.endsWith('/') && !parsed.search && !parsed.hash
+        ? ''
+        : parsed.pathname;
+    return `${scheme}${parsed.host}${pathname}${parsed.search}${parsed.hash}`;
   } catch {
-    return false;
+    return null;
   }
 }
 
@@ -48,11 +65,12 @@ function renderInline(text: string, keyPrefix: string): React.ReactNode[] {
     const linkMatch = part.match(/^\[([^\]]+)\]\(([^)]+)\)$/);
     if (linkMatch) {
       const [, label, href] = linkMatch;
-      if (isSafeHttpUrl(href)) {
+      const safeHref = toSafeHttpUrl(href);
+      if (safeHref && (safeHref.startsWith('https://') || safeHref.startsWith('http://'))) {
         return (
           <a
             key={key}
-            href={href.trim()}
+            href={safeHref}
             target="_blank"
             rel="noopener noreferrer"
             className="font-medium text-primary underline underline-offset-2 hover:opacity-80"
