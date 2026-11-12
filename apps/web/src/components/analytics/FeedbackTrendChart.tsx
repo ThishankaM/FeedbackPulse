@@ -142,13 +142,13 @@ export function FeedbackTrendChart({ data, className }: FeedbackTrendChartProps)
                 stroke="currentColor"
                 strokeOpacity={tick === 0 ? '0.2' : '0.08'}
                 strokeDasharray={tick === 0 ? 'none' : '4 4'}
-                className="text-foreground/40"
+                className="text-foreground/55"
               />
               <text
                 x={padding.left - 12}
                 y={y + 4}
                 textAnchor="end"
-                className="fill-muted-foreground text-[11px] font-medium"
+                className="fill-muted-foreground text-[12px] font-semibold"
               >
                 {tick}
               </text>
@@ -228,7 +228,7 @@ export function FeedbackTrendChart({ data, className }: FeedbackTrendChartProps)
               x={x}
               y={y}
               textAnchor="middle"
-              className="fill-muted-foreground text-[11px] font-medium"
+              className="fill-muted-foreground text-[12px] font-semibold"
             >
               {pt.date}
             </text>
@@ -239,13 +239,13 @@ export function FeedbackTrendChart({ data, className }: FeedbackTrendChartProps)
       {/* Floating Tooltip */}
       {hoveredPoint && (
         <div
-          className="absolute z-20 pointer-events-none transform -translate-x-1/2 -translate-y-full px-2.5 py-1.5 rounded-lg bg-popover/90 border border-border shadow-lg backdrop-blur-md text-xs font-semibold text-popover-foreground transition-all duration-75"
+          className="absolute z-20 pointer-events-none transform -translate-x-1/2 -translate-y-full px-3 py-2 rounded-xl bg-popover/98 border border-border shadow-xl backdrop-blur-md text-xs font-semibold text-popover-foreground transition-all duration-75"
           style={{
             left: `${(hoveredPoint.x / width) * 100}%`,
             top: `${(hoveredPoint.y / height) * 100 - 4}%`,
           }}
         >
-          <div className="text-[10px] text-muted-foreground font-normal">
+          <div className="text-[11px] text-muted-foreground font-medium">
             {hoveredPoint.point.date}
           </div>
           <div>{hoveredPoint.point.value} {t('analytics.trend.items')}</div>

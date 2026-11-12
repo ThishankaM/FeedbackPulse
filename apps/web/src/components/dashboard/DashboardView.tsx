@@ -326,24 +326,24 @@ export function DashboardView({
 
   return (
     <div className="fp-dashboard-view relative flex-1 space-y-7 px-4 py-5 sm:px-6 sm:py-7 lg:px-8">
-      <header className="relative flex flex-col gap-5 overflow-hidden rounded-3xl border border-indigo-200/70 bg-gradient-to-br from-white via-indigo-50/70 to-violet-50/80 p-5 shadow-sm dark:border-white/10 dark:from-slate-900 dark:via-slate-900 dark:to-indigo-950/50 sm:flex-row sm:items-center sm:justify-between sm:p-7">
+      <header className="relative flex flex-col gap-5 overflow-hidden rounded-3xl border border-indigo-200/90 bg-gradient-to-br from-white/95 via-indigo-50/90 to-violet-50/90 p-5 shadow-sm ring-1 ring-white/60 backdrop-blur-xl dark:border-white/14 dark:from-slate-900/95 dark:via-slate-900/92 dark:to-indigo-950/80 dark:ring-white/5 sm:flex-row sm:items-center sm:justify-between sm:p-7">
         <div className="pointer-events-none absolute -right-14 -top-24 h-64 w-64 rounded-full bg-indigo-400/15 blur-3xl" />
         <div className="relative">
           <span className="text-xs font-semibold uppercase tracking-[0.16em] text-indigo-600 dark:text-indigo-400">{t('dashboard.overviewLabel')}</span>
           <h1 className="mt-2 text-2xl font-bold tracking-tight text-slate-950 dark:text-white sm:text-3xl">
             {t('dashboard.welcome', { name: displayName })}
           </h1>
-          <p className="mt-1.5 text-sm text-slate-600 dark:text-slate-300">
+          <p className="mt-2 text-sm leading-relaxed text-slate-700 dark:text-slate-200">
             {t('dashboard.subtitle')}
           </p>
         </div>
-        <div className="relative flex items-center gap-3 self-start rounded-2xl border border-white/70 bg-white/70 px-4 py-3 shadow-sm backdrop-blur dark:border-white/10 dark:bg-white/[0.04] sm:self-center">
+        <div className="relative flex items-center gap-3 self-start rounded-2xl border border-white/85 bg-white/90 px-4 py-3 shadow-sm backdrop-blur-md dark:border-white/14 dark:bg-slate-950/70 sm:self-center">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-300">
             <MessagesSquare className="h-5 w-5" aria-hidden="true" />
           </div>
           <div>
             <p className="text-sm font-semibold text-slate-900 dark:text-white">{t('dashboard.activityLabel')}</p>
-            <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">{t('dashboard.metricsDescription')}</p>
+            <p className="mt-0.5 text-xs leading-relaxed text-slate-600 dark:text-slate-300">{t('dashboard.metricsDescription')}</p>
           </div>
         </div>
       </header>
@@ -399,8 +399,8 @@ export function DashboardView({
       </div>
 
       {/* 3. Status Filter Tabs & Action Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-2 border-t border-slate-200/80 dark:border-slate-800/80">
-        <div className="flex items-center gap-1 overflow-x-auto no-scrollbar pb-1">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-2">
+        <div className="flex items-center gap-1 overflow-x-auto rounded-2xl border border-border/70 bg-card/90 p-1 shadow-sm backdrop-blur-xl no-scrollbar dark:bg-card/80">
           {tabs.map((tab) => {
             const isActive = activeTab === tab.id;
             return (
@@ -408,10 +408,10 @@ export function DashboardView({
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
                 className={cn(
-                  'px-3.5 py-1.5 text-sm font-semibold rounded-lg transition-all shrink-0 cursor-pointer',
+                  'px-3.5 py-2 text-sm font-semibold rounded-xl transition-all shrink-0 cursor-pointer',
                   isActive
-                    ? 'fp-tab-active text-blue-600 dark:text-blue-400 bg-blue-50/80 dark:bg-blue-950/40 border-b-2 border-blue-600'
-                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                    ? 'fp-tab-active bg-primary text-primary-foreground shadow-sm'
+                    : 'text-foreground/75 hover:bg-accent hover:text-foreground'
                 )}
               >
                 {tab.label}

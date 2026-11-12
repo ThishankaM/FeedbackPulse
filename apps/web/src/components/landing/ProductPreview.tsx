@@ -68,16 +68,16 @@ export function ProductPreview() {
           <span className="size-2.5 rounded-full bg-[#febc2e]" />
           <span className="size-2.5 rounded-full bg-[#28c840]" />
         </div>
-        <div className="hidden min-w-72 items-center justify-center gap-2 rounded-lg bg-white/[0.07] px-4 py-1.5 text-[10px] font-medium text-white/58 sm:flex">
+        <div className="hidden min-w-72 items-center justify-center gap-2 rounded-lg bg-white/[0.09] px-4 py-1.5 text-[10px] font-medium text-white/75 sm:flex">
           <Search className="size-3" />
           {t('landing.visuals.preview.search')}
-          <span className="ml-auto rounded border border-white/10 px-1.5 py-0.5 text-[8px] text-white/35">
+          <span className="ml-auto rounded border border-white/15 px-1.5 py-0.5 text-[8px] text-white/65">
             ⌘ K
           </span>
         </div>
         <div className="flex items-center gap-2">
           <button
-            className="grid size-7 place-items-center rounded-lg bg-white/[0.07] text-white/55"
+            className="grid size-7 place-items-center rounded-lg bg-white/[0.07] text-white/75"
             aria-label={t('common.notifications')}
           >
             <Bell className="size-3.5" />
@@ -95,9 +95,9 @@ export function ProductPreview() {
               <MessageCircle className="size-4 fill-white" />
             </div>
             <span className="text-[12px] font-extrabold tracking-[-0.03em]">{t('nav.brand')}</span>
-            <ChevronDown className="ml-auto size-3.5 text-white/35" />
+            <ChevronDown className="ml-auto size-3.5 text-white/65" />
           </div>
-          <div className="mt-4 px-2 text-[9px] font-semibold uppercase tracking-[0.13em] text-white/30">
+          <div className="mt-4 px-2 text-[9px] font-semibold uppercase tracking-[0.13em] text-white/65">
             {t('landing.visuals.preview.workspace')}
           </div>
           <nav className="mt-2 space-y-1">
@@ -107,7 +107,7 @@ export function ProductPreview() {
                 <div
                   key={item.id}
                   className={`flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-[10px] font-medium ${
-                    item.active ? 'bg-white/[0.1] text-white' : 'text-white/48'
+                    item.active ? 'bg-white/[0.12] text-white' : 'text-white/72'
                   }`}
                 >
                   <Icon className="size-3.5" />
@@ -126,7 +126,7 @@ export function ProductPreview() {
               <Sparkles className="size-3.5 text-[#6d92ff]" />
               {t('landing.visuals.preview.aiInsights')}
             </div>
-            <p className="mt-1.5 text-[8px] leading-relaxed text-white/38">
+            <p className="mt-1.5 text-[9px] leading-relaxed text-white/68">
               {t('landing.visuals.preview.trending')}
             </p>
             <div className="mt-2.5 flex items-center gap-1 text-[8px] font-semibold text-[#7ea0ff]">
@@ -139,7 +139,7 @@ export function ProductPreview() {
         <main className="min-w-0 flex-1 overflow-hidden bg-[#f7f7f5] p-4 dark:bg-[#111114] sm:p-6">
           <div className="flex items-start justify-between gap-4">
             <div>
-              <div className="flex items-center gap-2 text-[9px] font-medium text-[#8a8a90] dark:text-white/38">
+              <div className="flex items-center gap-2 text-[9px] font-medium text-[#66676f] dark:text-white/68">
                 <span>{t('landing.visuals.preview.workspace')}</span>
                 <span>/</span>
                 <span>{t('landing.visuals.preview.feedback')}</span>
@@ -147,7 +147,7 @@ export function ProductPreview() {
               <h3 className="mt-1.5 text-[18px] font-bold tracking-[-0.04em] text-[#161618] dark:text-white sm:text-[22px]">
                 {t('landing.visuals.preview.customerFeedback')}
               </h3>
-              <p className="mt-1 text-[9px] text-[#8a8a90] dark:text-white/38">
+              <p className="mt-1 text-[9px] text-[#66676f] dark:text-white/68">
                 {t('landing.visuals.preview.subtitle')}
               </p>
             </div>
@@ -162,7 +162,7 @@ export function ProductPreview() {
               const Icon = metric.icon;
               return (
                 <div key={metric.key} className="rounded-xl border border-black/[0.07] bg-white p-2.5 dark:border-white/10 dark:bg-[#19191d] sm:p-3">
-                  <div className="flex items-center justify-between text-[8px] font-medium text-[#8a8a90] dark:text-white/38">
+                  <div className="flex items-center justify-between text-[8px] font-medium text-[#66676f] dark:text-white/68">
                     <span className="truncate">{t(`landing.visuals.preview.${metric.key}`)}</span>
                     <Icon className="size-3 text-[#b1b1b6]" />
                   </div>
@@ -187,14 +187,14 @@ export function ProductPreview() {
                   className={`rounded-lg px-2.5 py-1.5 text-[8px] font-semibold ${
                     index === 0
                       ? 'bg-white text-[#161618] shadow-sm ring-1 ring-black/[0.06] dark:bg-white/10 dark:text-white dark:ring-white/10'
-                      : 'text-[#8a8a90] dark:text-white/38'
+                      : 'text-[#66676f] dark:text-white/68'
                   }`}
                 >
                   {t(`landing.visuals.preview.${tabKey}`)}
                 </span>
               ))}
             </div>
-            <MoreHorizontal className="size-4 text-[#a1a1a6] dark:text-white/35" />
+            <MoreHorizontal className="size-4 text-[#777881] dark:text-white/60" />
           </div>
 
           <div className="mt-2.5 grid gap-2.5 md:grid-cols-2">
@@ -207,7 +207,7 @@ export function ProductPreview() {
               >
                 <div className="flex items-start gap-2.5">
                   <div className="flex w-8 shrink-0 flex-col items-center rounded-lg border border-black/[0.08] bg-[#fafaf9] py-1.5 dark:border-white/10 dark:bg-white/[0.04]">
-                    <span className="text-[7px] text-[#7b7b82] dark:text-white/35">▲</span>
+                    <span className="text-[7px] text-[#66676f] dark:text-white/60">▲</span>
                     <span className="text-[9px] font-extrabold text-[#161618] dark:text-white">{card.votes}</span>
                   </div>
                   <div className="min-w-0 flex-1">
@@ -217,7 +217,7 @@ export function ProductPreview() {
                     <p className="mt-1.5 text-[10px] font-semibold leading-snug text-[#242429] dark:text-white/82 sm:text-[11px]">
                       {t(`landing.visuals.preview.cards.${card.key}.title`)}
                     </p>
-                    <div className="mt-3 flex items-center gap-1.5 text-[8px] text-[#96969c] dark:text-white/35">
+                    <div className="mt-3 flex items-center gap-1.5 text-[8px] text-[#686971] dark:text-white/62">
                       <span className={`grid size-5 place-items-center rounded-full text-[6px] font-bold ${card.avatarTone}`}>
                         {card.avatar}
                       </span>

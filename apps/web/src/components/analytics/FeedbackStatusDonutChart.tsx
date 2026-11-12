@@ -100,7 +100,7 @@ export function FeedbackStatusDonutChart({ segments, className }: FeedbackStatus
                   <div className="text-2xl font-bold tracking-tight text-foreground">
                     {active.percentage}%
                   </div>
-                  <div className="text-xs font-medium text-muted-foreground max-w-[90px] truncate">
+                  <div className="text-sm font-semibold text-muted-foreground max-w-[90px] truncate">
                     {active.label}
                   </div>
                 </div>
@@ -111,7 +111,7 @@ export function FeedbackStatusDonutChart({ segments, className }: FeedbackStatus
               <div className="text-2xl font-bold tracking-tight text-foreground">
                 100%
               </div>
-              <div className="text-xs font-medium text-muted-foreground">
+              <div className="text-sm font-semibold text-muted-foreground">
                 Total
               </div>
             </div>

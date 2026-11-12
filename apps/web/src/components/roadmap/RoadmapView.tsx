@@ -482,9 +482,9 @@ export function RoadmapView({
           <div className="space-y-3 flex-1 overflow-y-auto max-h-[calc(100vh-320px)] pr-1">
             {plannedItems.length === 0 ? (
               <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-border/70 py-10 px-4 text-center">
-                <Clock className="h-7 w-7 text-muted-foreground/40 mb-2" />
+                <Clock className="h-7 w-7 text-muted-foreground/70 mb-2" />
                 <p className="text-xs font-semibold text-muted-foreground">{t('roadmap.emptyPlannedTitle')}</p>
-                <p className="text-[11px] text-muted-foreground/70 mt-0.5">{t('roadmap.emptyPlannedDesc')}</p>
+                <p className="text-xs text-muted-foreground mt-1">{t('roadmap.emptyPlannedDesc')}</p>
               </div>
             ) : (
               plannedItems.map((item) => (
@@ -558,9 +558,9 @@ export function RoadmapView({
           <div className="space-y-3 flex-1 overflow-y-auto max-h-[calc(100vh-320px)] pr-1">
             {inProgressItems.length === 0 ? (
               <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-border/70 py-10 px-4 text-center">
-                <Activity className="h-7 w-7 text-primary/40 mb-2" />
+                <Activity className="h-7 w-7 text-primary/70 mb-2" />
                 <p className="text-xs font-semibold text-muted-foreground">{t('roadmap.emptyInProgressTitle')}</p>
-                <p className="text-[11px] text-muted-foreground/70 mt-0.5">{t('roadmap.emptyInProgressDesc')}</p>
+                <p className="text-xs text-muted-foreground mt-1">{t('roadmap.emptyInProgressDesc')}</p>
               </div>
             ) : (
               inProgressItems.map((item) => (
@@ -631,9 +631,9 @@ export function RoadmapView({
           <div className="space-y-3 flex-1 overflow-y-auto max-h-[calc(100vh-320px)] pr-1">
             {completedItems.length === 0 ? (
               <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-border/70 py-10 px-4 text-center">
-                <CheckCircle2 className="h-7 w-7 text-emerald-500/40 mb-2" />
+                <CheckCircle2 className="h-7 w-7 text-emerald-500/70 mb-2" />
                 <p className="text-xs font-semibold text-muted-foreground">{t('roadmap.emptyCompletedTitle')}</p>
-                <p className="text-[11px] text-muted-foreground/70 mt-0.5">{t('roadmap.emptyCompletedDesc')}</p>
+                <p className="text-xs text-muted-foreground mt-1">{t('roadmap.emptyCompletedDesc')}</p>
               </div>
             ) : (
               completedItems.map((item) => (

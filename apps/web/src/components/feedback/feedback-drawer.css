@@ -32,10 +32,10 @@
   min-width: 620px;
   flex-direction: column;
   overflow: hidden;
-  border-left: 1px solid rgba(255, 255, 255, 0.74);
+  border-left: 1px solid rgba(255, 255, 255, 0.92);
   border-radius: 28px 0 0 28px;
   background:
-    linear-gradient(155deg, rgba(251, 253, 255, 0.96), rgba(246, 249, 255, 0.9)),
+    linear-gradient(155deg, rgba(251, 253, 255, 0.99), rgba(246, 249, 255, 0.97)),
     radial-gradient(circle at 100% 0%, rgba(67, 108, 255, 0.14), transparent 30rem);
   box-shadow:
     -34px 0 90px -40px rgba(15, 23, 42, 0.62),
@@ -47,9 +47,9 @@
 }
 
 .dark .fp-discussion-drawer {
-  border-left-color: rgba(255, 255, 255, 0.1);
+  border-left-color: rgba(255, 255, 255, 0.16);
   background:
-    linear-gradient(155deg, rgba(18, 22, 32, 0.97), rgba(10, 13, 21, 0.94)),
+    linear-gradient(155deg, rgba(20, 25, 37, 0.99), rgba(10, 14, 23, 0.98)),
     radial-gradient(circle at 100% 0%, rgba(55, 89, 203, 0.2), transparent 30rem);
   color: #f5f7fb;
   box-shadow:
@@ -71,8 +71,8 @@
 
 .fp-drawer-summary,
 .fp-drawer-composer {
-  border: 1px solid rgba(255, 255, 255, 0.78);
-  background: rgba(255, 255, 255, 0.68);
+  border: 1px solid rgba(255, 255, 255, 0.94);
+  background: rgba(255, 255, 255, 0.86);
   box-shadow:
     0 12px 30px -26px rgba(30, 41, 59, 0.48),
     inset 0 1px 0 rgba(255, 255, 255, 0.92);
@@ -80,22 +80,22 @@
 
 .dark .fp-drawer-summary,
 .dark .fp-drawer-composer {
-  border-color: rgba(255, 255, 255, 0.09);
-  background: rgba(255, 255, 255, 0.045);
+  border-color: rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.07);
   box-shadow:
     0 14px 34px -26px rgba(0, 0, 0, 0.95),
     inset 0 1px 0 rgba(255, 255, 255, 0.055);
 }
 
 .fp-drawer-comment {
-  border: 1px solid rgba(255, 255, 255, 0.72);
-  background: rgba(255, 255, 255, 0.78);
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.9);
   box-shadow: 0 8px 22px -22px rgba(30, 41, 59, 0.5);
 }
 
 .dark .fp-drawer-comment {
-  border-color: rgba(255, 255, 255, 0.075);
-  background: rgba(255, 255, 255, 0.055);
+  border-color: rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.075);
   box-shadow: 0 10px 24px -22px rgba(0, 0, 0, 0.9);
 }
 

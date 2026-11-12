@@ -356,7 +356,7 @@ export function FeedbackBoardView({
 
   return (
     <main className="fp-feedback-view mx-auto w-full max-w-[1600px] flex-1 space-y-8 px-4 py-5 sm:px-6 sm:py-8 lg:px-8">
-      <section className="fp-feedback-hero relative isolate overflow-hidden rounded-[1.75rem] border border-indigo-200/70 bg-gradient-to-br from-indigo-50 via-white to-violet-50 p-5 shadow-sm dark:border-white/10 dark:from-slate-900 dark:via-slate-900 dark:to-indigo-950/60 sm:p-8 lg:p-10">
+      <section className="fp-feedback-hero relative isolate overflow-hidden rounded-[1.75rem] border border-indigo-200/90 bg-gradient-to-br from-indigo-50/95 via-white/95 to-violet-50/92 p-5 shadow-sm ring-1 ring-white/60 backdrop-blur-xl dark:border-white/14 dark:from-slate-900/95 dark:via-slate-900/92 dark:to-indigo-950/80 dark:ring-white/5 sm:p-8 lg:p-10">
         <div className="pointer-events-none absolute -right-24 -top-28 -z-10 h-80 w-80 rounded-full bg-indigo-400/15 blur-3xl" />
         <div className="pointer-events-none absolute -bottom-28 left-1/3 -z-10 h-64 w-64 rounded-full bg-violet-400/10 blur-3xl" />
         <div className="grid items-center gap-8 md:grid-cols-[minmax(0,1fr)_auto]">
@@ -364,7 +364,7 @@ export function FeedbackBoardView({
             <h1 className="max-w-2xl text-3xl font-bold tracking-tight text-slate-950 dark:text-white sm:text-4xl lg:text-5xl">
               {t('feedback.boardTitle')}
             </h1>
-            <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600 dark:text-slate-300 sm:text-base">
+            <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-700 dark:text-slate-200 sm:text-base">
               {t('feedback.boardDescription')}
             </p>
             <form
@@ -372,10 +372,10 @@ export function FeedbackBoardView({
                 event.preventDefault();
                 onOpenNewFeedback();
               }}
-              className="mt-6 flex max-w-2xl flex-col gap-2 rounded-2xl border border-slate-200/80 bg-white/80 p-2 shadow-lg shadow-indigo-950/5 backdrop-blur-xl focus-within:border-indigo-400 focus-within:ring-4 focus-within:ring-indigo-500/10 dark:border-white/10 dark:bg-slate-950/60 sm:flex-row"
+              className="mt-6 flex max-w-2xl flex-col gap-2 rounded-2xl border border-slate-200/90 bg-white/92 p-2 shadow-lg shadow-indigo-950/5 backdrop-blur-xl focus-within:border-indigo-400 focus-within:ring-4 focus-within:ring-indigo-500/15 dark:border-white/14 dark:bg-slate-950/75 sm:flex-row"
             >
               <label className="flex min-w-0 flex-1 items-center gap-2 px-2">
-                <Search aria-hidden="true" className="h-4 w-4 shrink-0 text-slate-400" />
+                <Search aria-hidden="true" className="h-4 w-4 shrink-0 text-slate-500 dark:text-slate-300" />
                 <Input
                   value={searchQuery}
                   onChange={(event) => onSearchQueryChange(event.target.value)}
@@ -448,7 +448,7 @@ export function FeedbackBoardView({
                   }
                 }}
                 onClick={() => openPostDetail(post)}
-                className="fp-top-card group cursor-pointer rounded-2xl border-slate-200/70 bg-white/75 p-5 transition-all hover:-translate-y-0.5 hover:border-indigo-300 hover:shadow-lg hover:shadow-indigo-950/5 dark:border-white/10 dark:bg-white/[0.04] dark:hover:border-indigo-400/40"
+                className="fp-top-card group cursor-pointer rounded-2xl border-slate-200/90 bg-white/92 p-5 transition-all hover:-translate-y-0.5 hover:border-indigo-300 hover:shadow-lg hover:shadow-indigo-950/5 dark:border-white/14 dark:bg-slate-950/70 dark:hover:border-indigo-400/50"
               >
                 <div className="flex items-start gap-3">
                   <Button
@@ -471,7 +471,7 @@ export function FeedbackBoardView({
                     <div className="mt-2">{getStatusBadge(post.status)}</div>
                   </div>
                 </div>
-                <div className="mt-5 flex items-center gap-4 border-t border-slate-100 pt-3 text-xs text-slate-500 dark:border-white/10 dark:text-slate-400">
+                <div className="mt-5 flex items-center gap-4 border-t border-slate-200/80 pt-3 text-xs text-slate-600 dark:border-white/12 dark:text-slate-300">
                   <span className="inline-flex items-center gap-1.5 font-semibold text-slate-700 dark:text-slate-200">
                     <ArrowUp aria-hidden="true" className="h-3.5 w-3.5 text-indigo-600" />
                     {formatNumber(post.voteCount)}
@@ -490,7 +490,7 @@ export function FeedbackBoardView({
             <p className="font-medium text-slate-800 dark:text-slate-200">
               {hasLoadError ? t('feedback.loadError') : t('feedback.emptyTitle')}
             </p>
-            <p className="mt-1 max-w-md text-sm text-slate-500 dark:text-slate-400">
+            <p className="mt-1 max-w-md text-sm text-slate-600 dark:text-slate-300">
               {hasLoadError ? t('feedback.loadErrorDescription') : t('feedback.emptyDescription')}
             </p>
             {hasLoadError && (
@@ -503,7 +503,7 @@ export function FeedbackBoardView({
       </section>
 
       <section ref={listRef} aria-labelledby="feedback-feed-heading" className="space-y-4 scroll-mt-6">
-        <div className="flex flex-col gap-3 rounded-2xl border border-slate-200/70 bg-white/60 p-3 dark:border-white/10 dark:bg-white/[0.03] lg:flex-row lg:items-center lg:justify-between">
+        <div className="flex flex-col gap-3 rounded-2xl border border-slate-200/80 bg-card/90 p-3 shadow-sm backdrop-blur-xl dark:border-white/14 dark:bg-card/80 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex flex-wrap items-center gap-3">
             {/* Status Filter Tabs */}
             <div
@@ -554,7 +554,7 @@ export function FeedbackBoardView({
 
           <div className="flex items-center justify-between gap-3 lg:justify-end">
             <div
-              className="inline-flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400"
+              className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-600 dark:text-slate-300"
               aria-live="polite"
             >
               {isLoading && <LoaderCircle aria-hidden="true" className="h-3.5 w-3.5 animate-spin" />}
@@ -600,7 +600,7 @@ export function FeedbackBoardView({
                   }
                 }}
                 onClick={() => openPostDetail(post)}
-                className="group flex cursor-pointer items-start gap-3 rounded-2xl border-slate-200/70 bg-white/75 p-4 transition-all hover:border-indigo-300 hover:shadow-md dark:border-white/10 dark:bg-white/[0.04] sm:gap-4 sm:p-5"
+                className="group flex cursor-pointer items-start gap-3 rounded-2xl border-slate-200/90 bg-white/92 p-4 transition-all hover:border-indigo-300 hover:shadow-md dark:border-white/14 dark:bg-slate-950/70 sm:gap-4 sm:p-5"
               >
                 <Button
                   aria-label={t('feedback.upvote')}
@@ -622,10 +622,10 @@ export function FeedbackBoardView({
                     </h3>
                     {getStatusBadge(post.status)}
                   </div>
-                  <p className="mt-1 line-clamp-2 text-sm leading-relaxed text-slate-600 dark:text-slate-400">
+                  <p className="mt-1 line-clamp-2 text-sm leading-relaxed text-slate-700 dark:text-slate-300">
                     {post.content}
                   </p>
-                  <div className="mt-3 flex items-center gap-4 text-xs font-medium text-slate-500 dark:text-slate-400">
+                  <div className="mt-3 flex items-center gap-4 text-xs font-medium text-slate-600 dark:text-slate-300">
                     <span className="inline-flex items-center gap-1.5">
                       <MessageSquare aria-hidden="true" className="h-3.5 w-3.5" />
                       {t('feedback.commentsCount', { count: post.commentCount })}
@@ -640,11 +640,11 @@ export function FeedbackBoardView({
           </div>
         ) : (
           <Card className="rounded-2xl border-dashed p-8 text-center">
-            <Search aria-hidden="true" className="mx-auto mb-3 h-7 w-7 text-slate-400" />
+            <Search aria-hidden="true" className="mx-auto mb-3 h-7 w-7 text-slate-500 dark:text-slate-300" />
             <p className="font-medium text-slate-800 dark:text-slate-200">
               {posts.length ? t('feedback.noSearchResults') : t('feedback.emptyTitle')}
             </p>
-            <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+            <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">
               {posts.length ? t('feedback.noSearchResultsDescription') : t('feedback.emptyDescription')}
             </p>
             {!posts.length && (

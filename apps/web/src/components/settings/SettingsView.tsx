@@ -252,21 +252,21 @@ export function SettingsView({
     switch (role) {
       case 'OWNER':
         return (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-indigo-500/15 text-indigo-400 border border-indigo-500/20">
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-indigo-500/15 text-indigo-700 border border-indigo-500/25 dark:text-indigo-300">
             <Crown className="w-3 h-3" />
             {t('settings.roles.owner')}
           </span>
         );
       case 'ADMIN':
         return (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-500/15 text-blue-400 border border-blue-500/20">
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-500/15 text-blue-700 border border-blue-500/25 dark:text-blue-300">
             <Shield className="w-3 h-3" />
             {t('settings.roles.admin')}
           </span>
         );
       default:
         return (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-500/15 text-slate-300 border border-slate-500/20">
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-500/15 text-slate-700 border border-slate-500/25 dark:text-slate-200">
             <User className="w-3 h-3" />
             {t('settings.roles.member')}
           </span>
@@ -374,7 +374,7 @@ export function SettingsView({
               </div>
               <div className="min-w-0 flex-1">
                 <div className="text-xs font-bold truncate leading-none">{name || t('workspace.modalTitle')}</div>
-                <div className="text-[10px] text-white/80 mt-0.5 truncate">{t('settings.preview.productFeedback')}</div>
+                <div className="text-[11px] font-medium text-white/90 mt-0.5 truncate">{t('settings.preview.productFeedback')}</div>
               </div>
             </div>
 

@@ -27,7 +27,7 @@ const ToastContext = React.createContext<ToastContextValue>({
 });
 
 const VARIANT_STYLES: Record<ToastVariant, string> = {
-  default: 'border-border/80 bg-card/95 text-foreground',
+  default: 'border-border bg-card/98 text-foreground',
   success:
     'border-emerald-500/30 bg-emerald-50/95 text-emerald-950 dark:border-emerald-500/30 dark:bg-emerald-950/90 dark:text-emerald-100',
   destructive:
@@ -111,7 +111,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
                 <div className="min-w-0 flex-1">
                   <p className="text-xs font-semibold leading-snug">{item.title}</p>
                   {item.description && (
-                    <p className="mt-0.5 text-[11px] leading-relaxed opacity-85">
+                    <p className="mt-0.5 text-[11px] leading-relaxed text-muted-foreground">
                       {item.description}
                     </p>
                   )}
@@ -120,7 +120,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
                   type="button"
                   onClick={() => dismiss(item.id)}
                   aria-label={t('common.close')}
-                  className="rounded-lg p-1 opacity-60 transition-opacity hover:opacity-100 cursor-pointer"
+                  className="rounded-lg p-1 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground cursor-pointer"
                 >
                   <X className="h-3.5 w-3.5" />
                 </button>

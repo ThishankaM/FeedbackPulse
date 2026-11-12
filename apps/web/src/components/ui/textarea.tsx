@@ -28,7 +28,7 @@ export const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
         }}
         onInput={handleInput}
         className={cn(
-          'flex min-h-[80px] w-full rounded-lg border border-input bg-background/50 p-3 text-sm shadow-xs backdrop-blur-xs transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 dark:bg-input/20',
+          'flex min-h-[96px] w-full rounded-xl border border-input bg-card/90 p-3.5 text-sm leading-relaxed text-foreground shadow-xs backdrop-blur-xs transition-colors placeholder:text-muted-foreground hover:border-foreground/25 focus-visible:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/35 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-input/40',
           className
         )}
         {...props}

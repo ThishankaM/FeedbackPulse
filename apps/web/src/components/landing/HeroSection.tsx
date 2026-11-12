@@ -32,7 +32,7 @@ export function HeroSection({ onGetStarted }: HeroSectionProps) {
             <br className="hidden sm:block" /> {t('landing.hero.titleAccent')}
           </h1>
 
-          <p className="fp-reveal fp-reveal-delay-2 mt-6 max-w-2xl text-[16px] font-medium leading-[1.7] text-[#66666d] dark:text-white/58 sm:text-[18px]">
+          <p className="fp-reveal fp-reveal-delay-2 mt-6 max-w-2xl text-[16px] font-medium leading-[1.7] text-[#5d5e66] dark:text-white/80 sm:text-[18px]">
             {t('landing.hero.description')}
           </p>
 
@@ -56,7 +56,7 @@ export function HeroSection({ onGetStarted }: HeroSectionProps) {
             </Button>
           </div>
 
-          <div className="mt-5 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-[11px] font-semibold text-[#85858b] dark:text-white/45">
+          <div className="mt-5 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-[12px] font-semibold text-[#62636b] dark:text-white/72">
             <span className="flex items-center gap-1.5">
               <Check className="size-3.5 text-[#0d44e8]" />
               {t('landing.hero.freePlan')}
@@ -80,16 +80,16 @@ export function HeroSection({ onGetStarted }: HeroSectionProps) {
               </span>
               <div>
                 <p className="text-[11px] font-bold text-[#161618] dark:text-white">{t('landing.hero.floatingShipped')}</p>
-                <p className="mt-0.5 text-[9px] text-[#88888e] dark:text-white/45">{t('landing.hero.floatingNotified')}</p>
+                <p className="mt-0.5 text-[10px] text-[#66676f] dark:text-white/70">{t('landing.hero.floatingNotified')}</p>
               </div>
             </div>
           </div>
           <div className="absolute -right-5 bottom-14 hidden rounded-2xl border border-black/[0.08] bg-white p-3 text-left shadow-xl dark:border-white/10 dark:bg-[#151519] xl:block">
-            <p className="text-[9px] font-semibold uppercase tracking-[0.12em] text-[#9a9aa0]">{t('landing.hero.floatingInsight')}</p>
+            <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-[#6a6b73] dark:text-white/70">{t('landing.hero.floatingInsight')}</p>
             <p className="mt-1.5 max-w-[150px] text-[11px] font-bold leading-snug text-[#161618] dark:text-white">
               {t('landing.hero.floatingInsightText')}
             </p>
-            <div className="mt-2 flex items-center gap-1 text-[9px] font-bold text-[#0d44e8]">
+            <div className="mt-2 flex items-center gap-1 text-[10px] font-bold text-[#0d44e8] dark:text-[#9db2ff]">
               <Sparkles className="size-3" />
               {t('landing.hero.floatingRequests')}
             </div>
@@ -98,7 +98,7 @@ export function HeroSection({ onGetStarted }: HeroSectionProps) {
         </div>
 
         <div className="mt-20 text-center sm:mt-24">
-          <p className="text-[12px] font-semibold uppercase tracking-[0.16em] text-[#9a9aa0]">
+          <p className="text-[12px] font-bold uppercase tracking-[0.16em] text-[#66676f] dark:text-white/65">
             {t('landing.hero.logosLabel')}
           </p>
           <div className="relative mt-7 overflow-hidden">
@@ -108,9 +108,9 @@ export function HeroSection({ onGetStarted }: HeroSectionProps) {
               {[...customerLogos, ...customerLogos].map((logo, index) => (
                 <div
                   key={`${logo.name}-${index}`}
-                  className="flex w-[170px] items-center justify-center gap-2 text-[17px] font-bold tracking-[-0.04em] text-[#9b9ba1] dark:text-white/32"
+                  className="flex w-[170px] items-center justify-center gap-2 text-[17px] font-bold tracking-[-0.04em] text-[#70717a] dark:text-white/68"
                 >
-                  <span className="grid size-6 place-items-center rounded-md border border-[#d7d7db] text-[10px] font-extrabold text-[#85858b] dark:border-white/15 dark:text-white/38">
+                  <span className="grid size-6 place-items-center rounded-md border border-[#c7c8ce] text-[10px] font-extrabold text-[#62636b] dark:border-white/20 dark:text-white/65">
                     {logo.mark}
                   </span>
                   {logo.name}

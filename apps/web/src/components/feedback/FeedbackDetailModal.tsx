@@ -88,7 +88,7 @@ const STATUS_CONFIG = {
     labelKey: 'feedback.status.closed',
     dotColor: 'bg-slate-400',
     badgeClass:
-      'bg-slate-100 text-slate-700 border-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700',
+      'bg-slate-100 text-slate-700 border-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:border-slate-600',
   },
 } as const;
 
@@ -139,8 +139,8 @@ function CommentRow({
               {comment.authorRole === 'OWNER' ? t('feedback.owner') : t('feedback.admin')}
             </span>
           )}
-          <span className="truncate text-[10px] text-slate-400">{authorHandle}</span>
-          <span className="ml-auto shrink-0 text-[10px] text-slate-400">{timeLabel}</span>
+          <span className="truncate text-[10px] text-slate-500 dark:text-slate-300">{authorHandle}</span>
+          <span className="ml-auto shrink-0 text-[10px] text-slate-500 dark:text-slate-300">{timeLabel}</span>
         </div>
 
         <div
@@ -152,7 +152,7 @@ function CommentRow({
           <Markdown content={comment.content} className={isReply ? 'text-[11px]' : 'text-xs'} />
         </div>
 
-        <div className="mt-1.5 flex items-center gap-1.5 text-[11px] text-slate-500 dark:text-slate-400">
+        <div className="mt-1.5 flex items-center gap-1.5 text-[11px] text-slate-600 dark:text-slate-300">
           <button
             type="button"
             onClick={onLike}
@@ -176,7 +176,7 @@ function CommentRow({
           <button
             type="button"
             aria-label={t('feedback.moreOptions')}
-            className="fp-drawer-action ml-auto rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-white/[0.06] dark:hover:text-white"
+            className="fp-drawer-action ml-auto rounded-lg p-1.5 text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-700 dark:text-slate-300 dark:hover:bg-white/[0.08] dark:hover:text-white"
           >
             <MoreHorizontal className="size-3.5" />
           </button>
@@ -586,7 +586,7 @@ export function FeedbackDetailModal({
               <h2 id="discussion-drawer-title" className="text-xl font-bold tracking-[-0.035em] text-slate-950 dark:text-white">
                 {t('feedback.discussion')}
               </h2>
-              <p className="mt-0.5 text-[11px] font-medium text-slate-500 dark:text-white/45">
+              <p className="mt-0.5 text-xs font-medium text-slate-600 dark:text-white/72">
                 {t('feedback.discussionSubtitle')}
               </p>
             </div>
@@ -596,7 +596,7 @@ export function FeedbackDetailModal({
             data-autofocus
             onClick={() => onOpenChange(false)}
             aria-label={t('feedback.closeDiscussion')}
-            className="fp-drawer-action fp-drawer-close grid size-9 shrink-0 place-items-center rounded-xl text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/35 dark:hover:bg-white/[0.07] dark:hover:text-white"
+            className="fp-drawer-action fp-drawer-close grid size-9 shrink-0 place-items-center rounded-xl text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/45 dark:text-slate-300 dark:hover:bg-white/[0.09] dark:hover:text-white"
           >
             <X className="size-4.5" />
           </button>
@@ -615,10 +615,10 @@ export function FeedbackDetailModal({
                 </h3>
                 <Markdown
                   content={post.content}
-                  className="mt-1 text-[11px] leading-relaxed text-slate-600 dark:text-white/52"
+                  className="mt-1 text-xs leading-relaxed text-slate-700 dark:text-white/78"
                 />
 
-                <div className="mt-3 flex flex-wrap items-center gap-2.5 text-[10px] text-slate-500 dark:text-white/45">
+                <div className="mt-3 flex flex-wrap items-center gap-2.5 text-[11px] text-slate-600 dark:text-white/72">
                   <div ref={statusMenuRef} className="relative">
                     <button
                       type="button"
@@ -643,7 +643,7 @@ export function FeedbackDetailModal({
                             key={key}
                             type="button"
                             onClick={() => void handleSelectStatus(key as StatusKey)}
-                            className="flex w-full items-center justify-between px-3 py-2 text-left text-[10px] font-medium text-slate-700 transition-colors hover:bg-slate-100 dark:text-white/70 dark:hover:bg-white/[0.07]"
+                            className="flex w-full items-center justify-between px-3 py-2 text-left text-[11px] font-medium text-slate-700 transition-colors hover:bg-slate-100 dark:text-white/85 dark:hover:bg-white/[0.09]"
                           >
                             <span className="flex items-center gap-2">
                               <span className={cn('size-2 rounded-full', config.dotColor)} />
@@ -711,7 +711,7 @@ export function FeedbackDetailModal({
                   'fp-drawer-tab flex shrink-0 items-center gap-1.5 pb-3 transition-colors',
                   effectiveTab === tab.id
                     ? 'text-[#0d44e8] dark:text-[#8ca8ff]'
-                    : 'text-slate-500 hover:text-slate-800 dark:text-white/42 dark:hover:text-white'
+                    : 'text-slate-600 hover:text-slate-900 dark:text-white/72 dark:hover:text-white'
                 )}
               >
                 <span>{tab.label}</span>
@@ -744,7 +744,7 @@ export function FeedbackDetailModal({
                   return (
                     <div
                       key={activity.id}
-                      className="fp-drawer-enter-item flex items-center gap-3 rounded-2xl border border-blue-100 bg-blue-50/70 p-3 text-[10px] text-slate-600 dark:border-blue-900/40 dark:bg-blue-950/25 dark:text-white/52"
+                      className="fp-drawer-enter-item flex items-center gap-3 rounded-2xl border border-blue-100 bg-blue-50/80 p-3 text-[11px] text-slate-700 dark:border-blue-800/60 dark:bg-blue-950/35 dark:text-white/78"
                     >
                       <span className="grid size-8 shrink-0 place-items-center rounded-xl bg-blue-600 text-white">
                         <Rocket className="size-4" />
@@ -764,12 +764,12 @@ export function FeedbackDetailModal({
                 })}
               </div>
             ) : (
-              <div className="grid min-h-40 place-items-center text-center text-[11px] text-slate-400">
+              <div className="grid min-h-40 place-items-center text-center text-xs font-medium text-slate-500 dark:text-slate-300">
                 {t('feedback.noActivity')}
               </div>
             )
           ) : effectiveTab === 'internal' && comments.length === 0 ? (
-            <div className="grid min-h-40 place-items-center text-center text-[11px] text-slate-400">
+            <div className="grid min-h-40 place-items-center text-center text-xs font-medium text-slate-500 dark:text-slate-300">
               {t('feedback.noInternalNotes')}
             </div>
           ) : comments.length > 0 ? (
@@ -816,7 +816,7 @@ export function FeedbackDetailModal({
                 <span className="mx-auto grid size-11 place-items-center rounded-2xl bg-blue-500/10 text-blue-500 dark:bg-blue-500/15 dark:text-blue-300">
                   <MessageSquare className="size-5" />
                 </span>
-                <p className="mt-3 text-[11px] text-slate-400">{t('feedback.noComments')}</p>
+                <p className="mt-3 text-xs font-medium text-slate-500 dark:text-slate-300">{t('feedback.noComments')}</p>
               </div>
             </div>
           )}
@@ -841,7 +841,7 @@ export function FeedbackDetailModal({
                       type="button"
                       onClick={() => setReplyingToId(null)}
                       aria-label={t('feedback.cancelReply')}
-                      className="fp-drawer-action rounded p-1 text-slate-400 hover:bg-slate-100 dark:hover:bg-white/[0.06]"
+                      className="fp-drawer-action rounded p-1 text-slate-500 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-white/[0.08]"
                     >
                       <X className="size-3" />
                     </button>
@@ -860,11 +860,11 @@ export function FeedbackDetailModal({
                     }
                   }}
                   placeholder={t(effectiveTab === 'internal' ? 'feedback.internalNotePlaceholder' : 'feedback.writeCommentPlaceholder')}
-                  className="min-h-14 w-full resize-none bg-transparent px-1 py-1 text-[11px] leading-relaxed text-slate-900 outline-none placeholder:text-slate-400 dark:text-white dark:placeholder:text-white/30"
+                  className="min-h-14 w-full resize-none bg-transparent px-1 py-1 text-xs leading-relaxed text-slate-900 outline-none placeholder:text-slate-500 dark:text-white dark:placeholder:text-white/55"
                 />
 
                 <div className="mt-1 flex items-center justify-between border-t border-slate-200/60 pt-2 dark:border-white/10">
-                  <div className="flex items-center gap-1 text-slate-400">
+                  <div className="flex items-center gap-1 text-slate-500 dark:text-slate-300">
                     <button type="button" aria-label={t('feedback.addEmoji')} className="fp-drawer-action rounded-lg p-1.5 hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-white/[0.06] dark:hover:text-white">
                       <Smile className="size-3.5" />
                     </button>
@@ -879,7 +879,7 @@ export function FeedbackDetailModal({
                   <button
                     type="submit"
                     disabled={!commentText.trim() || submittingComment}
-                    className="fp-primary-action inline-flex h-8 items-center gap-1.5 rounded-lg bg-[#0d44e8] px-3 text-[10px] font-bold text-white shadow-sm hover:bg-[#0836c4] disabled:pointer-events-none disabled:opacity-40"
+                    className="fp-primary-action inline-flex h-9 items-center gap-1.5 rounded-lg bg-[#0d44e8] px-3 text-[11px] font-bold text-white shadow-sm hover:bg-[#0836c4] disabled:pointer-events-none disabled:opacity-40"
                   >
                     <Send className="size-3.5" />
                     {t('feedback.send')}

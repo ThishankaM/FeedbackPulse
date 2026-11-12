@@ -48,7 +48,7 @@ export const TooltipContent = React.forwardRef<
       role="tooltip"
       data-state="open"
       className={cn(
-        'fixed z-50 pointer-events-none rounded-lg border border-border/80 bg-popover/90 px-2.5 py-1.5 text-xs font-medium text-popover-foreground shadow-md backdrop-blur-md',
+        'fixed z-50 pointer-events-none rounded-lg border border-border bg-popover/98 px-2.5 py-1.5 text-xs font-medium text-popover-foreground shadow-md backdrop-blur-md',
         className
       )}
       style={{ animation: 'fp-fade-in 120ms ease-out', ...props.style }}

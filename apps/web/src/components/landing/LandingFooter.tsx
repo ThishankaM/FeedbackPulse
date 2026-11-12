@@ -36,7 +36,7 @@ export function LandingFooter() {
               </span>
               <span className="text-[17px] font-extrabold tracking-[-0.045em]">{t('nav.brand')}</span>
             </a>
-            <p className="mt-4 max-w-xs text-[13px] font-medium leading-[1.7] text-[#75757c] dark:text-white/45">
+            <p className="mt-4 max-w-xs text-[13px] font-medium leading-[1.7] text-[#5f6068] dark:text-white/70">
               {t('landing.footer.description')}
             </p>
             <a
@@ -51,11 +51,11 @@ export function LandingFooter() {
           <div className="grid grid-cols-2 gap-7 sm:grid-cols-4">
             {footerColumns.map((column) => (
               <div key={column.titleKey}>
-                <h3 className="text-[11px] font-bold uppercase tracking-[0.12em] text-[#9b9ba1] dark:text-white/35">{t(column.titleKey)}</h3>
+                <h3 className="text-[11px] font-bold uppercase tracking-[0.12em] text-[#62636b] dark:text-white/68">{t(column.titleKey)}</h3>
                 <ul className="mt-4 space-y-2.5">
                   {column.links.map((link) => (
                     <li key={link}>
-                      <a href="#" className="text-[12px] font-semibold text-[#55555b] transition-colors hover:text-[#0d44e8] dark:text-white/58 dark:hover:text-[#8aa5ff]">
+                      <a href="#" className="text-[12px] font-semibold text-[#4f5058] transition-colors hover:text-[#0d44e8] dark:text-white/78 dark:hover:text-[#a9bbff]">
                         {t(`landing.footer.links.${link}`)}
                       </a>
                     </li>
@@ -66,7 +66,7 @@ export function LandingFooter() {
           </div>
         </div>
 
-        <div className="flex flex-col items-center justify-between gap-4 pt-6 text-[10px] font-medium text-[#97979d] dark:text-white/35 sm:flex-row">
+        <div className="flex flex-col items-center justify-between gap-4 pt-6 text-[11px] font-medium text-[#66676f] dark:text-white/62 sm:flex-row">
           <p>{t('landing.footer.rights', { year: currentYear })}</p>
           <div className="flex items-center gap-5">
             <span>{t('landing.footer.madeFor')}</span>

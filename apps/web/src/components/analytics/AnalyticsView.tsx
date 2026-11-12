@@ -129,7 +129,7 @@ export function AnalyticsView({ workspaceSlug }: AnalyticsViewProps) {
           </Button>
 
           {/* Range Pills Container using shadcn styling */}
-          <div className="flex items-center p-1 rounded-2xl bg-muted/60 border border-border/50 backdrop-blur-md">
+          <div className="flex items-center p-1 rounded-2xl bg-card/85 border border-border/80 shadow-sm backdrop-blur-xl">
             {ranges.map((range) => {
               const isActive = selectedRange === range;
               return (
@@ -140,8 +140,8 @@ export function AnalyticsView({ workspaceSlug }: AnalyticsViewProps) {
                   disabled={isLoading || isRefreshing}
                   className={`px-3 py-1 text-xs font-semibold rounded-xl transition-all cursor-pointer ${
                     isActive
-                      ? 'bg-card text-foreground shadow-xs border border-border/60'
-                      : 'text-muted-foreground hover:text-foreground'
+                      ? 'bg-primary text-primary-foreground shadow-sm'
+                      : 'text-foreground/70 hover:bg-accent hover:text-foreground'
                   }`}
                 >
                   {range}
@@ -171,10 +171,10 @@ export function AnalyticsView({ workspaceSlug }: AnalyticsViewProps) {
         </Card>
       ) : isLoading && !isRefreshing ? (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
-          <Card className="rounded-3xl border border-border/70 p-6 min-h-[320px] flex items-center justify-center bg-card/60 backdrop-blur-md">
+          <Card className="rounded-3xl border border-border/80 p-6 min-h-[320px] flex items-center justify-center bg-card/90 backdrop-blur-md">
             <Loader2 className="h-7 w-7 text-primary animate-spin" />
           </Card>
-          <Card className="rounded-3xl border border-border/70 p-6 min-h-[320px] flex items-center justify-center bg-card/60 backdrop-blur-md">
+          <Card className="rounded-3xl border border-border/80 p-6 min-h-[320px] flex items-center justify-center bg-card/90 backdrop-blur-md">
             <Loader2 className="h-7 w-7 text-primary animate-spin" />
           </Card>
         </div>
@@ -182,7 +182,7 @@ export function AnalyticsView({ workspaceSlug }: AnalyticsViewProps) {
         /* Main Grid: Feedback Trend + Feedback by Status */
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
           {/* Card 1: Feedback Trend */}
-          <Card className="rounded-3xl border border-border/70 shadow-sm backdrop-blur-xl bg-card/80 dark:bg-card/60 transition-all hover:border-border p-6 flex flex-col justify-between">
+          <Card className="rounded-3xl border border-border/80 shadow-sm backdrop-blur-xl bg-card/95 dark:bg-card/85 transition-all hover:border-primary/35 p-6 flex flex-col justify-between">
             <CardHeader className="p-0 pb-6 flex flex-row items-center justify-between">
               <CardTitle className="text-lg font-bold text-foreground tracking-tight">
                 {t('analytics.trend.title')}
@@ -194,7 +194,7 @@ export function AnalyticsView({ workspaceSlug }: AnalyticsViewProps) {
           </Card>
 
           {/* Card 2: Feedback by Status */}
-          <Card className="rounded-3xl border border-border/70 shadow-sm backdrop-blur-xl bg-card/80 dark:bg-card/60 transition-all hover:border-border p-6 flex flex-col justify-between">
+          <Card className="rounded-3xl border border-border/80 shadow-sm backdrop-blur-xl bg-card/95 dark:bg-card/85 transition-all hover:border-primary/35 p-6 flex flex-col justify-between">
             <CardHeader className="p-0 pb-6 flex flex-row items-center justify-between">
               <CardTitle className="text-lg font-bold text-foreground tracking-tight">
                 {t('analytics.status.title')}
