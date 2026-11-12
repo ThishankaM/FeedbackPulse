@@ -466,13 +466,16 @@ export function FeedbackDetailModal({
         param: { id: post.id },
         json: { status: newStatus },
       });
-      if (!res.ok) throw new Error('Status update failed');
+      if (!res.ok) {
+        const err = await res.json().catch(() => null);
+        throw new Error((err as { error?: string } | null)?.error || t('feedback.statusUpdateFailed'));
+      }
       onStatusChange?.(post.id, newStatus);
       void fetchPostDetails();
       if (effectiveTab === 'activity') void fetchComments();
-    } catch {
+    } catch (err) {
       setStatusOverride({ postId: post.id, status: previousStatus });
-      setActionError(t('feedback.statusUpdateFailed'));
+      setActionError(err instanceof Error ? err.message : t('feedback.statusUpdateFailed'));
     }
   };
 
@@ -497,7 +500,10 @@ export function FeedbackDetailModal({
           isInternal: effectiveTab === 'internal',
         },
       });
-      if (!res.ok) throw new Error('Comment submission failed');
+      if (!res.ok) {
+        const err = await res.json().catch(() => null);
+        throw new Error((err as { error?: string } | null)?.error || t('feedback.commentFailed'));
+      }
 
       const data = await res.json();
       setCommentText('');
@@ -505,8 +511,8 @@ export function FeedbackDetailModal({
       setComments((previous) => [data.comment as CommentItem, ...previous]);
       if (effectiveTab === 'internal') setInternalCount((previous) => previous + 1);
       onCommentAdded?.(post.id);
-    } catch {
-      setActionError(t('feedback.commentFailed'));
+    } catch (err) {
+      setActionError(err instanceof Error ? err.message : t('feedback.commentFailed'));
     } finally {
       setSubmittingComment(false);
     }

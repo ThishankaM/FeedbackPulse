@@ -169,4 +169,51 @@ describe('Suite 02: Workspace Multi-Tenancy & Isolation (F6, F15)', () => {
     });
     assert.equal(res.status, 401);
   });
+
+  it('RBAC-01: GET /api/workspaces/:slug/members requires authenticated OWNER or ADMIN', async () => {
+    const slug = `ws-members-rbac-${Date.now()}`;
+    const wsRes = await client.post('/api/workspaces', { name: 'Members RBAC WS', slug }, userToken);
+    assert.equal(wsRes.status, 201);
+    const workspaceId = wsRes.data.workspace.id;
+
+    const adminSeeded = await seedUser(fixture.db, {
+      name: 'Admin User',
+      email: `ws_admin_${Date.now()}@example.com`,
+    });
+    const memberSeeded = await seedUser(fixture.db, {
+      name: 'Member User',
+      email: `ws_member_${Date.now()}@example.com`,
+    });
+    const outsiderSeeded = await seedUser(fixture.db, {
+      name: 'Outsider User',
+      email: `ws_outsider_${Date.now()}@example.com`,
+    });
+
+    await fixture.db.insert(schema.workspaceMembers).values([
+      { workspaceId, userId: adminSeeded.user.id, role: 'ADMIN' },
+      { workspaceId, userId: memberSeeded.user.id, role: 'MEMBER' },
+    ]);
+
+    // Unauthenticated -> 401
+    const unauthRes = await client.get(`/api/workspaces/${slug}/members`);
+    assert.equal(unauthRes.status, 401);
+
+    // Regular MEMBER -> 403
+    const memberRes = await client.get(`/api/workspaces/${slug}/members`, memberSeeded.token);
+    assert.equal(memberRes.status, 403);
+
+    // Non-member -> 403
+    const outsiderRes = await client.get(`/api/workspaces/${slug}/members`, outsiderSeeded.token);
+    assert.equal(outsiderRes.status, 403);
+
+    // OWNER -> 200
+    const ownerRes = await client.get(`/api/workspaces/${slug}/members`, userToken);
+    assert.equal(ownerRes.status, 200);
+    assert.equal(ownerRes.data.members.length, 3);
+
+    // ADMIN -> 200
+    const adminRes = await client.get(`/api/workspaces/${slug}/members`, adminSeeded.token);
+    assert.equal(adminRes.status, 200);
+    assert.equal(adminRes.data.members.length, 3);
+  });
 });

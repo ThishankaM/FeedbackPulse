@@ -20,6 +20,7 @@ import { FeedbackDetailModal } from '../feedback/FeedbackDetailModal';
 import { useAuth } from '../../context/AuthContext';
 import { cn } from '../../lib/utils';
 import { client } from '../../lib/api';
+import { canManageActiveWorkspace } from '../../lib/workspace-access';
 import type { FeedbackCardData } from '../dashboard/FeedbackCard';
 import '../dashboard/dashboard.css';
 
@@ -62,10 +63,10 @@ export function FeedbackBoardView({
   const cardsGridRef = React.useRef<HTMLDivElement>(null);
   const listRef = React.useRef<HTMLDivElement>(null);
 
-  const canManageWorkspace = React.useMemo(() => {
-    const membership = memberships.find((m) => m.workspaceSlug === workspaceSlug);
-    return membership?.role === 'OWNER' || membership?.role === 'ADMIN';
-  }, [memberships, workspaceSlug]);
+  const canManageWorkspace = React.useMemo(
+    () => canManageActiveWorkspace(memberships, workspaceSlug),
+    [memberships, workspaceSlug]
+  );
 
   React.useEffect(() => {
     if (!heroMascotRef.current || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
