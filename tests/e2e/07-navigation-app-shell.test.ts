@@ -7,6 +7,9 @@ import { ThemeProvider } from '../../apps/web/src/context/ThemeProvider.js';
 import { AuthProvider } from '../../apps/web/src/context/AuthContext.js';
 import { AppSidebar } from '../../apps/web/src/components/layout/AppSidebar.js';
 import { AppHeader } from '../../apps/web/src/components/layout/AppHeader.js';
+import { SettingsView } from '../../apps/web/src/components/settings/SettingsView.js';
+import { parseAppRoute, buildAppUrl } from '../../apps/web/src/lib/routes.js';
+import { canManageActiveWorkspace, getWorkspaceRole } from '../../apps/web/src/lib/workspace-access.js';
 
 describe('Suite 07: Modern Navigation & Application Shell (F4, F5, F6)', () => {
   // ==========================================
@@ -370,5 +373,106 @@ describe('Suite 07: Modern Navigation & Application Shell (F4, F5, F6)', () => {
     assert.equal(checkOverflow(340, 375), true); // Mobile 375px
     assert.equal(checkOverflow(600, 768), true); // Tablet 768px
     assert.equal(checkOverflow(800, 1440), true); // Desktop 1440px
+  });
+
+  // ==========================================
+  // RBAC NAVIGATION, ROUTES & SETTINGS SCOPING
+  // ==========================================
+
+  it('RBAC-UI-01: AppSidebar hides Settings for Members/guests and shows it for managers', () => {
+    const memberSidebar = render(
+      React.createElement(AppSidebar, {
+        currentView: 'dashboard',
+        onViewChange: () => undefined,
+        canManageWorkspace: false,
+      })
+    );
+    assert.equal(memberSidebar.hasText('Settings'), false);
+    assert.ok(memberSidebar.hasText('Analytics'));
+
+    const managerSidebar = render(
+      React.createElement(AppSidebar, {
+        currentView: 'dashboard',
+        onViewChange: () => undefined,
+        canManageWorkspace: true,
+      })
+    );
+    assert.ok(managerSidebar.hasText('Settings'));
+    assert.ok(managerSidebar.hasText('Analytics'));
+  });
+
+  it('RBAC-UI-02: SettingsView renders manager-only restriction for Members and scoped tabs for managers', () => {
+    const restrictedResult = render(
+      React.createElement(AuthProvider, null,
+        React.createElement(SettingsView, {
+          workspaceSlug: 'acme',
+          canManageWorkspace: false,
+          authLoading: false,
+          isAuthenticated: true,
+        })
+      )
+    );
+    assert.ok(restrictedResult.hasText('Manager access required'));
+    assert.equal(restrictedResult.hasText('Save Changes'), false);
+    assert.equal(restrictedResult.hasText('Team Members'), false);
+
+    const managerResult = render(
+      React.createElement(AuthProvider, null,
+        React.createElement(SettingsView, {
+          workspaceSlug: 'acme',
+          canManageWorkspace: true,
+          authLoading: false,
+          isAuthenticated: true,
+        })
+      )
+    );
+    assert.ok(managerResult.hasText('General'));
+    assert.ok(managerResult.hasText('Branding'));
+    assert.ok(managerResult.hasText('Members'));
+    assert.ok(managerResult.hasText('Integrations'));
+    assert.ok(managerResult.hasText('Embed Widget'));
+    assert.equal(managerResult.hasText('Billing'), false);
+    assert.equal(managerResult.hasText('API Keys'), false);
+    assert.equal(managerResult.hasText('Advanced'), false);
+  });
+
+  it('RBAC-UI-03: Routing supports canonical /board/:slug and legacy /b/:slug alias', () => {
+    assert.deepEqual(parseAppRoute('/board/acme'), { view: 'feedback', slug: 'acme', postId: null });
+    assert.deepEqual(parseAppRoute('/board/acme/p/post-123'), { view: 'feedback', slug: 'acme', postId: 'post-123' });
+    assert.deepEqual(parseAppRoute('/board/acme/roadmap'), { view: 'roadmap', slug: 'acme', postId: null });
+    assert.deepEqual(parseAppRoute('/board/acme/changelog'), { view: 'changelog', slug: 'acme', postId: null });
+    assert.deepEqual(parseAppRoute('/board/acme/analytics'), { view: 'analytics', slug: 'acme', postId: null });
+    assert.deepEqual(parseAppRoute('/board/acme/settings'), { view: 'settings', slug: 'acme', postId: null });
+
+    // Legacy /b/:slug alias
+    assert.deepEqual(parseAppRoute('/b/acme'), { view: 'feedback', slug: 'acme', postId: null });
+    assert.deepEqual(parseAppRoute('/b/acme/roadmap'), { view: 'roadmap', slug: 'acme', postId: null });
+
+    // Canonical URL builder
+    assert.equal(buildAppUrl('feedback', 'acme'), '/board/acme');
+    assert.equal(buildAppUrl('feedback', 'acme', 'post-123'), '/board/acme/p/post-123');
+    assert.equal(buildAppUrl('roadmap', 'acme'), '/board/acme/roadmap');
+    assert.equal(buildAppUrl('changelog', 'acme'), '/board/acme/changelog');
+    assert.equal(buildAppUrl('analytics', 'acme'), '/board/acme/analytics');
+    assert.equal(buildAppUrl('settings', 'acme'), '/board/acme/settings');
+    assert.equal(buildAppUrl('dashboard', 'acme'), '/dashboard/acme');
+  });
+
+  it('RBAC-UI-04: Workspace role helper resolves active workspace only', () => {
+    const memberships = [
+      { workspaceId: '1', role: 'OWNER', workspaceName: 'Alpha', workspaceSlug: 'alpha', primaryColor: '#4F46E5' },
+      { workspaceId: '2', role: 'MEMBER', workspaceName: 'Beta', workspaceSlug: 'beta', primaryColor: '#2563EB' },
+      { workspaceId: '3', role: 'ADMIN', workspaceName: 'Gamma', workspaceSlug: 'gamma', primaryColor: '#10B981' },
+    ];
+
+    assert.equal(getWorkspaceRole(memberships, 'alpha'), 'OWNER');
+    assert.equal(getWorkspaceRole(memberships, 'beta'), 'MEMBER');
+    assert.equal(getWorkspaceRole(memberships, 'gamma'), 'ADMIN');
+    assert.equal(getWorkspaceRole(memberships, 'unknown'), null);
+
+    assert.equal(canManageActiveWorkspace(memberships, 'alpha'), true);
+    assert.equal(canManageActiveWorkspace(memberships, 'beta'), false);
+    assert.equal(canManageActiveWorkspace(memberships, 'gamma'), true);
+    assert.equal(canManageActiveWorkspace(memberships, 'unknown'), false);
   });
 });

@@ -15,6 +15,7 @@ import { useToast } from '../ui/toast';
 import { cn } from '../../lib/utils';
 import { useAuth } from '../../context/AuthContext';
 import { client } from '../../lib/api';
+import { canManageActiveWorkspace } from '../../lib/workspace-access';
 import type { FeedbackCardData } from './FeedbackCard';
 
 export interface DashboardViewProps {
@@ -35,11 +36,7 @@ export function DashboardView({
   const { t } = useTranslation();
   const { user, memberships } = useAuth();
   const { toast } = useToast();
-  const canManageWorkspace = memberships.some(
-    (membership) =>
-      membership.workspaceSlug === workspaceSlug &&
-      (membership.role === 'OWNER' || membership.role === 'ADMIN')
-  );
+  const canManageWorkspace = canManageActiveWorkspace(memberships, workspaceSlug);
 
   const [activeTab, setActiveTab] = React.useState<string>('ALL');
 

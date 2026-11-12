@@ -17,62 +17,15 @@ import { Dialog, DialogHeader, DialogTitle, DialogDescription } from './componen
 import { Button } from './components/ui/button';
 import { Input } from './components/ui/input';
 import { client } from './lib/api';
+import { parseAppRoute, buildAppUrl } from './lib/routes';
+import { canManageActiveWorkspace } from './lib/workspace-access';
 import './components/dashboard/dashboard.css';
 
 const AuthModal = lazy(() => import('./components/auth/AuthModal'));
 
-interface ParsedRoute {
-  view: string;
-  slug: string;
-  postId: string | null;
-}
-
-function parseAppRoute(pathname: string): ParsedRoute {
-  const parts = pathname.split('/').filter(Boolean);
-  if (parts[0] === 'b' && parts[1]) {
-    const slug = parts[1];
-    if (parts[2] === 'p' && parts[3]) {
-      return { view: 'feedback', slug, postId: parts[3] };
-    }
-    if (parts[2] === 'roadmap') {
-      return { view: 'roadmap', slug, postId: null };
-    }
-    if (parts[2] === 'changelog') {
-      return { view: 'changelog', slug, postId: null };
-    }
-    if (parts[2] === 'analytics') {
-      return { view: 'analytics', slug, postId: null };
-    }
-    if (parts[2] === 'settings') {
-      return { view: 'settings', slug, postId: null };
-    }
-    return { view: 'feedback', slug, postId: null };
-  }
-  if (parts[0] === 'dashboard' && parts[1]) {
-    return { view: 'dashboard', slug: parts[1], postId: null };
-  }
-  if (parts.length === 1 && !['login', 'register', 'dashboard', 'b'].includes(parts[0])) {
-    return { view: 'dashboard', slug: parts[0], postId: null };
-  }
-  if (pathname === '/' && typeof window !== 'undefined' && !localStorage.getItem('feedbackpulse_token')) {
-    return { view: 'landing', slug: '', postId: null };
-  }
-  return { view: 'dashboard', slug: '', postId: null };
-}
-
-function buildAppUrl(view: string, slug: string, postId?: string | null): string {
-  if (!slug) return '/';
-  if (view === 'feedback') {
-    return postId ? `/b/${slug}/p/${postId}` : `/b/${slug}`;
-  }
-  if (view === 'roadmap') return `/b/${slug}/roadmap`;
-  if (view === 'changelog') return `/b/${slug}/changelog`;
-  return `/dashboard/${slug}`;
-}
-
 export default function App() {
   const { t } = useTranslation();
-  const { user, memberships, login, refreshUser } = useAuth();
+  const { user, memberships, isLoading: authLoading, login, refreshUser } = useAuth();
 
   // Navigation & View State ('landing' for marketing homepage, 'dashboard' or 'feedback' for app)
   const initialRoute = typeof window !== 'undefined'
@@ -136,8 +89,13 @@ export default function App() {
     return () => window.removeEventListener('popstate', handlePopState);
   }, [activeWorkspace.slug]);
 
+  const canManageWorkspace = canManageActiveWorkspace(memberships, activeWorkspace.slug);
+
   // View Navigation helper that syncs browser history
   const handleViewChange = (view: string) => {
+    if (view === 'settings' && !canManageWorkspace) {
+      return;
+    }
     setCurrentView(view);
     if (view !== 'feedback') {
       setDeepLinkPostId(null);
@@ -367,6 +325,7 @@ export default function App() {
           <AppSidebar
             currentView={currentView}
             onViewChange={handleViewChange}
+            canManageWorkspace={canManageWorkspace}
             activeWorkspace={activeWorkspace}
             onSwitchWorkspace={handleSwitchWorkspace}
             onOpenCreateWorkspace={handleOpenWorkspaceModal}
@@ -467,9 +426,14 @@ export default function App() {
               ) : currentView === 'settings' ? (
                 <SettingsView
                   workspaceSlug={activeWorkspace.slug}
+                  canManageWorkspace={canManageWorkspace}
+                  authLoading={authLoading}
+                  isAuthenticated={Boolean(user)}
+                  onReturnToDashboard={() => handleViewChange('dashboard')}
+                  onOpenAuthModal={() => handleOpenAuthModal('login')}
                   onWorkspaceUpdated={(newSlug) => {
                     setActiveWorkspace((prev) => ({ ...prev, slug: newSlug }));
-                    window.history.replaceState(null, '', `/b/${newSlug}/settings`);
+                    window.history.replaceState(null, '', `/board/${newSlug}/settings`);
                     setRefreshTrigger((prev) => prev + 1);
                   }}
                 />

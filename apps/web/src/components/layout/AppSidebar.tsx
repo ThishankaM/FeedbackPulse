@@ -20,6 +20,7 @@ import { prefersReducedMotion, scalePulse } from '../../lib/motion';
 export interface AppSidebarProps {
   currentView: string;
   onViewChange: (view: string) => void;
+  canManageWorkspace?: boolean;
   activeWorkspace?: {
     id?: string;
     name: string;
@@ -42,6 +43,7 @@ const SIDEBAR_STORAGE_KEY = 'feedbackpulse-sidebar-collapsed';
 export function AppSidebar({
   currentView = 'dashboard',
   onViewChange,
+  canManageWorkspace = false,
   mobileOpen = false,
   onMobileOpenChange,
 }: AppSidebarProps) {
@@ -63,7 +65,7 @@ export function AppSidebar({
     { id: 'roadmap', label: t('nav.roadmap'), icon: Layers },
     { id: 'changelog', label: t('nav.changelog'), icon: FileText },
     { id: 'analytics', label: t('nav.analytics'), icon: BarChart3 },
-    { id: 'settings', label: t('nav.settings'), icon: Settings },
+    ...(canManageWorkspace ? [{ id: 'settings', label: t('nav.settings'), icon: Settings }] : []),
   ];
 
   const stopResizing = React.useCallback(() => {

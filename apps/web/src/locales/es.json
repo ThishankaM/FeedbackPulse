@@ -580,7 +580,7 @@
     "namePlaceholder": "Acme Software",
     "slugLabel": "Slug",
     "slugPlaceholder": "acme",
-    "slugHelp": "Los tableros públicos estarán disponibles en /b/:slug",
+    "slugHelp": "Los tableros públicos estarán disponibles en /board/:slug",
     "colorLabel": "Color de marca",
     "logoUrlLabel": "URL del logotipo",
     "logoUrlPlaceholder": "https://example.com/logo.png",
@@ -654,15 +654,23 @@
     "loadError": "Error al cargar la configuración del espacio de trabajo.",
     "saveSuccess": "¡Ajustes guardados correctamente!",
     "saveError": "Error al guardar los ajustes.",
+    "restricted": {
+      "title": "Acceso exclusivo para administradores",
+      "description": "Solo los propietarios y administradores del espacio pueden ver o modificar la configuración.",
+      "signInHint": "Inicia sesión con una cuenta de administrador para gestionar los ajustes.",
+      "backToDashboard": "Volver al panel"
+    },
+    "branding": {
+      "colorLabel": "Color de marca",
+      "colorHint": "Elige el color de acento mostrado en tu tablero público y vista previa.",
+      "saveChanges": "Guardar marca"
+    },
     "tabs": {
       "general": "General",
       "branding": "Marca",
       "members": "Miembros",
       "integrations": "Integraciones",
-      "embedWidget": "Widget incrustable",
-      "apiKeys": "Claves API",
-      "billing": "Facturación",
-      "advanced": "Avanzado"
+      "embedWidget": "Widget incrustable"
     },
     "info": {
       "title": "Información del espacio",

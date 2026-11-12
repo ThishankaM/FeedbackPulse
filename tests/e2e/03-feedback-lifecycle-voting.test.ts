@@ -309,4 +309,57 @@ describe('Suite 03: Feedback Post Lifecycle, Voting & Comments (F8, F9, F10, F15
     assert.ok(dashItem);
     assert.equal(dashItem.hasVoted, true);
   });
+
+  it('RBAC-02: Members cannot create posts with manager statuses and non-members cannot comment', async () => {
+    // Member trying to create a post with COMPLETED status on board-scoped endpoint -> 403
+    const boardStatusRes = await client.post(
+      `/api/boards/${defaultBoard.id}/posts`,
+      {
+        title: 'Status Escalation Attempt',
+        content: 'Attempting to mark my own submission completed directly.',
+        status: 'COMPLETED',
+      },
+      memberToken
+    );
+    assert.equal(boardStatusRes.status, 403);
+
+    // Member trying to create a post with PLANNED status on /api/posts -> 403
+    const postStatusRes = await client.post(
+      '/api/posts',
+      {
+        workspaceId: workspace.id,
+        boardId: defaultBoard.id,
+        title: 'Status Escalation Attempt Two',
+        content: 'Attempting to mark my own submission planned directly.',
+        status: 'PLANNED',
+      },
+      memberToken
+    );
+    assert.equal(postStatusRes.status, 403);
+
+    // Owner creating a post with PLANNED status -> 201
+    const ownerCreateRes = await client.post(
+      `/api/boards/${defaultBoard.id}/posts`,
+      {
+        title: 'Owner Planned Feature',
+        content: 'Owners and admins can seed a post directly as planned.',
+        status: 'PLANNED',
+      },
+      ownerToken
+    );
+    assert.equal(ownerCreateRes.status, 201);
+    assert.equal(ownerCreateRes.data.post.status, 'PLANNED');
+
+    // Signed-in non-member trying to post a public comment -> 403
+    const outsiderSeeded = await seedUser(fixture.db, {
+      name: 'Non Member Commenter',
+      email: `outsider_comment_${Date.now()}@example.com`,
+    });
+    const outsiderCommentRes = await client.post(
+      `/api/posts/${testPostId}/comments`,
+      { content: 'Comment from a user outside this workspace.' },
+      outsiderSeeded.token
+    );
+    assert.equal(outsiderCommentRes.status, 403);
+  });
 });

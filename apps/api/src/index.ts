@@ -76,15 +76,19 @@ async function getUserVotedPostIds(workspaceId: string, userId?: string | null):
   return new Set(rows.map((r) => r.postId));
 }
 
-async function resolveActiveMember(c: any, workspaceId: string) {
+async function resolveActiveMember(
+  c: any,
+  workspaceId: string,
+  unauthenticatedMessage = 'Sign in to submit feedback'
+) {
   const authHeader = c.req.header('Authorization');
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return { error: 'Sign in to submit feedback', status: 401 as const, userId: null };
+    return { error: unauthenticatedMessage, status: 401 as const, userId: null, role: null };
   }
 
   const payload = await verifyAuthToken(authHeader.substring(7));
   if (!payload?.sub) {
-    return { error: 'Sign in to submit feedback', status: 401 as const, userId: null };
+    return { error: unauthenticatedMessage, status: 401 as const, userId: null, role: null };
   }
 
   const [author] = await db
@@ -93,24 +97,25 @@ async function resolveActiveMember(c: any, workspaceId: string) {
     .where(and(eq(users.id, payload.sub), isNull(users.deletedAt)));
 
   if (!author || author.status !== 'ACTIVE') {
-    return { error: 'Your account is not active', status: 401 as const, userId: null };
+    return { error: 'Your account is not active', status: 401 as const, userId: null, role: null };
   }
 
   const [membership] = await db
-    .select({ id: workspaceMembers.id })
+    .select({ id: workspaceMembers.id, role: workspaceMembers.role })
     .from(workspaceMembers)
     .where(
       and(
         eq(workspaceMembers.workspaceId, workspaceId),
-        eq(workspaceMembers.userId, author.id)
+        eq(workspaceMembers.userId, author.id),
+        eq(workspaceMembers.status, 'ACTIVE')
       )
     );
 
   if (!membership) {
-    return { error: 'You are not a member of this workspace', status: 403 as const, userId: null };
+    return { error: 'You are not a member of this workspace', status: 403 as const, userId: null, role: null };
   }
 
-  return { error: null, status: 200 as const, userId: author.id };
+  return { error: null, status: 200 as const, userId: author.id, role: membership.role };
 }
 
 // Middlewares
@@ -278,7 +283,7 @@ const routes = app
       return c.json({ error: 'User not found or inactive' }, 401);
     }
 
-    // Fetch user's workspace memberships
+    // Fetch user's active workspace memberships
     const members = await db
       .select({
         workspaceId: workspaceMembers.workspaceId,
@@ -289,7 +294,13 @@ const routes = app
       })
       .from(workspaceMembers)
       .innerJoin(workspaces, eq(workspaces.id, workspaceMembers.workspaceId))
-      .where(eq(workspaceMembers.userId, user.id));
+      .where(
+        and(
+          eq(workspaceMembers.userId, user.id),
+          eq(workspaceMembers.status, 'ACTIVE'),
+          isNull(workspaces.deletedAt)
+        )
+      );
 
     return c.json({ user, memberships: members }, 200);
   })
@@ -385,6 +396,14 @@ const routes = app
       const [workspace] = await db.select().from(workspaces).where(eq(workspaces.slug, slug));
       if (!workspace) {
         return c.json({ error: 'Workspace not found' }, 404);
+      }
+
+      const access = await getCurrentWorkspaceAccess(c, workspace.id);
+      if (!access.authenticated) {
+        return c.json({ error: 'Sign in to view workspace members' }, 401);
+      }
+      if (!access.isAdmin) {
+        return c.json({ error: 'Only workspace admins can view workspace members' }, 403);
       }
 
       const membersList = await db
@@ -1034,7 +1053,14 @@ const routes = app
 
         const member = await resolveActiveMember(c, targetBoard.workspaceId);
         if (member.error || !member.userId) {
-          return c.json({ error: member.error || 'Unauthorized' }, member.status);
+          return member.status === 401
+            ? c.json({ error: member.error || 'Unauthorized' }, 401)
+            : c.json({ error: member.error || 'Forbidden' }, 403);
+        }
+
+        const isAdmin = member.role === 'OWNER' || member.role === 'ADMIN';
+        if (status !== 'UNDER_REVIEW' && !isAdmin) {
+          return c.json({ error: 'Only workspace admins can set initial status' }, 403);
         }
 
         const [newPost] = await db
@@ -1076,7 +1102,14 @@ const routes = app
       try {
         const member = await resolveActiveMember(c, workspaceId);
         if (member.error || !member.userId) {
-          return c.json({ error: member.error || 'Unauthorized' }, member.status);
+          return member.status === 401
+            ? c.json({ error: member.error || 'Unauthorized' }, 401)
+            : c.json({ error: member.error || 'Forbidden' }, 403);
+        }
+
+        const isAdmin = member.role === 'OWNER' || member.role === 'ADMIN';
+        if (status !== 'UNDER_REVIEW' && !isAdmin) {
+          return c.json({ error: 'Only workspace admins can set initial status' }, 403);
         }
 
         // Verify the target board belongs to this workspace
@@ -1120,43 +1153,17 @@ const routes = app
       }
 
       // Voting requires an authenticated, active workspace member
-      const authHeader = c.req.header('Authorization');
-      if (!authHeader || !authHeader.startsWith('Bearer ')) {
-        return c.json({ error: 'Sign in to vote' }, 401);
-      }
-
-      const payload = await verifyAuthToken(authHeader.substring(7));
-      if (!payload?.sub) {
-        return c.json({ error: 'Sign in to vote' }, 401);
-      }
-
-      const [voter] = await db
-        .select({ id: users.id, status: users.status })
-        .from(users)
-        .where(and(eq(users.id, payload.sub), isNull(users.deletedAt)));
-
-      if (!voter || voter.status !== 'ACTIVE') {
-        return c.json({ error: 'Your account is not active' }, 401);
-      }
-
-      const [membership] = await db
-        .select({ id: workspaceMembers.id })
-        .from(workspaceMembers)
-        .where(
-          and(
-            eq(workspaceMembers.workspaceId, post.workspaceId),
-            eq(workspaceMembers.userId, voter.id)
-          )
-        );
-
-      if (!membership) {
-        return c.json({ error: 'You are not a member of this workspace' }, 403);
+      const member = await resolveActiveMember(c, post.workspaceId, 'Sign in to vote');
+      if (member.error || !member.userId) {
+        return member.status === 401
+          ? c.json({ error: member.error || 'Unauthorized' }, 401)
+          : c.json({ error: member.error || 'Forbidden' }, 403);
       }
 
       const result = await toggleVote({
         workspaceId: post.workspaceId,
         postId: post.id,
-        userId: voter.id,
+        userId: member.userId,
       });
 
       return c.json(result, 200);
@@ -1406,14 +1413,16 @@ const routes = app
           return c.json({ error: 'Post not found' }, 404);
         }
 
-        const authHeader = c.req.header('Authorization');
-        if (!authHeader || !authHeader.startsWith('Bearer ')) {
-          return c.json({ error: 'Sign in to comment' }, 401);
+        const member = await resolveActiveMember(c, post.workspaceId, 'Sign in to comment');
+        if (member.error || !member.userId) {
+          return member.status === 401
+            ? c.json({ error: member.error || 'Unauthorized' }, 401)
+            : c.json({ error: member.error || 'Forbidden' }, 403);
         }
 
-        const payload = await verifyAuthToken(authHeader.substring(7));
-        if (!payload?.sub) {
-          return c.json({ error: 'Sign in to comment' }, 401);
+        const isAdmin = member.role === 'OWNER' || member.role === 'ADMIN';
+        if (isInternal && !isAdmin) {
+          return c.json({ error: 'Only workspace admins can create internal notes' }, 403);
         }
 
         const [author] = await db
@@ -1421,32 +1430,9 @@ const routes = app
             id: users.id,
             name: users.name,
             avatarUrl: users.avatarUrl,
-            status: users.status,
           })
           .from(users)
-          .where(and(eq(users.id, payload.sub), isNull(users.deletedAt)));
-
-        if (!author || author.status !== 'ACTIVE') {
-          return c.json({ error: 'Your account is not active' }, 401);
-        }
-
-        if (isInternal) {
-          const access = await getCurrentWorkspaceAccess(c, post.workspaceId);
-          if (!access.isAdmin) {
-            return c.json({ error: 'Only workspace admins can create internal notes' }, 403);
-          }
-        }
-
-        // Get user role in workspace
-        const [member] = await db
-          .select({ role: workspaceMembers.role })
-          .from(workspaceMembers)
-          .where(
-            and(
-              eq(workspaceMembers.userId, author.id),
-              eq(workspaceMembers.workspaceId, post.workspaceId)
-            )
-          );
+          .where(eq(users.id, member.userId));
 
         const [newComment] = await db
           .insert(comments)
@@ -1454,7 +1440,7 @@ const routes = app
             workspaceId: post.workspaceId,
             postId: post.id,
             parentId: parentId || null,
-            authorUserId: author.id,
+            authorUserId: member.userId,
             content,
             isInternal: !!isInternal,
             moderationStatus: 'APPROVED',
@@ -1465,9 +1451,9 @@ const routes = app
           {
             comment: {
               ...newComment,
-              authorName: author.name,
-              authorAvatar: author.avatarUrl,
-              authorRole: member?.role || 'MEMBER',
+              authorName: author?.name ?? null,
+              authorAvatar: author?.avatarUrl ?? null,
+              authorRole: member.role,
             },
           },
           201

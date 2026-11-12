@@ -109,7 +109,7 @@
     "namePlaceholder": "Acme Software",
     "slugLabel": "Slug",
     "slugPlaceholder": "acme",
-    "slugHelp": "Public boards will be available at /b/:slug",
+    "slugHelp": "Public boards will be available at /board/:slug",
     "colorLabel": "Brand Color",
     "logoUrlLabel": "Logo URL",
     "logoUrlPlaceholder": "https://example.com/logo.png",
@@ -742,15 +742,23 @@
     "loadError": "Failed to load workspace settings.",
     "saveSuccess": "Workspace settings saved successfully!",
     "saveError": "Failed to save workspace settings.",
+    "restricted": {
+      "title": "Manager access required",
+      "description": "Only workspace Owners and Admins can view or modify workspace settings.",
+      "signInHint": "Sign in with a workspace manager account to manage settings.",
+      "backToDashboard": "Back to Dashboard"
+    },
+    "branding": {
+      "colorLabel": "Brand Color",
+      "colorHint": "Choose the accent color shown on your public board and workspace preview.",
+      "saveChanges": "Save Branding"
+    },
     "tabs": {
       "general": "General",
       "branding": "Branding",
       "members": "Members",
       "integrations": "Integrations",
-      "embedWidget": "Embed Widget",
-      "apiKeys": "API Keys",
-      "billing": "Billing",
-      "advanced": "Advanced"
+      "embedWidget": "Embed Widget"
     },
     "info": {
       "title": "Workspace Information",

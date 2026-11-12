@@ -35,6 +35,7 @@ import {
 import { FeedbackDetailModal } from '../feedback/FeedbackDetailModal';
 import { useAuth } from '../../context/AuthContext';
 import { client } from '../../lib/api';
+import { canManageActiveWorkspace } from '../../lib/workspace-access';
 import type { FeedbackCardData } from '../dashboard/FeedbackCard';
 import { cn } from '../../lib/utils';
 import { staggerCards, pulseVote, prefersReducedMotion } from '../../lib/motion';
@@ -53,6 +54,7 @@ interface RoadmapItem {
   content: string;
   status: 'PLANNED' | 'IN_PROGRESS' | 'COMPLETED';
   voteCount: number;
+  commentCount: number;
   hasVoted?: boolean;
   category: string;
   iconType: string;
@@ -69,8 +71,9 @@ export function RoadmapView({
   refreshTrigger = 0,
 }: RoadmapViewProps) {
   const { t } = useTranslation();
-  const { user } = useAuth();
+  const { user, memberships } = useAuth();
   const { toast } = useToast();
+  const canManageWorkspace = canManageActiveWorkspace(memberships, workspaceSlug);
   const [filterText, setFilterText] = React.useState(searchQuery);
   const [prevSearchQuery, setPrevSearchQuery] = React.useState(searchQuery);
   if (searchQuery !== prevSearchQuery) {
@@ -118,6 +121,7 @@ export function RoadmapView({
                     content: p.content,
                     status: key,
                     voteCount: p.voteCount || 0,
+                    commentCount: p.commentCount || 0,
                     hasVoted: Boolean(p.hasVoted),
                     category: t('roadmap.defaultCategory'),
                     iconType:
@@ -227,12 +231,34 @@ export function RoadmapView({
       status: item.status,
       voteCount: item.voteCount,
       hasVoted: item.hasVoted,
-      commentCount: 4,
+      commentCount: item.commentCount,
       authorName: t('roadmap.teamAuthor'),
       authorAvatar: null,
       createdAt: item.createdAt || '2026-11-10T00:00:00.000Z',
     });
     setIsDetailOpen(true);
+  };
+
+  const handleStatusChange = (postId: string, newStatus: string) => {
+    const isRoadmapStatus =
+      newStatus === 'PLANNED' || newStatus === 'IN_PROGRESS' || newStatus === 'COMPLETED';
+    setItems((prev) =>
+      isRoadmapStatus
+        ? prev.map((item) => (item.id === postId ? { ...item, status: newStatus } : item))
+        : prev.filter((item) => item.id !== postId)
+    );
+    setSelectedPost((prev) => (prev && prev.id === postId ? { ...prev, status: newStatus } : prev));
+  };
+
+  const handleCommentAdded = (postId: string) => {
+    setItems((prev) =>
+      prev.map((item) =>
+        item.id === postId ? { ...item, commentCount: item.commentCount + 1 } : item
+      )
+    );
+    setSelectedPost((prev) =>
+      prev && prev.id === postId ? { ...prev, commentCount: prev.commentCount + 1 } : prev
+    );
   };
 
   const filteredItems = React.useMemo(() => {
@@ -716,7 +742,10 @@ export function RoadmapView({
             )
           );
         }}
+        onStatusChange={handleStatusChange}
+        onCommentAdded={handleCommentAdded}
         onOpenAuthModal={onOpenAuthModal}
+        canManage={canManageWorkspace}
       />
     </div>
   );
