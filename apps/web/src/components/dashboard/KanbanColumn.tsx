@@ -54,7 +54,7 @@ export function KanbanColumn({
   return (
     <div
       ref={columnRef}
-      className="fp-glass-column fp-kanban-column flex min-w-0 w-full flex-col rounded-2xl border border-slate-200/80 bg-white/40 p-3 shadow-xs backdrop-blur-md dark:border-white/10 dark:bg-slate-900/25 sm:p-3.5"
+      className="fp-glass-column fp-kanban-column flex min-w-0 w-full flex-col rounded-2xl border border-slate-200/90 bg-white/85 p-3 shadow-xs backdrop-blur-md dark:border-white/14 dark:bg-slate-950/70 sm:p-3.5"
     >
       {/* Column Header */}
       <div className="flex items-center justify-between px-1.5 pb-3">
@@ -63,7 +63,7 @@ export function KanbanColumn({
           <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100">
             {title}
           </h3>
-          <span className="ml-1 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-slate-200/70 px-1.5 text-xs font-semibold text-slate-600 dark:bg-white/10 dark:text-slate-300">
+          <span className="ml-1 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-slate-200/80 px-1.5 text-xs font-bold text-slate-700 dark:bg-white/12 dark:text-slate-100">
             {count}
           </span>
         </div>
@@ -98,8 +98,8 @@ export function KanbanColumn({
           ))
         ) : (
           <div className="fp-empty-state flex flex-col items-center justify-center rounded-xl border border-dashed border-slate-200 bg-white/30 p-6 text-center dark:border-white/10 dark:bg-white/[0.02]">
-            <Inbox className="mb-1.5 h-5 w-5 text-slate-400 opacity-60" />
-            <p className="text-xs font-medium text-slate-400">{t('dashboard.emptyColumn')}</p>
+            <Inbox className="mb-1.5 h-5 w-5 text-slate-500 dark:text-slate-300" />
+            <p className="text-xs font-semibold text-slate-600 dark:text-slate-300">{t('dashboard.emptyColumn')}</p>
           </div>
         )}
       </div>

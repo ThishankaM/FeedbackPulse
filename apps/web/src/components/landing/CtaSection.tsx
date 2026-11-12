@@ -19,7 +19,7 @@ export function CtaSection({ onGetStarted }: CtaSectionProps) {
           <h2 className="fp-section-title mt-6 text-[42px] leading-[1.02] text-white sm:text-[62px]">
             {t('landing.cta.title')}
           </h2>
-          <p className="mx-auto mt-5 max-w-xl text-[15px] font-medium leading-[1.7] text-white/55 sm:text-[17px]">
+          <p className="mx-auto mt-5 max-w-xl text-[15px] font-medium leading-[1.7] text-white/76 sm:text-[17px]">
             {t('landing.cta.description')}
           </p>
           <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
@@ -37,7 +37,7 @@ export function CtaSection({ onGetStarted }: CtaSectionProps) {
               {t('landing.cta.pricing')}
             </Button>
           </div>
-          <div className="mt-6 flex flex-wrap items-center justify-center gap-5 text-[10px] font-semibold text-white/40">
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-5 text-[11px] font-semibold text-white/68">
             <span className="flex items-center gap-1.5"><Check className="size-3.5 text-[#7f9eff]" /> {t('landing.cta.freePlan')}</span>
             <span className="flex items-center gap-1.5"><Check className="size-3.5 text-[#7f9eff]" /> {t('landing.cta.setup')}</span>
             <span className="flex items-center gap-1.5"><Check className="size-3.5 text-[#7f9eff]" /> {t('landing.cta.noCard')}</span>

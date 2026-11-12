@@ -98,7 +98,7 @@ export const SheetTrigger = React.forwardRef<HTMLButtonElement, SheetTriggerProp
 SheetTrigger.displayName = 'SheetTrigger';
 
 export const sheetVariants = cva(
-  'fixed z-50 gap-4 bg-card/95 p-6 shadow-2xl backdrop-blur-xl border-border/80 transition-transform duration-300 ease-in-out',
+  'fixed z-50 gap-4 bg-card/98 p-6 shadow-2xl backdrop-blur-xl border-border transition-transform duration-300 ease-in-out',
   {
     variants: {
       side: {
@@ -149,7 +149,7 @@ export const SheetContent = React.forwardRef<HTMLDivElement, SheetContentProps>(
       <div className="fixed inset-0 z-50 flex">
         {/* Backdrop overlay */}
         <div
-          className="fixed inset-0 bg-black/60 backdrop-blur-xs transition-opacity"
+          className="fixed inset-0 bg-slate-950/70 backdrop-blur-sm transition-opacity"
           onClick={() => {
             onOpenChange(false);
             onClose?.();
@@ -167,7 +167,7 @@ export const SheetContent = React.forwardRef<HTMLDivElement, SheetContentProps>(
               onOpenChange(false);
               onClose?.();
             }}
-            className="absolute right-4 top-4 rounded-lg p-1 text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors cursor-pointer"
+            className="absolute right-4 top-4 grid size-9 place-items-center rounded-xl text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors cursor-pointer"
             aria-label="Close sheet"
           >
             <X className="h-5 w-5" />

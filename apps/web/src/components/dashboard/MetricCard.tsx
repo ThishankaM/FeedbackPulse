@@ -41,10 +41,10 @@ export function MetricCard({
   }, [value, formattedValue, loading, i18n.resolvedLanguage]);
 
   return (
-    <Card className="fp-glass-card fp-metric-card group relative overflow-hidden rounded-2xl border border-slate-200/80 bg-white/70 p-5 shadow-xs backdrop-blur-md transition-all duration-200 hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-md dark:border-white/10 dark:bg-slate-900/40 dark:hover:border-white/20">
+    <Card className="fp-glass-card fp-metric-card group relative overflow-hidden rounded-2xl border border-slate-200/90 bg-white/90 p-5 shadow-xs backdrop-blur-md transition-all duration-200 hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-md dark:border-white/14 dark:bg-slate-950/70 dark:hover:border-white/24">
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0 flex-1">
-          <p className="truncate text-xs font-semibold tracking-wider text-slate-500 uppercase dark:text-slate-400">
+          <p className="truncate text-xs font-bold tracking-wider text-slate-600 uppercase dark:text-slate-300">
             {label}
           </p>
           <div className="mt-2 flex items-baseline gap-2">
@@ -67,7 +67,7 @@ export function MetricCard({
                   'inline-flex items-center gap-0.5 rounded-full px-2 py-0.5 text-xs font-semibold ring-1 ring-inset',
                   isPositive
                     ? 'bg-emerald-500/10 text-emerald-600 ring-emerald-500/20 dark:bg-emerald-500/15 dark:text-emerald-400 dark:ring-emerald-500/30'
-                    : 'bg-slate-100 text-slate-600 ring-slate-200 dark:bg-white/10 dark:text-slate-300 dark:ring-white/10'
+                    : 'bg-slate-100 text-slate-700 ring-slate-200 dark:bg-white/10 dark:text-slate-200 dark:ring-white/15'
                 )}
               >
                 <ArrowUp className={cn('fp-delta-icon mr-0.5 h-3 w-3 stroke-[2.5]', !isPositive && 'rotate-180')} />

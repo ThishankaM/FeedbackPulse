@@ -135,7 +135,7 @@ export function NewFeedbackModal({
         <div>
           <label
             htmlFor="feedback-title-input"
-            className="mb-1.5 block text-xs font-semibold text-slate-700 dark:text-slate-300"
+            className="mb-1.5 block text-xs font-semibold text-foreground"
           >
             {t('feedback.titleLabel')}
           </label>
@@ -151,7 +151,7 @@ export function NewFeedbackModal({
             placeholder={t('feedback.titlePlaceholder')}
             aria-invalid={Boolean(fieldErrors.title)}
             autoFocus
-            className="rounded-xl border-slate-200/80 bg-white/70 shadow-xs backdrop-blur-sm dark:border-white/10 dark:bg-white/[0.04]"
+            className="rounded-xl border-border bg-card/90 shadow-xs backdrop-blur-sm dark:bg-card/75"
           />
           {fieldErrors.title && (
             <p role="alert" className="mt-1 text-[11px] font-medium text-rose-600 dark:text-rose-400">
@@ -164,7 +164,7 @@ export function NewFeedbackModal({
           <div>
             <label
               htmlFor="feedback-board-select"
-              className="mb-1.5 block text-xs font-semibold text-slate-700 dark:text-slate-300"
+              className="mb-1.5 block text-xs font-semibold text-foreground"
             >
               {t('dashboard.boardLabel')}
             </label>
@@ -177,7 +177,7 @@ export function NewFeedbackModal({
                   setFieldErrors((prev) => ({ ...prev, boardId: undefined }));
                 }
               }}
-              className="flex h-10 w-full rounded-xl border border-slate-200/80 bg-white/70 px-3 py-1 text-sm shadow-xs backdrop-blur-sm transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-white/10 dark:bg-slate-900/70 dark:text-slate-100"
+              className="flex h-10 w-full rounded-xl border border-input bg-card/90 px-3 py-1 text-sm text-foreground shadow-xs backdrop-blur-sm transition-colors hover:border-foreground/25 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/35 dark:bg-card/75"
             >
               {boards.map((b) => (
                 <option key={b.id} value={b.id} className="dark:bg-slate-900 dark:text-white">
@@ -197,7 +197,7 @@ export function NewFeedbackModal({
           <div className="mb-1.5 flex items-center justify-between gap-2">
             <label
               htmlFor="feedback-content-input"
-              className="block text-xs font-semibold text-slate-700 dark:text-slate-300"
+              className="block text-xs font-semibold text-foreground"
             >
               {t('feedback.contentLabel')}
             </label>
@@ -229,12 +229,12 @@ export function NewFeedbackModal({
                 placeholder={t('feedback.contentPlaceholder')}
                 aria-invalid={Boolean(fieldErrors.content)}
                 rows={4}
-                className="rounded-xl border-slate-200/80 bg-white/70 shadow-xs backdrop-blur-sm dark:border-white/10 dark:bg-white/[0.04]"
+                className="rounded-xl border-border bg-card/90 shadow-xs backdrop-blur-sm dark:bg-card/75"
               />
             </TabsContent>
 
             <TabsContent value="preview" className="mt-2">
-              <div className="min-h-[104px] rounded-xl border border-slate-200/80 bg-white/70 p-3 text-slate-700 shadow-xs backdrop-blur-sm dark:border-white/10 dark:bg-white/[0.04] dark:text-slate-300">
+              <div className="min-h-[104px] rounded-xl border border-border bg-card/90 p-3 text-slate-700 shadow-xs backdrop-blur-sm dark:text-slate-200 dark:bg-card/75">
                 {content.trim() ? (
                   <Markdown content={content} />
                 ) : (

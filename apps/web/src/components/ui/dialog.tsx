@@ -95,15 +95,15 @@ export function Dialog({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-black/60 backdrop-blur-xs transition-opacity"
+        className="fixed inset-0 bg-slate-950/70 backdrop-blur-sm transition-opacity"
         onClick={() => onOpenChange(false)}
       />
       {/* Dialog container */}
-      <div className="relative z-50 w-full max-w-lg rounded-2xl border border-border/80 bg-card/95 p-6 shadow-2xl backdrop-blur-xl transition-all">
+      <div className="relative z-50 w-full max-w-lg rounded-3xl border border-border bg-card/98 p-6 text-card-foreground shadow-2xl ring-1 ring-white/10 backdrop-blur-xl transition-all dark:ring-white/5">
         <button
           type="button"
           onClick={() => onOpenChange(false)}
-          className="absolute right-4 top-4 rounded-lg p-1 text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors cursor-pointer"
+          className="absolute right-4 top-4 grid size-9 place-items-center rounded-xl text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground cursor-pointer"
           aria-label="Close dialog"
         >
           <X className="h-5 w-5" />
@@ -187,7 +187,7 @@ export const DialogContent = React.forwardRef<HTMLDivElement, DialogContentProps
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
         {/* Backdrop */}
         <div
-          className="fixed inset-0 bg-black/60 backdrop-blur-xs transition-opacity"
+          className="fixed inset-0 bg-slate-950/70 backdrop-blur-sm transition-opacity"
           onClick={() => {
             onOpenChange(false);
             onClose?.();
@@ -197,7 +197,7 @@ export const DialogContent = React.forwardRef<HTMLDivElement, DialogContentProps
         <div
           ref={ref}
           className={cn(
-            'relative z-50 w-full max-w-lg rounded-2xl border border-border/80 bg-card/95 p-6 shadow-2xl backdrop-blur-xl transition-all',
+            'relative z-50 w-full max-w-lg rounded-3xl border border-border bg-card/98 p-6 text-card-foreground shadow-2xl ring-1 ring-white/10 backdrop-blur-xl transition-all dark:ring-white/5',
             className
           )}
           {...props}
@@ -208,7 +208,7 @@ export const DialogContent = React.forwardRef<HTMLDivElement, DialogContentProps
               onOpenChange(false);
               onClose?.();
             }}
-            className="absolute right-4 top-4 rounded-lg p-1 text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors cursor-pointer"
+            className="absolute right-4 top-4 grid size-9 place-items-center rounded-xl text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground cursor-pointer"
             aria-label="Close dialog"
           >
             <X className="h-5 w-5" />

@@ -107,7 +107,7 @@ export function LandingNavbar({
               onClick={(event) => navigateToSection(event, item.href)}
               aria-current={activeSection === item.href.slice(1) ? 'location' : undefined}
               data-active={activeSection === item.href.slice(1)}
-              className="fp-nav-link rounded-lg px-3.5 py-2 text-[13px] font-semibold text-[#66666d] transition-colors hover:bg-white hover:text-[#161618] hover:shadow-sm dark:text-white/58 dark:hover:bg-white/10 dark:hover:text-white"
+              className="fp-nav-link rounded-lg px-3.5 py-2 text-[13px] font-semibold text-[#5d5e66] transition-colors hover:bg-white hover:text-[#161618] hover:shadow-sm dark:text-white/78 dark:hover:bg-white/10 dark:hover:text-white"
             >
               {t(item.labelKey)}
             </a>
@@ -120,7 +120,7 @@ export function LandingNavbar({
             onClick={toggleLanguage}
             aria-label={t('landing.nav.toggleLanguage')}
             title={t('landing.nav.toggleLanguage')}
-            className="flex h-9 items-center gap-1.5 rounded-xl border border-black/[0.06] bg-white/55 px-2.5 text-[11px] font-bold text-[#4f4f55] transition-colors hover:bg-white dark:border-white/10 dark:bg-white/[0.06] dark:text-white/70 dark:hover:bg-white/10 dark:hover:text-white"
+            className="flex h-9 items-center gap-1.5 rounded-xl border border-black/[0.08] bg-white/70 px-2.5 text-[11px] font-bold text-[#44454d] transition-colors hover:bg-white dark:border-white/14 dark:bg-white/[0.08] dark:text-white/82 dark:hover:bg-white/12 dark:hover:text-white"
           >
             <Languages className="size-3.5" />
             {language.toUpperCase()}
@@ -134,7 +134,7 @@ export function LandingNavbar({
             title={t('landing.nav.toggleTheme', {
               theme: t(`common.theme.${nextTheme}`).toLowerCase(),
             })}
-            className="grid size-9 place-items-center rounded-xl border border-black/[0.06] bg-white/55 text-[#4f4f55] transition-colors hover:bg-white dark:border-white/10 dark:bg-white/[0.06] dark:text-white/70 dark:hover:bg-white/10 dark:hover:text-white"
+            className="grid size-9 place-items-center rounded-xl border border-black/[0.08] bg-white/70 text-[#44454d] transition-colors hover:bg-white dark:border-white/14 dark:bg-white/[0.08] dark:text-white/82 dark:hover:bg-white/12 dark:hover:text-white"
           >
             {resolvedTheme === 'dark' ? <Sun className="size-4" /> : <Moon className="size-4" />}
           </button>
@@ -150,7 +150,7 @@ export function LandingNavbar({
             <>
               <button
                 onClick={onSignIn}
-                className="rounded-xl px-3.5 py-2 text-[13px] font-semibold text-[#66666d] transition-colors hover:bg-[#f3f3f1] hover:text-[#161618] dark:text-white/60 dark:hover:bg-white/10 dark:hover:text-white"
+                className="rounded-xl px-3.5 py-2 text-[13px] font-semibold text-[#5d5e66] transition-colors hover:bg-[#f3f3f1] hover:text-[#161618] dark:text-white/80 dark:hover:bg-white/10 dark:hover:text-white"
               >
                 {t('landing.nav.logIn')}
               </button>

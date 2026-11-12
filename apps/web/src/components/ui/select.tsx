@@ -160,12 +160,12 @@ export const SelectTrigger = React.forwardRef<
       aria-expanded={open}
       onClick={handleClick}
       className={cn(
-        'flex h-9 w-full items-center justify-between rounded-lg border border-input bg-background/50 px-3 py-2 text-sm shadow-xs backdrop-blur-xs placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer dark:bg-input/20',
+        'flex h-10 w-full items-center justify-between rounded-xl border border-input bg-card/90 px-3.5 py-2 text-sm font-medium text-foreground shadow-xs backdrop-blur-xs placeholder:text-muted-foreground hover:border-foreground/25 focus:border-primary focus:outline-none focus:ring-2 focus:ring-ring/35 disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer dark:bg-input/40',
         className
       )}
     >
       {children}
-      <ChevronDown className="h-4 w-4 opacity-50 ml-2 shrink-0 transition-transform duration-200" style={{ transform: open ? 'rotate(180deg)' : 'none' }} />
+      <ChevronDown className="ml-2 h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-200" style={{ transform: open ? 'rotate(180deg)' : 'none' }} />
     </button>
   );
 });
@@ -277,7 +277,7 @@ export const SelectContent = React.forwardRef<
         ...style,
       }}
       className={cn(
-        'z-50 max-h-96 min-w-[8rem] overflow-auto rounded-xl border border-border/80 bg-popover/90 p-1 text-popover-foreground shadow-xl backdrop-blur-xl',
+        'z-50 max-h-96 min-w-[8rem] overflow-auto rounded-xl border border-border bg-popover/98 p-1 text-popover-foreground shadow-xl backdrop-blur-xl',
         !open && 'pointer-events-none hidden',
         className
       )}
@@ -322,7 +322,7 @@ export const SelectItem = React.forwardRef<
       disabled={disabled}
       onClick={handleClick}
       className={cn(
-        'relative flex w-full cursor-pointer select-none items-center rounded-lg py-1.5 pl-8 pr-2 text-sm text-left outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground disabled:pointer-events-none disabled:opacity-50',
+        'relative flex w-full cursor-pointer select-none items-center rounded-lg py-2 pl-8 pr-2 text-sm font-medium text-left outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground disabled:pointer-events-none disabled:opacity-50',
         isSelected && 'font-medium text-foreground',
         className
       )}

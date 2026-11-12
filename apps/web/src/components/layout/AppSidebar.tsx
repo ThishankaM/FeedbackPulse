@@ -102,7 +102,7 @@ export function AppSidebar({
       type="button"
       onClick={() => onViewChange('help')}
       aria-label={collapsed ? t('nav.helpSupport') : undefined}
-      className="flex items-center gap-3 px-4 py-2 w-full rounded-xl text-xs font-medium text-foreground/75 hover:text-foreground hover:bg-accent/60 transition-colors cursor-pointer overflow-hidden"
+      className="flex items-center gap-3 px-4 py-2.5 w-full rounded-xl text-xs font-semibold text-foreground/90 hover:text-foreground hover:bg-accent/80 transition-colors cursor-pointer overflow-hidden"
     >
       <HelpCircle className="h-4 w-4 shrink-0" />
       <span
@@ -164,14 +164,14 @@ export function AppSidebar({
                       'fp-sidebar-item flex items-center gap-3.5 px-[15px] py-2.5 w-full rounded-xl text-sm font-medium transition-colors duration-150 cursor-pointer overflow-hidden',
                       isActive
                         ? 'fp-sidebar-active bg-primary text-primary-foreground font-semibold shadow-xs'
-                        : 'text-foreground/75 hover:text-foreground hover:bg-accent/60'
+                        : 'text-foreground/90 hover:text-foreground hover:bg-accent/80'
                     )}
                   >
                     <Icon
                       onMouseEnter={(e: React.MouseEvent<SVGSVGElement>) => scalePulse(e.currentTarget)}
                       className={cn(
                         'fp-sidebar-icon h-4.5 w-4.5 shrink-0 transition-transform',
-                        isActive ? 'text-primary-foreground' : 'text-foreground/65'
+                        isActive ? 'text-primary-foreground' : 'text-foreground/80'
                       )}
                     />
                     <span
@@ -200,7 +200,7 @@ export function AppSidebar({
             aria-expanded={!collapsed}
             aria-label={collapsed ? t('nav.expandSidebar') : t('nav.collapseSidebar')}
             title={collapsed ? t('nav.expandSidebar') : t('nav.collapseSidebar')}
-            className="flex items-center gap-3 px-4 py-2 w-full rounded-xl text-xs font-medium text-foreground/75 hover:text-foreground hover:bg-accent/60 transition-colors cursor-pointer overflow-hidden"
+            className="flex items-center gap-3 px-4 py-2.5 w-full rounded-xl text-xs font-semibold text-foreground/90 hover:text-foreground hover:bg-accent/80 transition-colors cursor-pointer overflow-hidden"
           >
             {collapsed ? (
               <PanelLeftOpen className="h-4 w-4 shrink-0" />
@@ -261,10 +261,10 @@ export function AppSidebar({
                     'fp-sidebar-item flex items-center w-full rounded-xl text-sm font-medium transition-all duration-150 cursor-pointer overflow-hidden gap-3.5 px-3.5 py-2.5',
                     isActive
                       ? 'fp-sidebar-active bg-primary text-primary-foreground font-semibold shadow-xs'
-                      : 'text-foreground/75 hover:text-foreground hover:bg-accent/60'
+                      : 'text-foreground/90 hover:text-foreground hover:bg-accent/80'
                   )}
                 >
-                  <Icon className={cn('fp-sidebar-icon h-4.5 w-4.5 shrink-0', isActive ? 'text-primary-foreground' : 'text-foreground/65')} />
+                  <Icon className={cn('fp-sidebar-icon h-4.5 w-4.5 shrink-0', isActive ? 'text-primary-foreground' : 'text-foreground/80')} />
                   <span className="truncate font-medium">{item.label}</span>
                 </button>
               );
@@ -279,7 +279,7 @@ export function AppSidebar({
                 onViewChange('help');
                 onMobileOpenChange?.(false);
               }}
-              className="flex items-center w-full rounded-xl text-xs font-medium text-foreground/75 hover:text-foreground hover:bg-accent/60 transition-colors cursor-pointer gap-3 px-3 py-2 overflow-hidden"
+              className="flex items-center w-full rounded-xl text-xs font-semibold text-foreground/90 hover:text-foreground hover:bg-accent/80 transition-colors cursor-pointer gap-3 px-3 py-2.5 overflow-hidden"
             >
               <HelpCircle className="h-4 w-4 shrink-0" />
               <span className="truncate font-medium">{t('nav.helpSupport')}</span>

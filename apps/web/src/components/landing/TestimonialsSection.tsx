@@ -54,7 +54,7 @@ export function TestimonialsSection() {
                   <Star key={index} className="size-4 fill-[#f28a4c] text-[#f28a4c]" />
                 ))}
               </div>
-              <p className="mt-1.5 text-[12px] font-semibold text-[#74747b] dark:text-white/48">
+              <p className="mt-1.5 text-[12px] font-semibold text-[#5d5e66] dark:text-white/68">
                 {t('landing.testimonials.proof')}
               </p>
             </div>
@@ -80,10 +80,10 @@ export function TestimonialsSection() {
                     : 'bg-white dark:bg-[#151519]'
               }`}
             >
-              <Quote className={`size-6 ${index === 0 ? 'text-white/30' : 'text-[#c4c4c9]'}`} />
+              <Quote className={`size-6 ${index === 0 ? 'text-white/55' : 'text-[#9b9ca4] dark:text-white/45'}`} />
               <blockquote
                 className={`mt-5 text-[16px] font-semibold leading-[1.55] tracking-[-0.02em] ${
-                  index === 0 ? 'text-white' : 'text-[#2c2c31]'
+                  index === 0 ? 'text-white' : 'text-[#2c2c31] dark:text-white'
                 }`}
               >
                 “{t(`landing.testimonials.items.${testimonial.key}.quote`)}”
@@ -96,7 +96,7 @@ export function TestimonialsSection() {
                   <p className={`text-[12px] font-bold ${index === 0 ? 'text-white' : 'text-[#161618] dark:text-white'}`}>
                     {t(`landing.testimonials.items.${testimonial.key}.name`)}
                   </p>
-                  <p className={`mt-0.5 text-[10px] font-medium ${index === 0 ? 'text-white/45' : 'text-[#88888e] dark:text-white/42'}`}>
+                  <p className={`mt-0.5 text-[11px] font-medium ${index === 0 ? 'text-white/72' : 'text-[#65666e] dark:text-white/68'}`}>
                     {t(`landing.testimonials.items.${testimonial.key}.role`)}
                   </p>
                 </div>

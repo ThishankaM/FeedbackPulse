@@ -52,7 +52,7 @@ export function HowItWorksSection() {
               {t('landing.platform.title')}
             </h2>
           </div>
-          <p className="max-w-md text-[14px] font-medium leading-[1.7] text-[#6d6d74] dark:text-white/54 sm:text-[16px]">
+          <p className="max-w-md text-[14px] font-medium leading-[1.7] text-[#5d5e66] dark:text-white/75 sm:text-[16px]">
             {t('landing.platform.description')}
           </p>
         </div>
@@ -68,7 +68,7 @@ export function HowItWorksSection() {
               <h3 className="fp-section-title mt-5 text-[34px] leading-[1.08] text-white sm:text-[40px]">
                 {t('landing.platform.aiTitle')}
               </h3>
-              <p className="mt-4 max-w-md text-[14px] font-medium leading-[1.7] text-white/55">
+              <p className="mt-4 max-w-md text-[14px] font-medium leading-[1.7] text-white/76">
                 {t('landing.platform.aiDescription')}
               </p>
             </div>
@@ -76,7 +76,7 @@ export function HowItWorksSection() {
             <div className="relative mt-10 grid gap-3 sm:grid-cols-[1.2fr_0.8fr]">
               <div className="rounded-[18px] border border-white/10 bg-white/[0.07] p-4 backdrop-blur">
                 <div className="flex items-center justify-between">
-                  <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-white/45">{t('landing.platform.trending')}</p>
+                  <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-white/72">{t('landing.platform.trending')}</p>
                   <Sparkles className="size-3.5 text-[#8ca6ff]" />
                 </div>
                 <div className="mt-4 space-y-3">
@@ -86,7 +86,7 @@ export function HowItWorksSection() {
                     [trendingThemes[2], '61%', 'w-[61%]'],
                   ].map(([label, value, width]) => (
                     <div key={label}>
-                      <div className="mb-1.5 flex justify-between text-[9px] font-semibold text-white/72">
+                      <div className="mb-1.5 flex justify-between text-[10px] font-semibold text-white/88">
                         <span>{label}</span>
                         <span>{value}</span>
                       </div>
@@ -98,12 +98,12 @@ export function HowItWorksSection() {
                 </div>
               </div>
               <div className="rounded-[18px] border border-white/10 bg-white/[0.07] p-4 backdrop-blur">
-                <div className="flex items-center gap-2 text-[10px] font-bold text-white/55">
+                <div className="flex items-center gap-2 text-[10px] font-bold text-white/78">
                   <BarChart3 className="size-3.5 text-[#91a8ff]" />
                   {t('landing.platform.thisWeek')}
                 </div>
                 <p className="mt-5 text-[32px] font-bold tracking-[-0.05em]">{t('landing.platform.growth')}</p>
-                <p className="mt-1 text-[9px] leading-relaxed text-white/38">
+                <p className="mt-1 text-[10px] leading-relaxed text-white/68">
                   {t('landing.platform.growthDescription')}
                 </p>
                 <div className="mt-5 flex h-14 items-end gap-1.5">
@@ -129,7 +129,7 @@ export function HowItWorksSection() {
             </p>
             <div className="absolute bottom-5 right-5 rounded-xl border border-black/[0.06] bg-white px-3 py-2 shadow-lg">
               <p className="text-[8px] font-bold text-[#161618]">{t('landing.platform.enterpriseCustomer')}</p>
-              <p className="mt-0.5 text-[7px] text-[#96969c]">{t('landing.platform.votedRoadmap')}</p>
+              <p className="mt-0.5 text-[8px] text-[#686971]">{t('landing.platform.votedRoadmap')}</p>
             </div>
           </div>
 
@@ -159,7 +159,7 @@ export function HowItWorksSection() {
                 <h3 className="mt-5 text-[16px] font-bold tracking-[-0.025em] text-[#161618] dark:text-white">
                   {t(`landing.platform.cards.${feature.key}.title`)}
                 </h3>
-                <p className="mt-2 text-[12px] font-medium leading-relaxed text-[#74747b] dark:text-white/48">
+                <p className="mt-2 text-[12px] font-medium leading-relaxed text-[#60616a] dark:text-white/68">
                   {t(`landing.platform.cards.${feature.key}.description`)}
                 </p>
               </div>
@@ -178,14 +178,14 @@ export function HowItWorksSection() {
             return (
               <div key={item.key} className="flex items-center gap-2.5 rounded-xl bg-[#f7f7f5] px-3 py-3 dark:bg-white/[0.05]">
                 <Icon className="size-4 text-[#0d44e8]" />
-                <span className="text-[12px] font-bold text-[#4d4d53] dark:text-white/70">{t(`landing.platform.checks.${item.key}`)}</span>
+                <span className="text-[12px] font-bold text-[#45464e] dark:text-white/84">{t(`landing.platform.checks.${item.key}`)}</span>
                 <Check className="ml-auto size-3.5 text-[#1e9144]" />
               </div>
             );
           })}
         </div>
 
-        <div className="mt-10 flex flex-wrap items-center justify-center gap-6 text-[12px] font-semibold text-[#8b8b91] dark:text-white/42">
+        <div className="mt-10 flex flex-wrap items-center justify-center gap-6 text-[12px] font-semibold text-[#62636b] dark:text-white/68">
           <span className="flex items-center gap-2"><Rocket className="size-4" /> {t('landing.platform.launch')}</span>
           <span className="flex items-center gap-2"><ShieldCheck className="size-4" /> {t('landing.platform.privacy')}</span>
           <span className="flex items-center gap-2"><Zap className="size-4" /> {t('landing.platform.scale')}</span>

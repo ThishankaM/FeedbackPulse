@@ -71,7 +71,7 @@ export function FeedbackCard({ card, onVote, onClick }: FeedbackCardProps) {
           onClick?.(card);
         }
       }}
-      className="kanban-card fp-glass-item fp-feedback-card group relative rounded-xl border border-slate-200/80 bg-white/70 p-4 shadow-xs backdrop-blur-md transition-all duration-200 hover:-translate-y-0.5 hover:border-blue-400/50 hover:shadow-md dark:border-white/10 dark:bg-slate-900/40 dark:hover:border-blue-400/40 cursor-pointer"
+      className="kanban-card fp-glass-item fp-feedback-card group relative rounded-xl border border-slate-200/90 bg-white/95 p-4 shadow-xs backdrop-blur-md transition-all duration-200 hover:-translate-y-0.5 hover:border-blue-400/60 hover:shadow-md dark:border-white/14 dark:bg-slate-950/75 dark:hover:border-blue-400/50 cursor-pointer"
     >
       {/* Title & Options */}
       <div className="mb-1.5 flex items-start justify-between gap-2">
@@ -88,12 +88,12 @@ export function FeedbackCard({ card, onVote, onClick }: FeedbackCardProps) {
       </div>
 
       {/* Description Snippet */}
-      <p className="mb-4 line-clamp-2 text-xs leading-relaxed text-slate-600 dark:text-slate-400">
+      <p className="mb-4 line-clamp-2 text-xs leading-relaxed text-slate-700 dark:text-slate-300">
         {card.content}
       </p>
 
       {/* Footer Info */}
-      <div className="flex items-center justify-between border-t border-slate-100 pt-2.5 text-xs text-slate-500 dark:border-white/10 dark:text-slate-400">
+      <div className="flex items-center justify-between border-t border-slate-200/80 pt-2.5 text-xs text-slate-600 dark:border-white/12 dark:text-slate-300">
         <div className="flex items-center gap-2.5">
           {/* Author Avatar */}
           <Avatar
@@ -128,7 +128,7 @@ export function FeedbackCard({ card, onVote, onClick }: FeedbackCardProps) {
         </div>
 
         {/* Timestamp */}
-        <div className="flex items-center gap-1 text-[11px] text-slate-400">
+        <div className="flex items-center gap-1 text-[11px] font-medium text-slate-500 dark:text-slate-400">
           <Pin className="fp-pin-icon h-3 w-3 rotate-45 opacity-60" />
           <span>{formatTimeAgo(card.createdAt)}</span>
         </div>

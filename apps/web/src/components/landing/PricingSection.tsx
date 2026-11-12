@@ -40,7 +40,7 @@ export function PricingSection({ onSelectPlan }: PricingSectionProps) {
           <h2 className="fp-section-title mt-5 text-[40px] text-[#161618] dark:text-white sm:text-[54px]">
             {t('landing.pricing.title')}
           </h2>
-          <p className="mx-auto mt-5 max-w-xl text-[16px] font-medium leading-[1.7] text-[#6b6b72] dark:text-white/55">
+          <p className="mx-auto mt-5 max-w-xl text-[16px] font-medium leading-[1.7] text-[#5d5e66] dark:text-white/75">
             {t('landing.pricing.description')}
           </p>
 
@@ -49,7 +49,7 @@ export function PricingSection({ onSelectPlan }: PricingSectionProps) {
               type="button"
               onClick={() => setAnnual(false)}
               className={`rounded-lg px-3.5 py-2 text-[12px] font-bold transition-all ${
-                !annual ? 'bg-[#161618] text-white shadow-sm dark:bg-white dark:text-[#161618]' : 'text-[#727278] dark:text-white/50'
+                !annual ? 'bg-[#161618] text-white shadow-sm dark:bg-white dark:text-[#161618]' : 'text-[#5d5e66] dark:text-white/70'
               }`}
             >
               {t('landing.pricing.monthly')}
@@ -58,7 +58,7 @@ export function PricingSection({ onSelectPlan }: PricingSectionProps) {
               type="button"
               onClick={() => setAnnual(true)}
               className={`rounded-lg px-3.5 py-2 text-[12px] font-bold transition-all ${
-                annual ? 'bg-[#161618] text-white shadow-sm dark:bg-white dark:text-[#161618]' : 'text-[#727278] dark:text-white/50'
+                annual ? 'bg-[#161618] text-white shadow-sm dark:bg-white dark:text-[#161618]' : 'text-[#5d5e66] dark:text-white/70'
               }`}
             >
               {t('landing.pricing.yearly')}
@@ -87,18 +87,18 @@ export function PricingSection({ onSelectPlan }: PricingSectionProps) {
                 <p className={`text-[13px] font-bold ${plan.popular ? 'text-white' : 'text-[#161618] dark:text-white'}`}>
                   {t(`landing.pricing.plans.${plan.key}.name`)}
                 </p>
-                <p className={`mt-2 min-h-10 max-w-[240px] text-[12px] font-medium leading-relaxed ${plan.popular ? 'text-white/60' : 'text-[#797980] dark:text-white/48'}`}>
+                <p className={`mt-2 min-h-10 max-w-[240px] text-[12px] font-medium leading-relaxed ${plan.popular ? 'text-white/82' : 'text-[#5f6068] dark:text-white/68'}`}>
                   {t(`landing.pricing.plans.${plan.key}.description`)}
                 </p>
                 <div className="mt-7 flex items-end gap-1.5">
                   <span className={`text-[44px] font-bold leading-none tracking-[-0.06em] ${plan.popular ? 'text-white' : 'text-[#161618] dark:text-white'}`}>
                     ${price}
                   </span>
-                  <span className={`mb-1 text-[11px] font-medium ${plan.popular ? 'text-white/50' : 'text-[#96969c] dark:text-white/40'}`}>
+                  <span className={`mb-1 text-[11px] font-medium ${plan.popular ? 'text-white/78' : 'text-[#66676f] dark:text-white/68'}`}>
                     {t('landing.pricing.perMonth')}
                   </span>
                 </div>
-                <p className={`mt-1.5 text-[10px] font-medium ${plan.popular ? 'text-white/45' : 'text-[#a0a0a5] dark:text-white/32'}`}>
+                <p className={`mt-1.5 text-[11px] font-medium ${plan.popular ? 'text-white/74' : 'text-[#686971] dark:text-white/62'}`}>
                   {annual && price > 0
                     ? t('landing.pricing.billedYearly', { price: price * 12 })
                     : plan.monthly === 0
@@ -119,12 +119,12 @@ export function PricingSection({ onSelectPlan }: PricingSectionProps) {
                 </Button>
 
                 <div className={`my-6 h-px ${plan.popular ? 'bg-white/15' : 'bg-black/[0.07] dark:bg-white/10'}`} />
-                <p className={`text-[10px] font-bold uppercase tracking-[0.1em] ${plan.popular ? 'text-white/45' : 'text-[#9a9aa0]'}`}>
+                <p className={`text-[10px] font-bold uppercase tracking-[0.1em] ${plan.popular ? 'text-white/75' : 'text-[#63646c] dark:text-white/72'}`}>
                   {t('landing.pricing.includes')}
                 </p>
                 <ul className="mt-4 space-y-3">
                   {(t(`landing.pricing.plans.${plan.key}.features`, { returnObjects: true }) as string[]).map((feature) => (
-                    <li key={feature} className={`flex items-center gap-2.5 text-[12px] font-semibold ${plan.popular ? 'text-white/85' : 'text-[#4e4e54] dark:text-white/70'}`}>
+                    <li key={feature} className={`flex items-center gap-2.5 text-[12px] font-semibold ${plan.popular ? 'text-white/92' : 'text-[#44454d] dark:text-white/84'}`}>
                       <span className={`grid size-4.5 shrink-0 place-items-center rounded-full ${plan.popular ? 'bg-white/15 text-white' : 'bg-[#eef2ff] text-[#0d44e8]'}`}>
                         <Check className="size-2.5 stroke-[3]" />
                       </span>
@@ -137,7 +137,7 @@ export function PricingSection({ onSelectPlan }: PricingSectionProps) {
           })}
         </div>
 
-        <p className="mt-8 text-center text-[11px] font-medium text-[#8c8c92] dark:text-white/35">
+        <p className="mt-8 text-center text-[11px] font-medium text-[#63646c] dark:text-white/62">
           {t('landing.pricing.trial')}
         </p>
       </div>

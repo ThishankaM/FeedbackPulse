@@ -210,7 +210,7 @@ export const DropdownMenuContent = React.forwardRef<
         ...style,
       }}
       className={cn(
-        'z-50 min-w-[8rem] overflow-hidden rounded-xl border border-border/80 bg-popover/90 p-1 text-popover-foreground shadow-xl backdrop-blur-xl',
+        'z-50 min-w-[8rem] overflow-hidden rounded-xl border border-border bg-popover/98 p-1 text-popover-foreground shadow-xl backdrop-blur-xl',
         className
       )}
       {...props}
@@ -249,7 +249,7 @@ export const DropdownMenuItem = React.forwardRef<
       disabled={disabled}
       onClick={handleClick}
       className={cn(
-        'relative flex w-full cursor-pointer select-none items-center rounded-lg px-2.5 py-1.5 text-sm text-left outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground disabled:pointer-events-none disabled:opacity-50',
+        'relative flex w-full cursor-pointer select-none items-center rounded-lg px-2.5 py-2 text-sm font-medium text-left outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground disabled:pointer-events-none disabled:opacity-50',
         destructive &&
           'text-destructive hover:bg-destructive/10 hover:text-destructive focus:bg-destructive/10 focus:text-destructive',
         className

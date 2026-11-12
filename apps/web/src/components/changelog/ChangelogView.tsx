@@ -428,7 +428,7 @@ export function ChangelogView({
           <div className="ml-10 rounded-2xl border border-dashed border-border/80 p-8 text-center bg-card/40 backdrop-blur-sm">
             {items.length === 0 ? (
               <>
-                <FileText className="mx-auto h-8 w-8 text-muted-foreground/40 mb-2" />
+                <FileText className="mx-auto h-8 w-8 text-muted-foreground/70 mb-2" />
                 <h3 className="text-sm font-semibold text-foreground">
                   {t('changelog.emptyTitle')}
                 </h3>
@@ -438,7 +438,7 @@ export function ChangelogView({
               </>
             ) : (
               <>
-                <SlidersHorizontal className="mx-auto h-8 w-8 text-muted-foreground/40 mb-2" />
+                <SlidersHorizontal className="mx-auto h-8 w-8 text-muted-foreground/70 mb-2" />
                 <h3 className="text-sm font-semibold text-foreground">
                   {t('changelog.noMatchTitle')}
                 </h3>
@@ -573,7 +573,7 @@ export function ChangelogView({
                             <div className="h-2 w-2 rounded-full bg-red-500/80" />
                             <div className="h-2 w-2 rounded-full bg-yellow-500/80" />
                             <div className="h-2 w-2 rounded-full bg-green-500/80" />
-                            <span className="ml-2 text-[10px] font-medium text-slate-400">
+                            <span className="ml-2 text-[10px] font-medium text-slate-300">
                               {t('changelog.previewHeader')}
                             </span>
                           </div>
@@ -589,7 +589,7 @@ export function ChangelogView({
                           <div className="rounded-xl border border-white/10 bg-white/5 p-2 backdrop-blur-xs">
                             <div className="mb-1.5 flex items-center justify-between">
                               <span className="text-[10px] font-bold text-slate-300">{t('changelog.previewPlanned')}</span>
-                              <span className="rounded-full bg-white/10 px-1.5 py-0.2 text-[9px] text-slate-400">
+                              <span className="rounded-full bg-white/12 px-1.5 py-0.2 text-[10px] font-semibold text-slate-200">
                                 4
                               </span>
                             </div>
@@ -629,12 +629,12 @@ export function ChangelogView({
                         </div>
 
                         {/* Interactive Hint */}
-                        <div className="mt-3 flex items-center justify-between text-[11px] text-slate-400 pt-2 border-t border-white/5">
+                        <div className="mt-3 flex items-center justify-between text-[11px] text-slate-300 pt-2 border-t border-white/10">
                           <span className="flex items-center gap-1 text-primary">
                             <Sparkles className="h-3 w-3" />
                             {t('changelog.previewHint')}
                           </span>
-                          <span className="group-hover/mockup:translate-x-0.5 transition-transform flex items-center gap-0.5 text-slate-300">
+                          <span className="group-hover/mockup:translate-x-0.5 transition-transform flex items-center gap-0.5 font-medium text-slate-200">
                             {t('changelog.previewCta')} <ChevronRight className="h-3 w-3" />
                           </span>
                         </div>
@@ -774,7 +774,7 @@ export function ChangelogView({
                 </span>
               </div>
 
-              <p className="text-xs text-slate-300 leading-relaxed mb-4">
+              <p className="text-sm text-slate-200 leading-relaxed mb-4">
                 {t('changelog.modalDesc')}
               </p>
 

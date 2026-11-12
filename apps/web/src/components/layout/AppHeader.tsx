@@ -83,7 +83,7 @@ export function AppHeader({
   };
 
   return (
-    <header className="fp-app-header sticky top-0 z-20 flex h-16 min-h-16 items-center justify-between gap-2 bg-transparent px-3 text-foreground transition-colors duration-200 sm:gap-4 sm:px-5">
+    <header className="fp-app-header sticky top-0 z-20 flex h-16 min-h-16 items-center justify-between gap-2 bg-transparent px-3 text-foreground backdrop-blur-md transition-colors duration-200 sm:gap-4 sm:px-5">
       {/* Left section: Mobile menu toggle button + desktop spacer */}
       <div className="flex items-center gap-2 min-w-0 md:flex-1">
         {onOpenMobileMenu && (
@@ -91,7 +91,7 @@ export function AppHeader({
             type="button"
             onClick={onOpenMobileMenu}
             aria-label={t('nav.openNavigation')}
-            className="sm:hidden p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-foreground/[0.05] dark:hover:bg-white/[0.06] transition-colors cursor-pointer"
+            className="sm:hidden rounded-xl p-2 text-muted-foreground transition-colors hover:bg-foreground/[0.07] hover:text-foreground cursor-pointer"
           >
             <Menu className="h-5 w-5" />
           </button>
@@ -108,9 +108,9 @@ export function AppHeader({
           value={searchQuery}
           onChange={(e) => onSearchChange(e.target.value)}
           placeholder={t('dashboard.searchPlaceholder')}
-          className="h-9 w-full rounded-xl border-0 bg-foreground/[0.045] py-2 pl-10 pr-12 text-sm text-foreground placeholder:text-muted-foreground transition-colors hover:bg-foreground/[0.065] focus:bg-background/70 focus:outline-none focus:ring-2 focus:ring-primary/20 dark:bg-white/[0.055] dark:hover:bg-white/[0.08] dark:focus:bg-white/[0.09]"
+          className="h-10 w-full rounded-xl border border-border/75 bg-card/78 py-2 pl-10 pr-12 text-sm font-medium text-foreground shadow-xs backdrop-blur-md transition-colors placeholder:text-muted-foreground hover:border-border hover:bg-card/92 focus:border-primary/50 focus:bg-card focus:outline-none focus:ring-2 focus:ring-primary/25 dark:bg-card/70 dark:hover:bg-card/85 dark:focus:bg-card"
         />
-        <div className="pointer-events-none absolute right-2.5 top-1/2 hidden -translate-y-1/2 items-center gap-0.5 rounded-md border-0 bg-foreground/[0.06] px-1.5 py-0.5 text-[10px] font-semibold text-muted-foreground dark:bg-white/[0.08] sm:flex">
+        <div className="pointer-events-none absolute right-2.5 top-1/2 hidden -translate-y-1/2 items-center gap-0.5 rounded-md border border-border/60 bg-muted/80 px-1.5 py-0.5 text-[10px] font-bold text-muted-foreground sm:flex">
           <span>⌘</span>
           <span>K</span>
         </div>
@@ -122,7 +122,7 @@ export function AppHeader({
         <button
           type="button"
           title={t('common.notifications')}
-          className="fp-icon-button fp-bell-button relative rounded-xl p-2 text-muted-foreground transition-colors hover:bg-foreground/[0.05] hover:text-foreground dark:hover:bg-white/[0.06] cursor-pointer"
+          className="fp-icon-button fp-bell-button relative rounded-xl p-2 text-muted-foreground transition-colors hover:bg-foreground/[0.07] hover:text-foreground cursor-pointer"
         >
           <Bell className="fp-bell-icon h-5 w-5 transition-transform" />
           <span className="fp-notification-dot absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-bold text-destructive-foreground shadow-xs animate-pulse">
@@ -135,7 +135,7 @@ export function AppHeader({
           type="button"
           onClick={toggleTheme}
           title={t('common.theme.toggle')}
-          className="fp-icon-button fp-theme-button fp-theme-toggle relative overflow-hidden rounded-xl p-2 text-muted-foreground transition-colors hover:bg-foreground/[0.05] hover:text-foreground dark:hover:bg-white/[0.06] cursor-pointer"
+          className="fp-icon-button fp-theme-button fp-theme-toggle relative overflow-hidden rounded-xl p-2 text-muted-foreground transition-colors hover:bg-foreground/[0.07] hover:text-foreground cursor-pointer"
         >
           <div className="theme-toggle-icon relative h-5 w-5">
             <Sun
@@ -166,7 +166,7 @@ export function AppHeader({
             <DropdownMenuTrigger asChild>
               <button
                 type="button"
-                className="group flex items-center gap-2 rounded-xl border-0 bg-transparent px-2 py-1.5 text-left transition-colors hover:bg-foreground/[0.05] dark:hover:bg-white/[0.06] cursor-pointer"
+                className="group flex items-center gap-2 rounded-xl border border-transparent px-2 py-1.5 text-left transition-colors hover:border-border/70 hover:bg-card/70 cursor-pointer"
               >
                 <div className="fp-workspace-mark flex items-center justify-center h-7 w-7 rounded-lg bg-primary/12 text-primary font-bold text-[11px] uppercase shrink-0">
                   {activeWorkspace.slug ? activeWorkspace.slug.slice(0, 4).toUpperCase() : t('workspace.initials')}
@@ -175,7 +175,7 @@ export function AppHeader({
                   <p className="truncate text-xs font-semibold leading-tight text-foreground">
                     {activeWorkspace.name}
                   </p>
-                  <p className="truncate text-[10px] leading-tight text-muted-foreground">
+                  <p className="truncate text-[11px] leading-tight text-muted-foreground">
                     {activeWorkspace.slug}
                   </p>
                 </div>
@@ -188,7 +188,7 @@ export function AppHeader({
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-60 sm:w-64">
-              <DropdownMenuLabel className="text-[10px] uppercase tracking-wider text-muted-foreground">
+              <DropdownMenuLabel className="text-[10px] font-bold uppercase tracking-[0.12em] text-muted-foreground">
                 {t('nav.workspaces')}
               </DropdownMenuLabel>
               <DropdownMenuGroup className="max-h-48 overflow-y-auto space-y-1">
@@ -208,7 +208,7 @@ export function AppHeader({
                         </div>
                         <div className="min-w-0 flex-1">
                           <p className="truncate font-medium text-foreground">{m.workspaceName}</p>
-                          <p className="text-[10px] text-muted-foreground truncate">{m.workspaceSlug}</p>
+                          <p className="text-[11px] text-muted-foreground truncate">{m.workspaceSlug}</p>
                         </div>
                       </div>
                       {activeWorkspace.slug === m.workspaceSlug && (
