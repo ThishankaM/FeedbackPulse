@@ -21,7 +21,7 @@ import { useToast } from '../ui/toast';
 import { FeedbackDetailModal } from '../feedback/FeedbackDetailModal';
 import { CreateBoardModal } from '../feedback/CreateBoardModal';
 import { useAuth } from '../../context/AuthContext';
-import { cn } from '../../lib/utils';
+import { cn, sanitizeImageUrl } from '../../lib/utils';
 import { client } from '../../lib/api';
 import { canManageActiveWorkspace } from '../../lib/workspace-access';
 import type { FeedbackCardData } from '../dashboard/FeedbackCard';
@@ -401,8 +401,8 @@ export function FeedbackBoardView({
       >
         <div className="flex items-center gap-3.5 min-w-0">
           <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center shrink-0 overflow-hidden shadow-inner">
-            {logoUrl ? (
-              <img src={logoUrl} alt={workspaceName} className="w-full h-full object-cover" />
+            {sanitizeImageUrl(logoUrl) ? (
+              <img src={sanitizeImageUrl(logoUrl)!} alt={workspaceName} className="w-full h-full object-cover" />
             ) : (
               <span className="font-bold text-lg sm:text-xl uppercase text-white">
                 {workspaceName ? workspaceName.charAt(0) : 'W'}

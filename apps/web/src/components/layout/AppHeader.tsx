@@ -25,7 +25,7 @@ import {
 } from '../ui/dropdown-menu';
 import { useTheme } from '../../context/ThemeProvider';
 import { useAuth } from '../../context/AuthContext';
-import { cn } from '../../lib/utils';
+import { cn, sanitizeImageUrl } from '../../lib/utils';
 
 export interface AppHeaderProps {
   searchQuery: string;
@@ -170,9 +170,9 @@ export function AppHeader({
                 className="group flex items-center gap-2 rounded-xl border border-transparent px-2 py-1.5 text-left transition-colors hover:border-border/70 hover:bg-card/70 cursor-pointer"
               >
                 <div className="fp-workspace-mark flex items-center justify-center h-7 w-7 rounded-lg bg-primary/12 text-primary font-bold text-[11px] uppercase shrink-0 overflow-hidden">
-                  {activeWorkspace.logoUrl ? (
+                  {sanitizeImageUrl(activeWorkspace.logoUrl) ? (
                     <img
-                      src={activeWorkspace.logoUrl}
+                      src={sanitizeImageUrl(activeWorkspace.logoUrl)!}
                       alt={activeWorkspace.name}
                       className="h-full w-full object-cover"
                     />
@@ -215,9 +215,9 @@ export function AppHeader({
                     >
                       <div className="flex items-center gap-2 min-w-0">
                         <div className="flex items-center justify-center h-6 w-6 rounded-md bg-primary/15 text-primary font-bold text-[10px] uppercase shrink-0 overflow-hidden">
-                          {m.logoUrl ? (
+                          {sanitizeImageUrl(m.logoUrl) ? (
                             <img
-                              src={m.logoUrl}
+                              src={sanitizeImageUrl(m.logoUrl)!}
                               alt={m.workspaceName}
                               className="h-full w-full object-cover"
                             />

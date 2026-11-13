@@ -30,6 +30,7 @@ import { useToast } from '../ui/toast';
 import { useAuth } from '../../context/AuthContext';
 import { client } from '../../lib/api';
 import { canManageActiveWorkspace } from '../../lib/workspace-access';
+import { sanitizeImageUrl } from '../../lib/utils';
 
 export interface WorkspaceSettingsProps {
   workspaceSlug: string;
@@ -365,8 +366,8 @@ export function SettingsView({
               }}
             >
               <div className="w-7 h-7 rounded-lg bg-white/20 backdrop-blur-sm flex items-center justify-center shrink-0 overflow-hidden">
-                {logoUrl ? (
-                  <img src={logoUrl} alt={name} className="w-full h-full object-cover" />
+                {sanitizeImageUrl(logoUrl) ? (
+                  <img src={sanitizeImageUrl(logoUrl)!} alt={name} className="w-full h-full object-cover" />
                 ) : (
                   <span className="font-bold text-xs uppercase">{name ? name.charAt(0) : 'W'}</span>
                 )}

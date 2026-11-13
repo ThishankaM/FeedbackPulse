@@ -2,11 +2,12 @@ import * as React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Upload, Trash2, ZoomIn, ZoomOut, Check, X, RotateCcw, ImageIcon } from 'lucide-react';
 import { Button } from './button';
-import { cn } from '../../lib/utils';
+import { cn, sanitizeImageUrl, sanitizeHexColor } from '../../lib/utils';
 
 const VIEW_SIZE = 192; // 1:1 crop viewport in CSS pixels
 const OUTPUT_SIZE = 512; // 512x512 output resolution
 const MAX_FILE_BYTES = 5 * 1024 * 1024; // 5 MB
+const ALLOWED_MIME_TYPES = ['image/png', 'image/jpeg', 'image/jpg', 'image/webp'];
 
 export interface SquareLogoUploaderProps {
   value: string;
@@ -80,9 +81,20 @@ export function SquareLogoUploader({
     []
   );
 
+  const safeSourceUrl = React.useMemo(
+    () => (sourceUrl ? sanitizeImageUrl(sourceUrl) : null),
+    [sourceUrl]
+  );
+  const safeValue = React.useMemo(() => sanitizeImageUrl(value), [value]);
+  const safeColor = React.useMemo(() => sanitizeHexColor(primaryColor), [primaryColor]);
+  const safeLetter = React.useMemo(() => {
+    const char = (fallbackLetter || 'W').trim().charAt(0);
+    return /^[a-zA-Z0-9]$/.test(char) ? char.toUpperCase() : 'W';
+  }, [fallbackLetter]);
+
   const handleFile = (file: File) => {
     setError(null);
-    if (!file.type.startsWith('image/')) {
+    if (!ALLOWED_MIME_TYPES.includes(file.type)) {
       setError(t('workspace.logoInvalidType'));
       return;
     }
@@ -106,8 +118,10 @@ export function SquareLogoUploader({
     if (file) {
       handleFile(file);
     }
-    // Reset input so re-selecting the same file still triggers onChange
-    e.target.value = '';
+    // Reset file input ref so re-selecting the same file still triggers onChange
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
   };
 
   const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
@@ -121,9 +135,9 @@ export function SquareLogoUploader({
   };
 
   const handleImageLoad = (e: React.SyntheticEvent<HTMLImageElement>) => {
-    const target = e.currentTarget;
-    imgRef.current = target;
-    setImgDims({ width: target.naturalWidth, height: target.naturalHeight });
+    const naturalWidth = e.currentTarget.naturalWidth;
+    const naturalHeight = e.currentTarget.naturalHeight;
+    setImgDims({ width: naturalWidth, height: naturalHeight });
     setZoom(1);
     setOffset({ x: 0, y: 0 });
   };
@@ -238,7 +252,7 @@ export function SquareLogoUploader({
       <input
         ref={fileInputRef}
         type="file"
-        accept="image/png,image/jpeg,image/webp,image/gif,image/svg+xml"
+        accept="image/png,image/jpeg,image/webp"
         onChange={handleFileInputChange}
         className="hidden"
       />
@@ -263,7 +277,8 @@ export function SquareLogoUploader({
               className="relative aspect-square rounded-2xl border-2 border-primary/60 bg-background/80 overflow-hidden cursor-grab active:cursor-grabbing select-none touch-none shadow-sm"
             >
               <img
-                src={sourceUrl}
+                ref={imgRef}
+                src={safeSourceUrl ?? undefined}
                 alt="Crop preview"
                 onLoad={handleImageLoad}
                 style={previewStyle}
@@ -299,7 +314,12 @@ export function SquareLogoUploader({
                 max={3}
                 step={0.05}
                 value={zoom}
-                onChange={(e) => handleZoomChange(parseFloat(e.target.value))}
+                onChange={(e) => {
+                  const nextVal = parseFloat(e.target.value);
+                  if (!Number.isNaN(nextVal)) {
+                    handleZoomChange(nextVal);
+                  }
+                }}
                 className="flex-1 accent-primary cursor-pointer h-1.5"
                 aria-label={t('workspace.logoZoom')}
               />
@@ -371,16 +391,16 @@ export function SquareLogoUploader({
           <div
             className="w-16 h-16 aspect-square rounded-2xl border border-border/80 flex items-center justify-center overflow-hidden shrink-0 shadow-xs"
             style={{
-              background: value
+              background: safeValue
                 ? undefined
-                : `linear-gradient(135deg, ${primaryColor} 0%, #2563eb 100%)`,
+                : `linear-gradient(135deg, ${safeColor} 0%, #2563eb 100%)`,
             }}
           >
-            {value ? (
-              <img src={value} alt="Logo preview" className="w-full h-full object-cover" />
+            {safeValue ? (
+              <img src={safeValue} alt="Logo preview" className="w-full h-full object-cover" />
             ) : (
               <span className="text-white font-black text-xl uppercase">
-                {fallbackLetter ? fallbackLetter.charAt(0) : 'W'}
+                {safeLetter}
               </span>
             )}
           </div>
