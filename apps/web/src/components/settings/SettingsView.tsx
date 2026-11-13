@@ -7,8 +7,6 @@ import {
   ExternalLink,
   Copy,
   Check,
-  Upload,
-  Trash2,
   Users,
   UserPlus,
   Crown,
@@ -27,10 +25,12 @@ import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Textarea } from '../ui/textarea';
 import { Badge } from '../ui/badge';
+import { SquareLogoUploader } from '../ui/SquareLogoUploader';
 import { useToast } from '../ui/toast';
 import { useAuth } from '../../context/AuthContext';
 import { client } from '../../lib/api';
 import { canManageActiveWorkspace } from '../../lib/workspace-access';
+import { sanitizeImageUrl } from '../../lib/utils';
 
 export interface WorkspaceSettingsProps {
   workspaceSlug: string;
@@ -366,8 +366,8 @@ export function SettingsView({
               }}
             >
               <div className="w-7 h-7 rounded-lg bg-white/20 backdrop-blur-sm flex items-center justify-center shrink-0 overflow-hidden">
-                {logoUrl ? (
-                  <img src={logoUrl} alt={name} className="w-full h-full object-cover" />
+                {sanitizeImageUrl(logoUrl) ? (
+                  <img src={sanitizeImageUrl(logoUrl)!} alt={name} className="w-full h-full object-cover" />
                 ) : (
                   <span className="font-bold text-xs uppercase">{name ? name.charAt(0) : 'W'}</span>
                 )}
@@ -601,52 +601,13 @@ export function SettingsView({
                   </div>
                 </CardHeader>
 
-                <div className="flex items-center gap-4 py-2">
-                  <div
-                    className="w-20 h-20 rounded-2xl border border-border/80 flex items-center justify-center overflow-hidden shrink-0 shadow-inner relative group"
-                    style={{
-                      background: logoUrl
-                        ? undefined
-                        : `linear-gradient(135deg, ${primaryColor} 0%, #2563eb 100%)`,
-                    }}
-                  >
-                    {logoUrl ? (
-                      <img src={logoUrl} alt={name} className="w-full h-full object-cover" />
-                    ) : (
-                      <span className="text-white font-black text-2xl uppercase">
-                        {name ? name.charAt(0) : 'W'}
-                      </span>
-                    )}
-                  </div>
-
-                  <div className="space-y-2 flex-1">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        const url = prompt(t('settings.logo.promptUrl'), logoUrl);
-                        if (url !== null) setLogoUrl(url);
-                      }}
-                      className="w-full justify-start rounded-xl text-xs font-semibold cursor-pointer"
-                    >
-                      <Upload className="h-3.5 w-3.5 mr-2" />
-                      {t('settings.logo.uploadNew')}
-                    </Button>
-                    {logoUrl && (
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setLogoUrl('')}
-                        className="w-full justify-start rounded-xl text-xs font-semibold text-destructive hover:bg-destructive/10 cursor-pointer"
-                      >
-                        <Trash2 className="h-3.5 w-3.5 mr-2" />
-                        {t('settings.logo.remove')}
-                      </Button>
-                    )}
-                  </div>
-                </div>
+                <SquareLogoUploader
+                  value={logoUrl}
+                  onChange={setLogoUrl}
+                  fallbackLetter={name || 'W'}
+                  primaryColor={primaryColor}
+                  className="py-2"
+                />
               </div>
 
               <div className="pt-4 border-t border-border/50 space-y-3">

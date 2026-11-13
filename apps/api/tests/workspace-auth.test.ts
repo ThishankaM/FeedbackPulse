@@ -268,3 +268,147 @@ test('status changes require a workspace admin', async () => {
   const data = await adminResponse.json();
   assert.equal(data.post.status, 'PLANNED');
 });
+
+test('board creation requires a workspace admin or owner', async () => {
+  const memberResponse = await app.request('/api/workspaces/security-fixture/boards', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${memberToken}`,
+    },
+    body: JSON.stringify({ name: 'Bug Reports', slug: 'bugs' }),
+  });
+  assert.equal(memberResponse.status, 403);
+
+  const adminResponse = await app.request('/api/workspaces/security-fixture/boards', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${adminToken}`,
+    },
+    body: JSON.stringify({ name: 'Bug Reports', slug: 'bugs', description: 'Track bugs' }),
+  });
+  assert.equal(adminResponse.status, 201);
+  const data = await adminResponse.json();
+  assert.equal(data.board.name, 'Bug Reports');
+  assert.equal(data.board.slug, 'bugs');
+
+  const duplicateResponse = await app.request('/api/workspaces/security-fixture/boards', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${adminToken}`,
+    },
+    body: JSON.stringify({ name: 'Duplicate Bugs', slug: 'bugs' }),
+  });
+  assert.equal(duplicateResponse.status, 409);
+});
+
+test('changelog creation, update, and deletion requires a workspace admin or owner', async () => {
+  // 1. Unauthenticated creation is rejected with 401
+  const anonResponse = await app.request('/api/workspaces/security-fixture/changelogs', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      title: 'v1.0.0 Launch',
+      slug: 'v1-0-0-launch',
+      content: 'Major features included in this launch.',
+      status: 'PUBLISHED',
+    }),
+  });
+  assert.equal(anonResponse.status, 401);
+
+  // 2. Regular member is rejected with 403
+  const memberResponse = await app.request('/api/workspaces/security-fixture/changelogs', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${memberToken}`,
+    },
+    body: JSON.stringify({
+      title: 'v1.0.0 Launch',
+      slug: 'v1-0-0-launch',
+      content: 'Major features included in this launch.',
+      status: 'PUBLISHED',
+    }),
+  });
+  assert.equal(memberResponse.status, 403);
+
+  // 3. Workspace admin can create a draft changelog
+  const adminDraftResponse = await app.request('/api/workspaces/security-fixture/changelogs', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${adminToken}`,
+    },
+    body: JSON.stringify({
+      title: 'v1.1.0 Beta Draft',
+      slug: 'v1-1-0-draft',
+      content: 'Internal preview features not yet ready.',
+      status: 'DRAFT',
+    }),
+  });
+  assert.equal(adminDraftResponse.status, 201);
+  const draftData = await adminDraftResponse.json();
+  const draftId = draftData.changelog.id;
+  assert.equal(draftData.changelog.status, 'DRAFT');
+
+  // 4. Public changelog listing does not leak drafts to unauthenticated users
+  const publicListResponse = await app.request('/api/workspaces/security-fixture/changelogs');
+  assert.equal(publicListResponse.status, 200);
+  const publicList = await publicListResponse.json();
+  assert.ok(!publicList.changelogs.some((c: any) => c.id === draftId));
+
+  // 5. Admin listing includes drafts
+  const adminListResponse = await app.request('/api/workspaces/security-fixture/changelogs', {
+    headers: { Authorization: `Bearer ${adminToken}` },
+  });
+  assert.equal(adminListResponse.status, 200);
+  const adminList = await adminListResponse.json();
+  assert.ok(adminList.changelogs.some((c: any) => c.id === draftId));
+
+  // 6. Member cannot update the changelog
+  const memberPatchResponse = await app.request(`/api/workspaces/security-fixture/changelogs/${draftId}`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${memberToken}`,
+    },
+    body: JSON.stringify({ title: 'Hacked Title' }),
+  });
+  assert.equal(memberPatchResponse.status, 403);
+
+  // 7. Admin can update and publish the changelog
+  const adminPatchResponse = await app.request(`/api/workspaces/security-fixture/changelogs/${draftId}`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${adminToken}`,
+    },
+    body: JSON.stringify({
+      title: 'v1.1.0 Released',
+      status: 'PUBLISHED',
+      content: 'Updated content shipped to production.',
+    }),
+  });
+  assert.equal(adminPatchResponse.status, 200);
+  const updatedData = await adminPatchResponse.json();
+  assert.equal(updatedData.changelog.title, 'v1.1.0 Released');
+  assert.equal(updatedData.changelog.status, 'PUBLISHED');
+
+  // 8. Member cannot delete the changelog
+  const memberDeleteResponse = await app.request(`/api/workspaces/security-fixture/changelogs/${draftId}`, {
+    method: 'DELETE',
+    headers: { Authorization: `Bearer ${memberToken}` },
+  });
+  assert.equal(memberDeleteResponse.status, 403);
+
+  // 9. Admin can delete the changelog
+  const adminDeleteResponse = await app.request(`/api/workspaces/security-fixture/changelogs/${draftId}`, {
+    method: 'DELETE',
+    headers: { Authorization: `Bearer ${adminToken}` },
+  });
+  assert.equal(adminDeleteResponse.status, 200);
+  const deleteData = await adminDeleteResponse.json();
+  assert.equal(deleteData.success, true);
+});

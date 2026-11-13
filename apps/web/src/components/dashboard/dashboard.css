@@ -565,8 +565,9 @@
     min-height: auto;
   }
 
+  .fp-feedback-view .fp-feedback-banner,
   .fp-feedback-view .fp-feedback-hero {
-    border-radius: 1.25rem;
+    border-radius: 1rem;
   }
 }
 

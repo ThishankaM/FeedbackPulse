@@ -16,6 +16,7 @@ import { LandingPage } from './components/landing/LandingPage';
 import { Dialog, DialogHeader, DialogTitle, DialogDescription } from './components/ui/dialog';
 import { Button } from './components/ui/button';
 import { Input } from './components/ui/input';
+import { SquareLogoUploader } from './components/ui/SquareLogoUploader';
 import { client } from './lib/api';
 import { parseAppRoute, buildAppUrl } from './lib/routes';
 import { canManageActiveWorkspace } from './lib/workspace-access';
@@ -43,6 +44,7 @@ export default function App() {
     name: string;
     slug: string;
     primaryColor?: string;
+    logoUrl?: string | null;
   }>({
     name: '',
     slug: '',
@@ -50,6 +52,7 @@ export default function App() {
 
   // Available Boards for New Feedback Modal
   const [boards, setBoards] = useState<Array<{ id: string; name: string }>>([]);
+  const [selectedInitialBoardId, setSelectedInitialBoardId] = useState<string | undefined>();
 
   // Modal & Drawer States
   const [isNewFeedbackModalOpen, setIsNewFeedbackModalOpen] = useState(false);
@@ -154,6 +157,7 @@ export default function App() {
                 name: data.workspace.name,
                 slug: data.workspace.slug,
                 primaryColor: data.workspace.primaryColor || '#4F46E5',
+                logoUrl: data.workspace.logoUrl ?? null,
               });
               return;
             }
@@ -171,6 +175,7 @@ export default function App() {
           name: first.workspaceName,
           slug: first.workspaceSlug,
           primaryColor: first.primaryColor || '#4F46E5',
+          logoUrl: first.logoUrl ?? null,
         });
         window.history.replaceState(
           { view: currentView, slug: first.workspaceSlug },
@@ -202,6 +207,7 @@ export default function App() {
             name: data.workspace.name,
             slug: data.workspace.slug,
             primaryColor: data.workspace.primaryColor,
+            logoUrl: data.workspace.logoUrl ?? null,
           });
         }
         if (data.boards && data.boards.length > 0) {
@@ -263,7 +269,15 @@ export default function App() {
       name: z.string().trim().min(2).max(255),
       slug: z.string().min(2).max(100).regex(/^[a-z0-9-]+$/),
       primaryColor: z.string().regex(/^#([0-9a-fA-F]{3}){1,2}$/),
-      logoUrl: z.string().url().optional(),
+      logoUrl: z
+        .string()
+        .refine(
+          (val) =>
+            val.startsWith('data:image/') ||
+            z.string().url().safeParse(val).success,
+          { message: 'Invalid logo image' }
+        )
+        .optional(),
     }).safeParse({ name: newWsName, slug: newWsSlug, primaryColor: newWsColor, logoUrl: newWsLogoUrl.trim() || undefined });
     if (!input.success) {
       setWsError(t('workspace.validationError'));
@@ -280,6 +294,7 @@ export default function App() {
           name: data.workspace.name,
           slug: data.workspace.slug,
           primaryColor: data.workspace.primaryColor,
+          logoUrl: data.workspace.logoUrl ?? null,
         });
         if (data.defaultBoard) {
           setBoards([{ id: data.defaultBoard.id, name: data.defaultBoard.name }]);
@@ -388,13 +403,18 @@ export default function App() {
               ) : currentView === 'feedback' ? (
                 <FeedbackBoardView
                   workspaceSlug={activeWorkspace.slug}
+                  activeWorkspace={activeWorkspace}
                   searchQuery={searchQuery}
                   onSearchQueryChange={setSearchQuery}
-                  onOpenNewFeedback={() => setIsNewFeedbackModalOpen(true)}
+                  onOpenNewFeedback={(boardId) => {
+                    setSelectedInitialBoardId(boardId);
+                    setIsNewFeedbackModalOpen(true);
+                  }}
                   onOpenAuthModal={() => handleOpenAuthModal('login')}
                   initialPostId={deepLinkPostId}
                   onPostIdChange={handlePostIdChange}
                   refreshTrigger={refreshTrigger}
+                  onBoardsUpdated={setBoards}
                 />
               ) : currentView === 'roadmap' ? (
                 <RoadmapView
@@ -410,6 +430,7 @@ export default function App() {
               ) : currentView === 'changelog' ? (
                 <ChangelogView
                   workspaceSlug={activeWorkspace.slug}
+                  canManageWorkspace={canManageWorkspace}
                   searchQuery={searchQuery}
                   onOpenNewFeedback={() => setIsNewFeedbackModalOpen(true)}
                   onOpenAuthModal={() => {
@@ -435,6 +456,7 @@ export default function App() {
                     setActiveWorkspace((prev) => ({ ...prev, slug: newSlug }));
                     window.history.replaceState(null, '', `/board/${newSlug}/settings`);
                     setRefreshTrigger((prev) => prev + 1);
+                    void refreshUser();
                   }}
                 />
               ) : (
@@ -467,6 +489,7 @@ export default function App() {
           onOpenChange={setIsNewFeedbackModalOpen}
           workspaceId={activeWorkspace.id}
           boards={boards}
+          initialBoardId={selectedInitialBoardId}
           onFeedbackCreated={() => setRefreshTrigger((prev) => prev + 1)}
         />
       )}
@@ -547,13 +570,13 @@ export default function App() {
 
           <div>
             <label className="block text-xs font-semibold text-foreground mb-1.5">
-              {t('workspace.logoUrlLabel')}
+              {t('workspace.logoLabel')}
             </label>
-            <Input
-              type="url"
+            <SquareLogoUploader
               value={newWsLogoUrl}
-              onChange={(e) => setNewWsLogoUrl(e.target.value)}
-              placeholder={t('workspace.logoUrlPlaceholder')}
+              onChange={setNewWsLogoUrl}
+              fallbackLetter={newWsName || 'W'}
+              primaryColor={newWsColor}
             />
           </div>
 

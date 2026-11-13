@@ -25,7 +25,7 @@ import {
 } from '../ui/dropdown-menu';
 import { useTheme } from '../../context/ThemeProvider';
 import { useAuth } from '../../context/AuthContext';
-import { cn } from '../../lib/utils';
+import { cn, sanitizeImageUrl } from '../../lib/utils';
 
 export interface AppHeaderProps {
   searchQuery: string;
@@ -37,6 +37,7 @@ export interface AppHeaderProps {
     name: string;
     slug: string;
     primaryColor?: string;
+    logoUrl?: string | null;
   } | null;
   onSwitchWorkspace?: (slug: string) => void;
   onWorkspaceChange?: (workspace: any) => void;
@@ -168,8 +169,18 @@ export function AppHeader({
                 type="button"
                 className="group flex items-center gap-2 rounded-xl border border-transparent px-2 py-1.5 text-left transition-colors hover:border-border/70 hover:bg-card/70 cursor-pointer"
               >
-                <div className="fp-workspace-mark flex items-center justify-center h-7 w-7 rounded-lg bg-primary/12 text-primary font-bold text-[11px] uppercase shrink-0">
-                  {activeWorkspace.slug ? activeWorkspace.slug.slice(0, 4).toUpperCase() : t('workspace.initials')}
+                <div className="fp-workspace-mark flex items-center justify-center h-7 w-7 rounded-lg bg-primary/12 text-primary font-bold text-[11px] uppercase shrink-0 overflow-hidden">
+                  {sanitizeImageUrl(activeWorkspace.logoUrl) ? (
+                    <img
+                      src={sanitizeImageUrl(activeWorkspace.logoUrl)!}
+                      alt={activeWorkspace.name}
+                      className="h-full w-full object-cover"
+                    />
+                  ) : activeWorkspace.slug ? (
+                    activeWorkspace.slug.slice(0, 4).toUpperCase()
+                  ) : (
+                    t('workspace.initials')
+                  )}
                 </div>
                 <div className="hidden min-w-0 max-w-[110px] sm:block sm:max-w-[150px]">
                   <p className="truncate text-xs font-semibold leading-tight text-foreground">
@@ -203,8 +214,16 @@ export function AppHeader({
                       )}
                     >
                       <div className="flex items-center gap-2 min-w-0">
-                        <div className="flex items-center justify-center h-6 w-6 rounded-md bg-primary/15 text-primary font-bold text-[10px] uppercase shrink-0">
-                          {m.workspaceSlug.slice(0, 3).toUpperCase()}
+                        <div className="flex items-center justify-center h-6 w-6 rounded-md bg-primary/15 text-primary font-bold text-[10px] uppercase shrink-0 overflow-hidden">
+                          {sanitizeImageUrl(m.logoUrl) ? (
+                            <img
+                              src={sanitizeImageUrl(m.logoUrl)!}
+                              alt={m.workspaceName}
+                              className="h-full w-full object-cover"
+                            />
+                          ) : (
+                            m.workspaceSlug.slice(0, 3).toUpperCase()
+                          )}
                         </div>
                         <div className="min-w-0 flex-1">
                           <p className="truncate font-medium text-foreground">{m.workspaceName}</p>

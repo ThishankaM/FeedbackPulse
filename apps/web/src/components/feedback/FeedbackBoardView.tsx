@@ -9,6 +9,8 @@ import {
   TrendingUp,
   Lightbulb,
   LoaderCircle,
+  LayoutGrid,
+  Lock,
 } from 'lucide-react';
 import { animate, stagger } from 'animejs';
 import { Button } from '../ui/button';
@@ -17,8 +19,9 @@ import { Card } from '../ui/card';
 import { Input } from '../ui/input';
 import { useToast } from '../ui/toast';
 import { FeedbackDetailModal } from '../feedback/FeedbackDetailModal';
+import { CreateBoardModal } from '../feedback/CreateBoardModal';
 import { useAuth } from '../../context/AuthContext';
-import { cn } from '../../lib/utils';
+import { cn, sanitizeImageUrl } from '../../lib/utils';
 import { client } from '../../lib/api';
 import { canManageActiveWorkspace } from '../../lib/workspace-access';
 import type { FeedbackCardData } from '../dashboard/FeedbackCard';
@@ -26,13 +29,21 @@ import '../dashboard/dashboard.css';
 
 export interface FeedbackBoardViewProps {
   workspaceSlug: string;
+  activeWorkspace?: {
+    id?: string;
+    name: string;
+    slug: string;
+    primaryColor?: string;
+    logoUrl?: string | null;
+  } | null;
   searchQuery: string;
   onSearchQueryChange: (query: string) => void;
-  onOpenNewFeedback: () => void;
+  onOpenNewFeedback: (boardId?: string) => void;
   onOpenAuthModal?: () => void;
   initialPostId?: string | null;
   onPostIdChange?: (postId: string | null) => void;
   refreshTrigger: number;
+  onBoardsUpdated?: (boards: Array<{ id: string; name: string }>) => void;
 }
 
 type FeedSort = 'trending' | 'top' | 'recent';
@@ -40,6 +51,7 @@ type StatusFilter = 'ALL' | 'UNDER_REVIEW' | 'PLANNED' | 'IN_PROGRESS';
 
 export function FeedbackBoardView({
   workspaceSlug,
+  activeWorkspace,
   searchQuery,
   onSearchQueryChange,
   onOpenNewFeedback,
@@ -47,19 +59,37 @@ export function FeedbackBoardView({
   initialPostId = null,
   onPostIdChange,
   refreshTrigger,
+  onBoardsUpdated,
 }: FeedbackBoardViewProps) {
   const { t, i18n } = useTranslation();
   const { user, memberships } = useAuth();
   const { toast } = useToast();
   const [activeSort, setActiveSort] = React.useState<FeedSort>('trending');
   const [statusFilter, setStatusFilter] = React.useState<StatusFilter>('ALL');
+  const [selectedBoardId, setSelectedBoardId] = React.useState<string>('ALL');
+  const [boards, setBoards] = React.useState<
+    Array<{
+      id: string;
+      name: string;
+      slug: string;
+      description?: string | null;
+      isDefault: boolean;
+      isPublic: boolean;
+    }>
+  >([]);
+  const [isCreateBoardOpen, setIsCreateBoardOpen] = React.useState(false);
   const [posts, setPosts] = React.useState<FeedbackCardData[]>([]);
   const [selectedPost, setSelectedPost] = React.useState<FeedbackCardData | null>(null);
   const [isDetailOpen, setIsDetailOpen] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState(true);
   const [hasLoadError, setHasLoadError] = React.useState(false);
+  const [workspaceData, setWorkspaceData] = React.useState<{
+    name?: string;
+    slug?: string;
+    primaryColor?: string;
+    logoUrl?: string | null;
+  } | null>(null);
 
-  const heroMascotRef = React.useRef<HTMLDivElement>(null);
   const cardsGridRef = React.useRef<HTMLDivElement>(null);
   const listRef = React.useRef<HTMLDivElement>(null);
 
@@ -68,20 +98,9 @@ export function FeedbackBoardView({
     [memberships, workspaceSlug]
   );
 
-  React.useEffect(() => {
-    if (!heroMascotRef.current || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    const animation = animate(heroMascotRef.current, {
-      translateY: [-5, 5],
-      rotate: [-1, 1],
-      direction: 'alternate',
-      loop: true,
-      easing: 'easeInOutSine',
-      duration: 3200,
-    });
-    return () => {
-      animation.pause();
-    };
-  }, []);
+  const workspaceName = activeWorkspace?.name || workspaceData?.name || '';
+  const primaryColor = activeWorkspace?.primaryColor || workspaceData?.primaryColor || '#4F46E5';
+  const logoUrl = activeWorkspace?.logoUrl ?? workspaceData?.logoUrl ?? null;
 
   const loadPosts = React.useCallback(async () => {
     if (!workspaceSlug) {
@@ -101,6 +120,18 @@ export function FeedbackBoardView({
       });
       if (!response.ok) throw new Error('Could not load feedback');
       const data = await response.json();
+      if (data.workspace) {
+        setWorkspaceData({
+          name: data.workspace.name,
+          slug: data.workspace.slug,
+          primaryColor: data.workspace.primaryColor,
+          logoUrl: data.workspace.logoUrl,
+        });
+      }
+      if (data.boards && Array.isArray(data.boards)) {
+        setBoards(data.boards as any);
+        onBoardsUpdated?.(data.boards.map((b: any) => ({ id: b.id, name: b.name })));
+      }
       const allPosts = Object.values(data.columns || {}).flatMap((items: unknown) =>
         Array.isArray(items)
           ? items.map((item: Record<string, unknown>): FeedbackCardData => ({
@@ -297,13 +328,18 @@ export function FeedbackBoardView({
   };
 
   const topFeaturedPosts = React.useMemo(
-    () => [...posts].sort((a, b) => b.voteCount - a.voteCount).slice(0, 3),
-    [posts]
+    () =>
+      posts
+        .filter((p) => (selectedBoardId === 'ALL' ? true : p.boardId === selectedBoardId))
+        .sort((a, b) => b.voteCount - a.voteCount)
+        .slice(0, 3),
+    [posts, selectedBoardId]
   );
 
   const filteredFeed = React.useMemo(() => {
     const normalizedQuery = searchQuery.trim().toLocaleLowerCase(i18n.resolvedLanguage);
     const result = posts.filter((post) => {
+      if (selectedBoardId !== 'ALL' && post.boardId !== selectedBoardId) return false;
       if (statusFilter !== 'ALL' && post.status !== statusFilter) return false;
       return (
         !normalizedQuery ||
@@ -319,7 +355,7 @@ export function FeedbackBoardView({
     return result.sort(
       (a, b) => b.voteCount + b.commentCount * 2 - (a.voteCount + a.commentCount * 2)
     );
-  }, [posts, activeSort, statusFilter, searchQuery, i18n.resolvedLanguage]);
+  }, [posts, selectedBoardId, activeSort, statusFilter, searchQuery, i18n.resolvedLanguage]);
 
   const getStatusBadge = (status: string) => {
     const labels: Record<string, string> = {
@@ -356,51 +392,41 @@ export function FeedbackBoardView({
 
   return (
     <main className="fp-feedback-view mx-auto w-full max-w-[1600px] flex-1 space-y-8 px-4 py-5 sm:px-6 sm:py-8 lg:px-8">
-      <section className="fp-feedback-hero relative isolate overflow-hidden rounded-[1.75rem] border border-indigo-200/90 bg-gradient-to-br from-indigo-50/95 via-white/95 to-violet-50/92 p-5 shadow-sm ring-1 ring-white/60 backdrop-blur-xl dark:border-white/14 dark:from-slate-900/95 dark:via-slate-900/92 dark:to-indigo-950/80 dark:ring-white/5 sm:p-8 lg:p-10">
-        <div className="pointer-events-none absolute -right-24 -top-28 -z-10 h-80 w-80 rounded-full bg-indigo-400/15 blur-3xl" />
-        <div className="pointer-events-none absolute -bottom-28 left-1/3 -z-10 h-64 w-64 rounded-full bg-violet-400/10 blur-3xl" />
-        <div className="grid items-center gap-8 md:grid-cols-[minmax(0,1fr)_auto]">
-          <div className="max-w-3xl">
-            <h1 className="max-w-2xl text-3xl font-bold tracking-tight text-slate-950 dark:text-white sm:text-4xl lg:text-5xl">
-              {t('feedback.boardTitle')}
-            </h1>
-            <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-700 dark:text-slate-200 sm:text-base">
-              {t('feedback.boardDescription')}
-            </p>
-            <form
-              onSubmit={(event) => {
-                event.preventDefault();
-                onOpenNewFeedback();
-              }}
-              className="mt-6 flex max-w-2xl flex-col gap-2 rounded-2xl border border-slate-200/90 bg-white/92 p-2 shadow-lg shadow-indigo-950/5 backdrop-blur-xl focus-within:border-indigo-400 focus-within:ring-4 focus-within:ring-indigo-500/15 dark:border-white/14 dark:bg-slate-950/75 sm:flex-row"
-            >
-              <label className="flex min-w-0 flex-1 items-center gap-2 px-2">
-                <Search aria-hidden="true" className="h-4 w-4 shrink-0 text-slate-500 dark:text-slate-300" />
-                <Input
-                  value={searchQuery}
-                  onChange={(event) => onSearchQueryChange(event.target.value)}
-                  placeholder={t('feedback.searchPlaceholder')}
-                  aria-label={t('feedback.searchPlaceholder')}
-                  className="h-10 border-0 bg-transparent px-0 shadow-none focus-visible:ring-0"
-                />
-              </label>
-              <Button
-                type="submit"
-                className="h-10 shrink-0 rounded-xl bg-indigo-600 px-4 text-white hover:bg-indigo-700"
-              >
-                <Plus aria-hidden="true" className="mr-2 h-4 w-4" />
-                {t('feedback.submitFeedback')}
-              </Button>
-            </form>
+      {/* Workspace Header Banner (matches Settings -> Public Workspace Preview) */}
+      <section
+        className="fp-feedback-banner relative overflow-hidden rounded-2xl p-4 sm:p-5 shadow-sm text-white flex items-center justify-between gap-4 transition-all"
+        style={{
+          background: `linear-gradient(135deg, ${primaryColor} 0%, #3b82f6 100%)`,
+        }}
+      >
+        <div className="flex items-center gap-3.5 min-w-0">
+          <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center shrink-0 overflow-hidden shadow-inner">
+            {sanitizeImageUrl(logoUrl) ? (
+              <img src={sanitizeImageUrl(logoUrl)!} alt={workspaceName} className="w-full h-full object-cover" />
+            ) : (
+              <span className="font-bold text-lg sm:text-xl uppercase text-white">
+                {workspaceName ? workspaceName.charAt(0) : 'W'}
+              </span>
+            )}
           </div>
-          <div
-            ref={heroMascotRef}
-            className="hidden h-40 w-40 items-center justify-center rounded-[2rem] bg-gradient-to-br from-indigo-600 to-violet-600 text-white shadow-xl shadow-indigo-600/20 md:flex lg:mr-8"
-            aria-hidden="true"
-          >
-            <Lightbulb className="h-16 w-16 stroke-[1.4]" />
+          <div className="min-w-0 flex-1">
+            <h1 className="text-lg sm:text-xl md:text-2xl font-bold truncate leading-tight tracking-tight text-white">
+              {workspaceName || t('workspace.modalTitle')}
+            </h1>
+            <p className="text-xs sm:text-sm font-medium text-white/90 mt-0.5 truncate">
+              {t('settings.preview.productFeedback')}
+            </p>
           </div>
         </div>
+
+        <Button
+          type="button"
+          onClick={() => onOpenNewFeedback(selectedBoardId !== 'ALL' ? selectedBoardId : undefined)}
+          className="hidden sm:inline-flex shrink-0 items-center gap-1.5 rounded-xl bg-white/20 hover:bg-white/30 text-white border border-white/25 backdrop-blur-sm font-semibold shadow-xs transition-all cursor-pointer h-10 px-4 text-xs"
+        >
+          <Plus aria-hidden="true" className="h-4 w-4" />
+          <span>{t('feedback.submitFeedback')}</span>
+        </Button>
       </section>
 
       <section aria-labelledby="featured-feedback-heading" className="space-y-4">
@@ -503,6 +529,86 @@ export function FeedbackBoardView({
       </section>
 
       <section ref={listRef} aria-labelledby="feedback-feed-heading" className="space-y-4 scroll-mt-6">
+        {/* Board Switcher Navigation */}
+        <div className="flex flex-wrap items-center justify-between gap-2.5 pb-0.5">
+          <div
+            className="flex flex-wrap items-center gap-1.5 min-w-0"
+            role="tablist"
+            aria-label={t('feedback.allBoards')}
+          >
+            <button
+              type="button"
+              role="tab"
+              aria-selected={selectedBoardId === 'ALL'}
+              onClick={() => setSelectedBoardId('ALL')}
+              className={cn(
+                'inline-flex items-center gap-2 rounded-xl px-3.5 py-1.5 text-xs font-semibold transition-all cursor-pointer border',
+                selectedBoardId === 'ALL'
+                  ? 'bg-blue-600 text-white border-transparent shadow-xs hover:bg-blue-700'
+                  : 'bg-card/75 hover:bg-card text-muted-foreground hover:text-foreground border-border/70'
+              )}
+            >
+              <LayoutGrid className="h-3.5 w-3.5" />
+              <span>{t('feedback.allBoards')}</span>
+              <span
+                className={cn(
+                  'ml-0.5 text-[10px] rounded-full px-1.5 py-0.2 font-mono',
+                  selectedBoardId === 'ALL'
+                    ? 'bg-white/20 text-white'
+                    : 'bg-muted text-muted-foreground'
+                )}
+              >
+                {posts.length}
+              </span>
+            </button>
+
+            {boards.map((b) => {
+              const boardPostCount = posts.filter((p) => p.boardId === b.id).length;
+              return (
+                <button
+                  key={b.id}
+                  type="button"
+                  role="tab"
+                  aria-selected={selectedBoardId === b.id}
+                  onClick={() => setSelectedBoardId(b.id)}
+                  className={cn(
+                    'inline-flex items-center gap-1.5 rounded-xl px-3.5 py-1.5 text-xs font-semibold transition-all cursor-pointer border',
+                    selectedBoardId === b.id
+                      ? 'bg-blue-600 text-white border-transparent shadow-xs hover:bg-blue-700'
+                      : 'bg-card/75 hover:bg-card text-muted-foreground hover:text-foreground border-border/70'
+                  )}
+                >
+                  {!b.isPublic && <Lock className="h-3 w-3 text-amber-500" />}
+                  <span>{b.name}</span>
+                  <span
+                    className={cn(
+                      'ml-0.5 text-[10px] rounded-full px-1.5 py-0.2 font-mono',
+                      selectedBoardId === b.id
+                        ? 'bg-white/20 text-white'
+                        : 'bg-muted text-muted-foreground'
+                    )}
+                  >
+                    {boardPostCount}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+
+          {canManageWorkspace && (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setIsCreateBoardOpen(true)}
+              className="h-8 gap-1.5 rounded-xl text-xs font-semibold cursor-pointer border-dashed border-border/80 hover:border-primary/60 hover:bg-primary/5 hover:text-primary transition-colors"
+            >
+              <Plus className="h-3.5 w-3.5" />
+              <span>{t('feedback.createBoard')}</span>
+            </Button>
+          )}
+        </div>
+
         <div className="flex flex-col gap-3 rounded-2xl border border-slate-200/80 bg-card/90 p-3 shadow-sm backdrop-blur-xl dark:border-white/14 dark:bg-card/80 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex flex-wrap items-center gap-3">
             {/* Status Filter Tabs */}
@@ -552,15 +658,30 @@ export function FeedbackBoardView({
             </div>
           </div>
 
-          <div className="flex items-center justify-between gap-3 lg:justify-end">
+          <div className="flex flex-wrap items-center justify-between gap-3 lg:justify-end">
+            <div className="relative w-full sm:w-52">
+              <Search aria-hidden="true" className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
+              <Input
+                value={searchQuery}
+                onChange={(event) => onSearchQueryChange(event.target.value)}
+                placeholder={t('feedback.searchPlaceholder')}
+                aria-label={t('feedback.searchPlaceholder')}
+                className="h-9 pl-8 pr-3 text-xs rounded-xl bg-background/60"
+              />
+            </div>
             <div
-              className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-600 dark:text-slate-300"
+              className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-600 dark:text-slate-300 shrink-0"
               aria-live="polite"
             >
               {isLoading && <LoaderCircle aria-hidden="true" className="h-3.5 w-3.5 animate-spin" />}
               {t('feedback.postsCount', { count: filteredFeed.length })}
             </div>
-            <Button variant="outline" size="sm" onClick={onOpenNewFeedback} className="h-9 shrink-0 gap-1.5 rounded-xl">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onOpenNewFeedback(selectedBoardId !== 'ALL' ? selectedBoardId : undefined)}
+              className="h-9 shrink-0 gap-1.5 rounded-xl"
+            >
               <Plus aria-hidden="true" className="h-4 w-4" />
               <span>{t('feedback.newFeedback')}</span>
             </Button>
@@ -648,13 +769,29 @@ export function FeedbackBoardView({
               {posts.length ? t('feedback.noSearchResultsDescription') : t('feedback.emptyDescription')}
             </p>
             {!posts.length && (
-              <Button onClick={onOpenNewFeedback} className="mt-4 rounded-xl bg-indigo-600 hover:bg-indigo-700">
+              <Button
+                onClick={() => onOpenNewFeedback(selectedBoardId !== 'ALL' ? selectedBoardId : undefined)}
+                className="mt-4 rounded-xl bg-indigo-600 hover:bg-indigo-700"
+              >
                 {t('feedback.submitFeedback')}
               </Button>
             )}
           </Card>
         )}
       </section>
+
+      {/* Create Board Modal */}
+      {canManageWorkspace && (
+        <CreateBoardModal
+          open={isCreateBoardOpen}
+          onOpenChange={setIsCreateBoardOpen}
+          workspaceSlug={workspaceSlug}
+          onBoardCreated={(newBoard) => {
+            setSelectedBoardId(newBoard.id);
+            void loadPosts();
+          }}
+        />
+      )}
 
       <FeedbackDetailModal
         open={isDetailOpen}

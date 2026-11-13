@@ -15,6 +15,7 @@ export interface NewFeedbackModalProps {
   onOpenChange: (open: boolean) => void;
   workspaceId: string;
   boards: Array<{ id: string; name: string }>;
+  initialBoardId?: string;
   onFeedbackCreated: () => void;
 }
 
@@ -23,6 +24,7 @@ export function NewFeedbackModal({
   onOpenChange,
   workspaceId,
   boards,
+  initialBoardId,
   onFeedbackCreated,
 }: NewFeedbackModalProps) {
   const { t } = useTranslation();
@@ -38,6 +40,16 @@ export function NewFeedbackModal({
     content?: string;
     boardId?: string;
   }>({});
+
+  React.useEffect(() => {
+    if (open) {
+      if (initialBoardId && boards.some((b) => b.id === initialBoardId)) {
+        setSelectedBoardId(initialBoardId);
+      } else if (boards[0]?.id) {
+        setSelectedBoardId(boards[0].id);
+      }
+    }
+  }, [open, initialBoardId, boards]);
 
   const boardId = selectedBoardId || boards[0]?.id || '';
 

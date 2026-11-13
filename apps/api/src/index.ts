@@ -127,6 +127,25 @@ app.use('*', cors({
   credentials: true,
 }));
 
+const LOGO_DATA_URL_REGEX = /^data:image\/(png|jpeg|jpg|webp|gif);base64,[A-Za-z0-9+/=]+$/;
+const MAX_LOGO_DATA_URL_LENGTH = 700_000;
+
+const logoUrlSchema = z.string().refine(
+  (val) => {
+    if (val === '') return true;
+    if (val.startsWith('data:')) {
+      return val.length <= MAX_LOGO_DATA_URL_LENGTH && LOGO_DATA_URL_REGEX.test(val);
+    }
+    try {
+      const parsed = new URL(val);
+      return parsed.protocol === 'http:' || parsed.protocol === 'https:';
+    } catch {
+      return false;
+    }
+  },
+  { message: 'Must be a valid image URL or uploaded image (max 500 KB)' }
+);
+
 // Route Definitions chained for Hono RPC type inference
 const routes = app
   // 0. Welcome / Index
@@ -291,6 +310,7 @@ const routes = app
         workspaceName: workspaces.name,
         workspaceSlug: workspaces.slug,
         primaryColor: workspaces.primaryColor,
+        logoUrl: workspaces.logoUrl,
       })
       .from(workspaceMembers)
       .innerJoin(workspaces, eq(workspaces.id, workspaceMembers.workspaceId))
@@ -336,7 +356,7 @@ const routes = app
       z.object({
         name: z.string().min(2).max(255).optional(),
         slug: z.string().min(2).max(100).regex(/^[a-z0-9-]+$/).optional(),
-        logoUrl: z.string().url().optional().nullable().or(z.literal('')),
+        logoUrl: logoUrlSchema.optional().nullable(),
         primaryColor: z.string().regex(/^#([0-9a-fA-F]{3}){1,2}$/).optional(),
         description: z.string().max(500).optional(),
       })
@@ -441,7 +461,7 @@ const routes = app
         name: z.string().min(2, 'Name must be at least 2 characters').max(255),
         slug: z.string().min(2).max(100).regex(/^[a-z0-9-]+$/, 'Slug must be lowercase alphanumeric with hyphens'),
         primaryColor: z.string().regex(/^#([0-9a-fA-F]{3}){1,2}$/, 'Must be a valid hex color').default('#4F46E5'),
-        logoUrl: z.string().url('Must be a valid URL').optional().or(z.literal('')),
+        logoUrl: logoUrlSchema.optional(),
       })
     ),
     async (c) => {
@@ -493,6 +513,68 @@ const routes = app
     }
   )
 
+  // 5b. Workspace Boards Management (Create new board)
+  .post(
+    '/api/workspaces/:slug/boards',
+    authMiddleware,
+    zValidator(
+      'json',
+      z.object({
+        name: z.string().trim().min(2, 'Name must be at least 2 characters').max(255),
+        slug: z
+          .string()
+          .trim()
+          .min(2, 'Slug must be at least 2 characters')
+          .max(100)
+          .regex(/^[a-z0-9-]+$/, 'Slug must be lowercase alphanumeric with hyphens'),
+        description: z.string().trim().max(500).optional(),
+        isPublic: z.boolean().default(true),
+      })
+    ),
+    async (c) => {
+      const slugParam = c.req.param('slug');
+      const body = c.req.valid('json');
+
+      try {
+        const [workspace] = await db.select().from(workspaces).where(eq(workspaces.slug, slugParam));
+        if (!workspace) {
+          return c.json({ error: 'Workspace not found' }, 404);
+        }
+
+        const access = await getCurrentWorkspaceAccess(c, workspace.id);
+        if (!access.isAdmin) {
+          return c.json({ error: 'Only workspace admins or owners can create boards' }, 403);
+        }
+
+        // Verify slug uniqueness within workspace
+        const [existing] = await db
+          .select({ id: boards.id })
+          .from(boards)
+          .where(and(eq(boards.workspaceId, workspace.id), eq(boards.slug, body.slug)));
+
+        if (existing) {
+          return c.json({ error: 'A board with this slug already exists in this workspace' }, 409);
+        }
+
+        const [newBoard] = await db
+          .insert(boards)
+          .values({
+            workspaceId: workspace.id,
+            name: body.name,
+            slug: body.slug,
+            description: body.description || null,
+            isDefault: false,
+            isPublic: body.isPublic,
+          })
+          .returning();
+
+        return c.json({ board: newBoard }, 201);
+      } catch (error: any) {
+        return c.json({ error: error.message || 'Failed to create board' }, 500);
+      }
+    }
+  )
+
   // 6. Workspace Dashboard Data (KPI Metrics + Status Columns + Boards)
   .get('/api/workspaces/:slug/dashboard', async (c) => {
     const slug = c.req.param('slug');
@@ -510,6 +592,7 @@ const routes = app
           slug: boards.slug,
           description: boards.description,
           isDefault: boards.isDefault,
+          isPublic: boards.isPublic,
         })
         .from(boards)
         .where(and(eq(boards.workspaceId, workspace.id), isNull(boards.archivedAt)));
@@ -894,6 +977,181 @@ const routes = app
       return c.json({ changelogs: items }, 200);
     } catch (error: any) {
       return c.json({ error: error.message || 'Failed to fetch changelogs' }, 500);
+    }
+  })
+  .post(
+    '/api/workspaces/:slug/changelogs',
+    authMiddleware,
+    zValidator(
+      'json',
+      z.object({
+        title: z.string().trim().min(2, 'Title must be at least 2 characters').max(255),
+        slug: z
+          .string()
+          .trim()
+          .min(2, 'Slug must be at least 2 characters')
+          .max(150)
+          .regex(/^[a-z0-9-]+$/, 'Slug must be lowercase alphanumeric with hyphens'),
+        content: z.string().trim().min(5, 'Content must be at least 5 characters'),
+        status: z.enum(['DRAFT', 'PUBLISHED']).default('PUBLISHED'),
+        publishedAt: z.string().optional().nullable(),
+      })
+    ),
+    async (c) => {
+      const slugParam = c.req.param('slug');
+      const body = c.req.valid('json');
+
+      try {
+        const [workspace] = await db.select().from(workspaces).where(eq(workspaces.slug, slugParam));
+        if (!workspace) {
+          return c.json({ error: 'Workspace not found' }, 404);
+        }
+
+        const access = await getCurrentWorkspaceAccess(c, workspace.id);
+        if (!access.isAdmin) {
+          return c.json({ error: 'Only workspace admins or owners can create changelog entries' }, 403);
+        }
+
+        const [existing] = await db
+          .select({ id: changelogs.id })
+          .from(changelogs)
+          .where(and(eq(changelogs.workspaceId, workspace.id), eq(changelogs.slug, body.slug)));
+
+        if (existing) {
+          return c.json({ error: 'A changelog with this slug already exists in this workspace' }, 409);
+        }
+
+        const pubDate = body.status === 'PUBLISHED'
+          ? (body.publishedAt ? new Date(body.publishedAt) : new Date())
+          : null;
+
+        const [newChangelog] = await db
+          .insert(changelogs)
+          .values({
+            workspaceId: workspace.id,
+            title: body.title,
+            slug: body.slug,
+            content: body.content,
+            status: body.status,
+            publishedAt: pubDate,
+            authorUserId: access.userId,
+          })
+          .returning();
+
+        return c.json({ changelog: newChangelog }, 201);
+      } catch (error: any) {
+        return c.json({ error: error.message || 'Failed to create changelog' }, 500);
+      }
+    }
+  )
+  .patch(
+    '/api/workspaces/:slug/changelogs/:id',
+    authMiddleware,
+    zValidator(
+      'json',
+      z.object({
+        title: z.string().trim().min(2).max(255).optional(),
+        slug: z
+          .string()
+          .trim()
+          .min(2)
+          .max(150)
+          .regex(/^[a-z0-9-]+$/)
+          .optional(),
+        content: z.string().trim().min(5).optional(),
+        status: z.enum(['DRAFT', 'PUBLISHED', 'ARCHIVED']).optional(),
+        publishedAt: z.string().optional().nullable(),
+      })
+    ),
+    async (c) => {
+      const slugParam = c.req.param('slug');
+      const idParam = c.req.param('id');
+      const body = c.req.valid('json');
+
+      try {
+        const [workspace] = await db.select().from(workspaces).where(eq(workspaces.slug, slugParam));
+        if (!workspace) {
+          return c.json({ error: 'Workspace not found' }, 404);
+        }
+
+        const access = await getCurrentWorkspaceAccess(c, workspace.id);
+        if (!access.isAdmin) {
+          return c.json({ error: 'Only workspace admins or owners can update changelog entries' }, 403);
+        }
+
+        const [existing] = await db
+          .select()
+          .from(changelogs)
+          .where(and(eq(changelogs.id, idParam), eq(changelogs.workspaceId, workspace.id)));
+
+        if (!existing) {
+          return c.json({ error: 'Changelog not found' }, 404);
+        }
+
+        if (body.slug && body.slug !== existing.slug) {
+          const [slugConflict] = await db
+            .select({ id: changelogs.id })
+            .from(changelogs)
+            .where(and(eq(changelogs.workspaceId, workspace.id), eq(changelogs.slug, body.slug)));
+
+          if (slugConflict) {
+            return c.json({ error: 'A changelog with this slug already exists' }, 409);
+          }
+        }
+
+        const updateData: Record<string, unknown> = {};
+        if (body.title !== undefined) updateData.title = body.title;
+        if (body.slug !== undefined) updateData.slug = body.slug;
+        if (body.content !== undefined) updateData.content = body.content;
+        if (body.status !== undefined) {
+          updateData.status = body.status;
+          if (body.status === 'PUBLISHED' && !existing.publishedAt) {
+            updateData.publishedAt = new Date();
+          }
+        }
+        if (body.publishedAt !== undefined) {
+          updateData.publishedAt = body.publishedAt ? new Date(body.publishedAt) : null;
+        }
+
+        const [updated] = await db
+          .update(changelogs)
+          .set(updateData)
+          .where(and(eq(changelogs.id, idParam), eq(changelogs.workspaceId, workspace.id)))
+          .returning();
+
+        return c.json({ changelog: updated }, 200);
+      } catch (error: any) {
+        return c.json({ error: error.message || 'Failed to update changelog' }, 500);
+      }
+    }
+  )
+  .delete('/api/workspaces/:slug/changelogs/:id', authMiddleware, async (c) => {
+    const slugParam = c.req.param('slug');
+    const idParam = c.req.param('id');
+
+    try {
+      const [workspace] = await db.select().from(workspaces).where(eq(workspaces.slug, slugParam));
+      if (!workspace) {
+        return c.json({ error: 'Workspace not found' }, 404);
+      }
+
+      const access = await getCurrentWorkspaceAccess(c, workspace.id);
+      if (!access.isAdmin) {
+        return c.json({ error: 'Only workspace admins or owners can delete changelog entries' }, 403);
+      }
+
+      const [deleted] = await db
+        .delete(changelogs)
+        .where(and(eq(changelogs.id, idParam), eq(changelogs.workspaceId, workspace.id)))
+        .returning();
+
+      if (!deleted) {
+        return c.json({ error: 'Changelog not found' }, 404);
+      }
+
+      return c.json({ success: true }, 200);
+    } catch (error: any) {
+      return c.json({ error: error.message || 'Failed to delete changelog' }, 500);
     }
   })
 
