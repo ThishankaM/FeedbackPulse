@@ -155,11 +155,12 @@ export function AuthModal({
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
       <DialogContent
         className="auth-glass auth-modal-enter auth-scrollbar relative w-full max-w-[480px] rounded-[24px] border border-white/60 dark:border-white/10 p-6 sm:p-7 shadow-2xl backdrop-blur-2xl"
+        closeButtonClassName="auth-modal-close right-4 top-4 sm:right-5 sm:top-5"
         role="dialog"
         aria-modal="true"
         aria-labelledby="auth-modal-title"
       >
-        <DialogHeader className="auth-form-enter text-center sm:text-center space-y-1.5 pb-1">
+        <DialogHeader className="auth-form-enter text-center sm:text-center space-y-1.5 pb-1 px-6 sm:px-8">
           <DialogTitle
             id="auth-modal-title"
             className="text-[24px] sm:text-[28px] font-bold tracking-tight text-foreground"

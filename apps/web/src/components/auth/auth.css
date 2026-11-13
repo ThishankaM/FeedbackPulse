@@ -140,12 +140,30 @@
   }
 }
 
+/* Close button animation matching discussion drawer */
+.auth-modal-close .lucide {
+  transition:
+    transform 170ms ease,
+    filter 170ms ease;
+}
+
+.auth-modal-close:hover .lucide {
+  filter: drop-shadow(0 0 5px rgba(50, 102, 235, 0.36));
+  transform: rotate(90deg);
+}
+
+.auth-modal-close:active .lucide {
+  transform: rotate(90deg) scale(0.9);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .auth-modal-enter,
   .auth-panel-enter,
   .auth-form-enter,
   .auth-logo-ring,
-  .auth-loader-dot {
+  .auth-loader-dot,
+  .auth-modal-close .lucide {
     animation: none;
+    transition: none;
   }
 }
