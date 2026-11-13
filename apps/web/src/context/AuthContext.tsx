@@ -14,6 +14,7 @@ export interface WorkspaceMembership {
   workspaceName: string;
   workspaceSlug: string;
   primaryColor: string;
+  logoUrl?: string | null;
 }
 
 interface AuthContextType {

@@ -17,6 +17,9 @@ import {
   Activity,
   FileText,
   Calendar,
+  Plus,
+  Pencil,
+  Lock,
 } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
@@ -28,12 +31,16 @@ import {
   DialogTitle,
   DialogDescription,
 } from '../ui/dialog';
+import { ChangelogEditorModal } from './ChangelogEditorModal';
+import { useAuth } from '../../context/AuthContext';
+import { canManageActiveWorkspace } from '../../lib/workspace-access';
 import { cn } from '../../lib/utils';
 import { client } from '../../lib/api';
 import { staggerCards, prefersReducedMotion } from '../../lib/motion';
 
 export interface ChangelogViewProps {
   workspaceSlug?: string;
+  canManageWorkspace?: boolean;
   searchQuery?: string;
   onOpenNewFeedback?: () => void;
   onOpenAuthModal?: () => void;
@@ -45,6 +52,7 @@ export type ChangelogCategory = 'all' | 'new' | 'improvement' | 'release';
 
 export interface ChangelogItem {
   id: string;
+  slug?: string;
   version?: string;
   date: string;
   isoDate: string;
@@ -52,6 +60,8 @@ export interface ChangelogItem {
   tagVariant: 'purple' | 'info' | 'default' | 'success';
   title: string;
   summary: string;
+  rawContent?: string;
+  status?: string;
   descriptionHtml?: string;
   highlights?: string[];
   hasPreview?: boolean;
@@ -68,18 +78,21 @@ export interface ChangelogItem {
   };
   authorName?: string;
   authorAvatar?: string;
-  status?: string;
 }
 
 const DEFAULT_CHANGELOG_ITEMS: ChangelogItem[] = [];
 
 export function ChangelogView({
   workspaceSlug,
+  canManageWorkspace,
   searchQuery = '',
   onViewChange,
   refreshTrigger = 0,
 }: ChangelogViewProps) {
   const { t, i18n } = useTranslation();
+  const { memberships } = useAuth();
+  const effectiveCanManage = canManageWorkspace ?? (workspaceSlug ? canManageActiveWorkspace(memberships, workspaceSlug) : false);
+
   const [items, setItems] = React.useState<ChangelogItem[]>(DEFAULT_CHANGELOG_ITEMS);
   const [isLoading, setIsLoading] = React.useState(true);
   const [activeCategory, setActiveCategory] = React.useState<ChangelogCategory>('all');
@@ -89,6 +102,9 @@ export function ChangelogView({
   const [subscribedSuccess, setSubscribedSuccess] = React.useState(false);
   const [copiedId, setCopiedId] = React.useState<string | null>(null);
   const [selectedPreview, setSelectedPreview] = React.useState<ChangelogItem | null>(null);
+  const [isEditorOpen, setIsEditorOpen] = React.useState(false);
+  const [editingItem, setEditingItem] = React.useState<ChangelogItem | null>(null);
+  const [reloadKey, setReloadKey] = React.useState(0);
 
   const timelineContainerRef = React.useRef<HTMLDivElement>(null);
   const activeDotRef = React.useRef<HTMLDivElement>(null);
@@ -165,6 +181,7 @@ export function ChangelogView({
 
               return {
                 id: raw.id,
+                slug: raw.slug,
                 version,
                 date: formattedDate,
                 isoDate: pubDate.toISOString(),
@@ -172,6 +189,7 @@ export function ChangelogView({
                 tagVariant,
                 title: raw.title,
                 summary,
+                rawContent: raw.content,
                 highlights: highlights.length > 0 ? highlights : undefined,
                 hasPreview,
                 previewType: 'roadmap',
@@ -206,7 +224,7 @@ export function ChangelogView({
     return () => {
       isCancelled = true;
     };
-  }, [workspaceSlug, refreshTrigger, i18n.resolvedLanguage]);
+  }, [workspaceSlug, refreshTrigger, reloadKey, i18n.resolvedLanguage]);
 
   // Anime.js Stagger entrance animation on mount and filter changes
   React.useEffect(() => {
@@ -396,13 +414,28 @@ export function ChangelogView({
             </div>
           </div>
 
-          <Button
-            onClick={() => setSubscribeModalOpen(true)}
-            className="self-end flex shrink-0 items-center gap-2 rounded-full bg-primary px-5 py-2 text-xs font-semibold text-primary-foreground shadow-sm hover:bg-primary/90 transition-all cursor-pointer"
-          >
-            <Bell className="h-3.5 w-3.5" />
-            <span>{t('changelog.subscribe')}</span>
-          </Button>
+          <div className="self-end flex items-center gap-2 shrink-0">
+            {effectiveCanManage && (
+              <Button
+                onClick={() => {
+                  setEditingItem(null);
+                  setIsEditorOpen(true);
+                }}
+                className="flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground shadow-sm hover:bg-primary/90 transition-all cursor-pointer"
+              >
+                <Plus className="h-3.5 w-3.5" />
+                <span>{t('changelog.newRelease')}</span>
+              </Button>
+            )}
+            <Button
+              variant="outline"
+              onClick={() => setSubscribeModalOpen(true)}
+              className="flex items-center gap-2 rounded-full px-4 py-2 text-xs font-semibold shadow-xs hover:bg-accent transition-all cursor-pointer"
+            >
+              <Bell className="h-3.5 w-3.5" />
+              <span>{t('changelog.subscribe')}</span>
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -514,24 +547,52 @@ export function ChangelogView({
                       {t(`changelog.badge.${item.tag.toLowerCase()}`)}
                     </Badge>
 
-                    {/* Share / Copy Link Button */}
-                    <button
-                      onClick={() => handleCopyLink(item.id)}
-                      title={t('changelog.copyLinkTitle')}
-                      className="ml-auto inline-flex items-center gap-1 rounded-lg px-2 py-1 text-[11px] font-medium text-muted-foreground hover:bg-accent hover:text-foreground transition-colors cursor-pointer"
-                    >
-                      {copiedId === item.id ? (
-                        <>
-                          <Check className="h-3.5 w-3.5 text-emerald-500" />
-                          <span className="text-emerald-500 font-semibold">{t('common.copied')}</span>
-                        </>
-                      ) : (
-                        <>
-                          <Share2 className="h-3.5 w-3.5" />
-                          <span className="hidden sm:inline">{t('common.share')}</span>
-                        </>
+                    {/* Draft Badge for Admins */}
+                    {item.status === 'DRAFT' && (
+                      <Badge
+                        variant="secondary"
+                        className="rounded-full px-2.5 py-0.5 text-xs font-semibold bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30 flex items-center gap-1"
+                      >
+                        <Lock className="h-2.5 w-2.5" />
+                        <span>{t('changelog.draftBadge')}</span>
+                      </Badge>
+                    )}
+
+                    <div className="ml-auto flex items-center gap-1.5">
+                      {/* Admin Edit Button */}
+                      {effectiveCanManage && (
+                        <button
+                          onClick={() => {
+                            setEditingItem(item);
+                            setIsEditorOpen(true);
+                          }}
+                          title={t('common.edit')}
+                          className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-[11px] font-medium text-muted-foreground hover:bg-accent hover:text-foreground transition-colors cursor-pointer"
+                        >
+                          <Pencil className="h-3 w-3" />
+                          <span className="hidden sm:inline">{t('common.edit')}</span>
+                        </button>
                       )}
-                    </button>
+
+                      {/* Share / Copy Link Button */}
+                      <button
+                        onClick={() => handleCopyLink(item.id)}
+                        title={t('changelog.copyLinkTitle')}
+                        className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-[11px] font-medium text-muted-foreground hover:bg-accent hover:text-foreground transition-colors cursor-pointer"
+                      >
+                        {copiedId === item.id ? (
+                          <>
+                            <Check className="h-3.5 w-3.5 text-emerald-500" />
+                            <span className="text-emerald-500 font-semibold">{t('common.copied')}</span>
+                          </>
+                        ) : (
+                          <>
+                            <Share2 className="h-3.5 w-3.5" />
+                            <span className="hidden sm:inline">{t('common.share')}</span>
+                          </>
+                        )}
+                      </button>
+                    </div>
                   </div>
 
                   {/* Title */}
@@ -795,6 +856,26 @@ export function ChangelogView({
           </div>
         </DialogContent>
       </Dialog>
+      {/* 6. Changelog Editor Modal for Workspace Owners & Admins */}
+      {effectiveCanManage && workspaceSlug && (
+        <ChangelogEditorModal
+          open={isEditorOpen}
+          onOpenChange={setIsEditorOpen}
+          workspaceSlug={workspaceSlug}
+          initialData={
+            editingItem
+              ? {
+                  id: editingItem.id,
+                  title: editingItem.title,
+                  slug: editingItem.slug,
+                  content: editingItem.rawContent || editingItem.summary,
+                  status: (editingItem.status as 'DRAFT' | 'PUBLISHED') || 'PUBLISHED',
+                }
+              : null
+          }
+          onSaved={() => setReloadKey((prev) => prev + 1)}
+        />
+      )}
     </div>
   );
 }
