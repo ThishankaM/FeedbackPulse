@@ -103,7 +103,7 @@ export function Dialog({
         <button
           type="button"
           onClick={() => onOpenChange(false)}
-          className="absolute right-4 top-4 grid size-9 place-items-center rounded-xl text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground cursor-pointer"
+          className="absolute right-4 top-4 z-50 flex size-9 sm:size-10 items-center justify-center rounded-xl text-muted-foreground transition-all hover:bg-accent hover:text-accent-foreground active:scale-95 cursor-pointer touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
           aria-label="Close dialog"
         >
           <X className="h-5 w-5" />
@@ -156,10 +156,12 @@ DialogTrigger.displayName = 'DialogTrigger';
 
 export interface DialogContentProps extends React.HTMLAttributes<HTMLDivElement> {
   onClose?: () => void;
+  closeButtonClassName?: string;
+  hideCloseButton?: boolean;
 }
 
 export const DialogContent = React.forwardRef<HTMLDivElement, DialogContentProps>(
-  ({ className, children, onClose, ...props }, ref) => {
+  ({ className, children, onClose, closeButtonClassName, hideCloseButton, ...props }, ref) => {
     const { open, onOpenChange } = useDialogContext();
 
     React.useEffect(() => {
@@ -202,17 +204,22 @@ export const DialogContent = React.forwardRef<HTMLDivElement, DialogContentProps
           )}
           {...props}
         >
-          <button
-            type="button"
-            onClick={() => {
-              onOpenChange(false);
-              onClose?.();
-            }}
-            className="absolute right-4 top-4 grid size-9 place-items-center rounded-xl text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground cursor-pointer"
-            aria-label="Close dialog"
-          >
-            <X className="h-5 w-5" />
-          </button>
+          {!hideCloseButton && (
+            <button
+              type="button"
+              onClick={() => {
+                onOpenChange(false);
+                onClose?.();
+              }}
+              className={cn(
+                'absolute right-4 top-4 z-50 flex size-9 sm:size-10 items-center justify-center rounded-xl text-muted-foreground transition-all hover:bg-accent hover:text-accent-foreground active:scale-95 cursor-pointer touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
+                closeButtonClassName
+              )}
+              aria-label="Close dialog"
+            >
+              <X className="h-5 w-5" />
+            </button>
+          )}
           {children}
         </div>
       </div>
